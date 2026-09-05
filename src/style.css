@@ -7,3 +7,27 @@
 /* Language controls stay available in both the lobby and a running match. */
 .language-control{display:inline-block;width:88px;flex:0 0 88px}.language-control select{width:100%;min-height:29px;font-size:11px;padding:4px 17px 4px 7px;letter-spacing:0}.game-top .language-control{width:78px;flex-basis:78px}html[lang=en] .brand-caption strong{font-size:17px;letter-spacing:.1em}html[lang=en] .country-note{height:auto;min-height:15px}html[lang=en] .panel-title h2{letter-spacing:.07em}html[lang=en] .help-grid{grid-template-columns:155px 1fr}html[lang=en] .build-tabs button small{font-size:8px}html[lang=en] .sidebar-tools button{font-size:10px;letter-spacing:0}
 html[lang=en] .player-table select{padding-right:6px}html[lang=en] .item-name{font-size:9px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}@media(max-height:800px) and (min-width:801px){.player-table td{height:35px;padding:3px 5px}.shell{gap:14px}.lobby-options{margin-top:10px;padding-top:10px}.checks{padding-top:10px}}
+/* Project identity and disclosures use text, without third-party brand styling. */
+.app-title{font:600 20px/1.35 Tahoma,sans-serif;color:#e5d297;letter-spacing:0;margin:0;max-width:650px;overflow-wrap:anywhere}
+.brand{min-width:0;flex:1}.brand-caption{flex-shrink:0}
+.project-notice{position:relative;color:#c0b397;font:12px/1.7 Tahoma,sans-serif;z-index:1}
+.project-notice summary{cursor:pointer;padding:7px 0;color:#dfd0a8;min-height:32px}
+.project-notice p+p{margin-top:10px}.project-notice a{color:#eddaa5;text-decoration:underline}
+.shell{overflow:auto}.shell>.project-notice{width:100%;max-width:1440px;margin:0 auto;flex-shrink:0}
+.shell>.project-notice>div{max-width:960px;padding:6px 0 12px}
+.asset-setup-panel .app-title{font:600 23px/1.4 Tahoma,sans-serif;letter-spacing:0;margin:0 0 20px}
+.asset-setup-panel h2{font:400 20px/1.4 Tahoma,sans-serif;color:#e5d297;margin:9px 0 16px}
+.asset-setup-panel .project-notice{margin:12px 0}
+.game-top{height:auto;min-height:54px;flex-shrink:0}.game-top .left{min-width:0;flex:1}
+.game-heading{min-width:0}.game-heading .app-title{font-size:12px;max-width:none}.game-heading .game-title{font-size:10px;color:#b9b99f}
+.loading-screen h1.app-title{font-size:24px}
+.battlefield-tools{position:absolute;left:12px;bottom:12px;z-index:6;display:flex;flex-direction:column;align-items:flex-start;gap:8px;max-width:calc(100% - 24px);pointer-events:none}
+.battlefield-tools .hud-objective{position:static;max-width:460px}
+.debug-panel{pointer-events:auto;width:260px;max-width:100%;color:#d7d6ba;background:#17221bf5;border:1px solid #748062;box-shadow:0 3px 12px #0007;font:12px/1.5 Tahoma,sans-serif}
+.debug-panel summary{cursor:pointer;padding:9px 12px;min-height:36px;color:#e5d297}
+.debug-controls{display:flex;flex-direction:column;gap:10px;padding:2px 12px 12px;max-height:calc(100dvh - 180px);overflow:auto}
+.debug-controls p{font-size:11px;color:#afb8a2;margin:0}.debug-controls button{font-size:12px;letter-spacing:0;text-align:left;padding:8px}
+.debug-controls label{display:flex;align-items:center;gap:8px;min-height:28px;cursor:pointer}.debug-controls input{flex-shrink:0;width:16px;height:16px;accent-color:#acbb87}
+.debug-panel :focus-visible,.project-notice :focus-visible{outline:2px solid #eddaa5;outline-offset:3px}
+@media(max-width:800px){.header{align-items:flex-start;flex-wrap:wrap;gap:12px}.header .app-title{font-size:18px}.game-top{padding:6px}.game-top .right{flex-wrap:wrap;justify-content:flex-end;max-width:160px}.game-heading .app-title{font-size:10px}.battlefield-tools{left:8px;bottom:8px}}
+.asset-setup-screen{align-items:flex-start}

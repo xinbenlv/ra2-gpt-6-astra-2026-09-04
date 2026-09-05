@@ -1,7 +1,14 @@
+import { APP_TITLE } from './project';
+
 export type Locale = 'en' | 'zh-CN';
 const STORAGE_KEY = 'ra2-language';
-let locale: Locale = 'en';
-try { if (typeof window !== 'undefined' && window.localStorage?.getItem(STORAGE_KEY) === 'zh-CN') locale = 'zh-CN'; } catch { /* Storage can be unavailable in private browsing. */ }
+export function detectLocale(saved: string | null, browserLanguage?: string): Locale {
+  if (saved === 'en' || saved === 'zh-CN') return saved;
+  return /^zh(?:[-_]|$)/i.test(browserLanguage ?? '') ? 'zh-CN' : 'en';
+}
+let savedLocale: string | null = null;
+try { if (typeof window !== 'undefined') savedLocale = window.localStorage?.getItem(STORAGE_KEY) ?? null; } catch { /* Storage can be unavailable in private browsing. */ }
+let locale: Locale = detectLocale(savedLocale, typeof window !== 'undefined' ? (window.navigator.languages?.[0] || window.navigator.language) : undefined);
 
 /** Source messages remain Chinese in the simulation; localization happens at the presentation boundary. */
 const english: Record<string, string> = {
@@ -67,7 +74,7 @@ export function setLocale(value: Locale): void {
 function updateDocumentLanguage(): void {
   if (typeof document === 'undefined') return;
   document.documentElement.lang = locale;
-  document.title = locale === 'en' ? 'Red Alert 2 — Skirmish' : '红色警戒 2 — 遭遇战';
+  document.title = APP_TITLE;
 }
 updateDocumentLanguage();
 

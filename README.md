@@ -1,6 +1,18 @@
-# Red Alert 2 · TypeScript Skirmish
+# Fan Re-created Red Alert2 (via ChatGPT 6 Astra on 2026-09-04)
 
 Current release: **v0.2.0** — browser-only asset preparation. The earlier local-file startup version is preserved as **v.0.1.0**.
+
+An independent fan recreation created by developer [Victor Zhou](https://zzn.im) in a **one-shot development experiment on 2026-09-04**, while testing the then-latest model, **ChatGPT 6 Astra**. Victor uses this approach to benchmark different models. The one-shot label describes the initial experiment; subsequent fixes and updates are recorded in the commit history.
+
+## Disclaimer and contact
+
+This project has no affiliation, sponsorship, authorization or endorsement from **Electronic Arts (EA), Westwood Studios or their licensors**. Command & Conquer, Red Alert 2, and all original game trademarks, logos, assets and related copyrights belong to **EA and their respective rights holders**.
+
+This project is also **not associated with, sponsored by or endorsed by OpenAI or ChatGPT**. OpenAI, ChatGPT and related trademarks and logos belong to **OpenAI and their respective owners**. The model name identifies the tool used for this experiment and does not imply an official partnership.
+
+**No infringement of anyone’s copyright or other rights is intended.** This project claims no ownership of the original assets and grants no license to third-party content. For questions, rights concerns or **takedown requests**, contact Victor at **hi[at]zzn[dot]im** ([email](mailto:hi@zzn.im)).
+
+## About the game
 
 A browser RTS focused on Red Alert 2 skirmishes, with original Westwood artwork, maps, voices and music converted on the player's device. The game engine, AI, rendering and interface are independently written in TypeScript. No existing implementation on the user's computer or at `github.com/xinbenlv` was consulted.
 
@@ -13,7 +25,7 @@ npm ci
 npm run dev
 ```
 
-The interface defaults to English; use the English / 中文 selector to switch languages at any time.
+The interface defaults to **English**, except when the browser’s preferred language is Chinese (`zh`, including `zh-CN`, `zh-TW` and `zh-HK`). A saved manual language choice takes precedence. Use the English / 中文 selector to switch at any time.
 
 Open the printed address, normally [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
@@ -75,6 +87,17 @@ Every build excludes original resources, **even when the developer has already e
 | Esc / P | Cancel current action / pause |
 
 Short game eliminates a player after all buildings and MCVs are destroyed. With short game disabled, all units and buildings must be destroyed.
+
+## Debug Panel
+
+Open **Debug Panel** in the bottom-left corner during a skirmish:
+
+- **Add 10,000 credits** adds funds to the current player each time it is clicked.
+- **Reveal entire map** reveals terrain, enemies and the radar for the current player. Turning it off restores normal fog rules.
+- **Instant construction & recruitment** completes existing paid queues and future purchases immediately. Credits, prerequisites and building placement still apply; AI production is unchanged.
+- **Mute all audio** immediately stops music, voices and effects and blocks further playback. Unmuting restores the previous music and sound preferences.
+
+Gameplay debug options reset for each new match. The audio mute lasts for the current page session.
 
 ## Fidelity and limits
 

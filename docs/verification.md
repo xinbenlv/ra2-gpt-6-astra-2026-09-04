@@ -69,3 +69,12 @@ These checks do not establish frame-for-frame compatibility with the Westwood en
 Tag `v.0.1.0` preserves the local-original-files startup version. Version `v0.2.0` restores explicit browser consent and browser-only original storage, including on localhost. The service worker upgrades its application cache without discarding previously prepared originals, and an existing worker remains usable when an update cannot reach the network offline.
 
 All 38 tests and the production asset-exclusion check passed. A fresh Chromium context showed **Agree & download** with no Internet Archive request before consent. Clicking it requested Internet Archive's own CORS endpoint; intentionally aborting that test request displayed the retry action. Direct HTTP requests confirmed the application host did not serve original metadata. The previously prepared Chromium profile reused its 130 sprites with zero failed images, reloaded offline and deployed an MCV on Arctic Circle with no JavaScript errors. This release reused the unchanged converter worker validated by the full download/conversion test above.
+
+## Project identity and debug controls — 2026-09-05
+
+The README and app now identify the fan recreation and Victor Zhou's initial one-shot model benchmark. The app includes an English/Chinese disclosure of third-party rights, independence from EA and OpenAI, and contact details for questions or takedowns.
+
+- All 43 tests passed, including new cases for browser-language selection, manual preference precedence, local-player debug credits and visibility, instant production with normal costs/prerequisites, and global audio mute.
+- The TypeScript/Vite production build and source-only repository/build checks passed with local originals present. Original assets remain excluded from Git and the hosted output.
+- Chromium checked fresh `en-US`, `zh-CN`, `zh-TW` and `ja-JP` contexts: Chinese was selected only for Chinese browser locales; a manual English choice survived reload. No original download occurred before consent.
+- A production preview using the existing browser asset cache verified the exact app title, disclosures, two consecutive credit grants, reveal on/off, instant construction followed by manual placement, immediate mute and music resumption, live language switching, keyboard navigation inside the panel, and reset of gameplay debug options on a new match. No browser runtime errors occurred. This check reused cached originals; it did not repeat the original archive download/conversion acceptance run.

@@ -1,7 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { COUNTRIES, CATALOG } from '../src/game/data.ts';
-import { getLocale, registerTranslations, setLocale, t } from '../src/i18n.ts';
+import { detectLocale, getLocale, registerTranslations, setLocale, t } from '../src/i18n.ts';
+
+test('browser language chooses Chinese only for Chinese locales, with manual choice taking precedence', () => {
+  for (const language of ['zh', 'zh-CN', 'zh-TW', 'zh-HK', 'zh-Hant', 'ZH_cn']) assert.equal(detectLocale(null, language), 'zh-CN');
+  for (const language of ['en-US', 'ja-JP', 'fr-FR', '', undefined]) assert.equal(detectLocale(null, language), 'en');
+  assert.equal(detectLocale('en', 'zh-CN'), 'en');
+  assert.equal(detectLocale('zh-CN', 'en-US'), 'zh-CN');
+  assert.equal(detectLocale('invalid', 'zh-TW'), 'zh-CN');
+});
 
 test('English is the default and all country and production descriptions are translated', () => {
   assert.equal(getLocale(), 'en');

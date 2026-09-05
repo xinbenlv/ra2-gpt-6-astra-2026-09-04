@@ -30,6 +30,9 @@ export class GameEngine {
   status: 'playing' | 'victory' | 'defeat' = 'playing';
   winnerTeam: number | null = null;
   lastMessage = '';
+  debugRevealMap = false;
+  private instantProduction = false;
+  get debugInstantProduction(): boolean { return this.instantProduction; }
   ore: Float32Array;
   private blocked: Uint8Array;
   private nextId = 1;
@@ -113,6 +116,18 @@ export class GameEngine {
   }
 
   getPlayer(id = this.localPlayerId): PlayerState | undefined { return id === -1 ? this.neutralPlayer : this.players.find(p => p.id === id); }
+  grantDebugCredits(): void {
+    const player = this.getPlayer();
+    if (player && !player.defeated && this.status === 'playing') player.credits += 10000;
+  }
+  setDebugInstantProduction(enabled: boolean): void {
+    this.instantProduction = enabled;
+    const player = this.getPlayer();
+    if (!enabled || !player || player.defeated || this.status !== 'playing') return;
+    // Complete already-paid queues as well as future purchases. Buildings still need placement.
+    const rounds = Math.max(...CATEGORIES.map(category => player.queues[category].length));
+    for (let i = 0; i < rounds; i++) this.advanceProduction(player, 0);
+  }
   getEntity(id: number): Entity | undefined { return this.entityMap.get(id); }
   isAllied(a: number, b: number): boolean {
     if (a === b) return true;
@@ -125,11 +140,11 @@ export class GameEngine {
     return this.map.cells[ty * this.map.width + tx] ?? 'void';
   }
   visible(playerId: number, x: number, y: number): boolean {
-    if (!this.fogOfWar) return this.terrainAt(x, y) !== 'void';
+    if (!this.fogOfWar || (this.debugRevealMap && playerId === this.localPlayerId)) return this.terrainAt(x, y) !== 'void';
     return !!this.getPlayer(playerId)?.fog[Math.floor(y) * this.map.width + Math.floor(x)];
   }
   explored(playerId: number, x: number, y: number): boolean {
-    if (!this.fogOfWar) return this.terrainAt(x, y) !== 'void';
+    if (!this.fogOfWar || (this.debugRevealMap && playerId === this.localPlayerId)) return this.terrainAt(x, y) !== 'void';
     return !!this.getPlayer(playerId)?.explored[Math.floor(y) * this.map.width + Math.floor(x)];
   }
   isPowered(playerId: number): boolean {
@@ -180,6 +195,7 @@ export class GameEngine {
     p.credits -= d.cost;
     p.queues[d.category].push({ type, progress: 0, duration: d.buildTime, ready: false, paid: d.cost });
     this.lastMessage = `${d.name}：开始生产`;
+    if (this.instantProduction && playerId === this.localPlayerId) this.advanceProduction(p, 0);
     return true;
   }
   cancelBuild(playerId: number, category: ProductionCategory): boolean {
@@ -530,7 +546,8 @@ export class GameEngine {
       const producers = Math.min(3, this.entities.filter(e => e.owner === p.id && getDefinition(e.type).producer === category).length);
       const powered = this.isPowered(p.id) ? 1 : .35;
       const difficulty = !p.ai ? 1 : p.difficulty === 'easy' ? .75 : p.difficulty === 'hard' ? 1.15 : 1;
-      item.progress = Math.min(1, item.progress + dt / item.duration * powered * difficulty * (1 + Math.max(0, producers - 1) * .2));
+      item.progress = this.instantProduction && p.id === this.localPlayerId ? 1
+        : Math.min(1, item.progress + dt / item.duration * powered * difficulty * (1 + Math.max(0, producers - 1) * .2));
       if (item.progress < 1) continue;
       if (d.kind === 'building') { item.ready = true; this.event(`${d.name}已就绪，请选择放置位置。`, p.id, 'complete'); }
       else {

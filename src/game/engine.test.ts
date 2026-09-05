@@ -58,6 +58,61 @@ test('canceling a queued item refunds exactly its paid cost', () => {
   assert.equal(engine.getPlayer(0)!.queues.structure.length, 0);
 });
 
+test('debug credits are additive and target the configured local player', () => {
+  const engine = game({ localPlayerId: 1 });
+  engine.grantDebugCredits(); engine.grantDebugCredits();
+  assert.equal(engine.getPlayer(1)!.credits, 40000);
+  assert.equal(engine.getPlayer(0)!.credits, 20000);
+  engine.status = 'defeat'; engine.grantDebugCredits();
+  assert.equal(engine.getPlayer(1)!.credits, 40000);
+});
+
+test('debug reveal survives fog updates, affects only the local player and restores fog when disabled', () => {
+  const engine = game({ fogOfWar: true, localPlayerId: 1 });
+  assert.equal(engine.visible(1, 30, 30), false);
+  assert.equal(engine.explored(1, 30, 30), false);
+  engine.debugRevealMap = true;
+  advance(engine, 1);
+  assert.equal(engine.visible(1, 30, 30), true);
+  assert.equal(engine.explored(1, 30, 30), true);
+  assert.equal(engine.visible(0, 30, 30), false);
+  assert.equal(engine.explored(0, 30, 30), false);
+  assert.equal(engine.visible(1, -1, 0), false);
+  engine.debugRevealMap = false;
+  assert.equal(engine.visible(1, 30, 30), false);
+  assert.equal(engine.explored(1, 30, 30), false);
+  assert.equal(game().debugRevealMap, false);
+});
+
+test('instant production completes paid queues and recruitment without bypassing costs or prerequisites', () => {
+  const engine = game(); deploy(engine);
+  assert.ok(engine.build(0, 'power_plant'));
+  assert.ok(engine.build(1, 'tesla_reactor'));
+  const paidCredits = engine.getPlayer(0)!.credits;
+  engine.setDebugInstantProduction(true);
+  assert.equal(engine.getPlayer(0)!.queues.structure[0].ready, true);
+  assert.equal(engine.getPlayer(0)!.credits, paidCredits);
+  assert.equal(engine.getPlayer(1)!.queues.structure[0].ready, false);
+  assert.equal(engine.build(0, 'war_factory'), false);
+  assert.equal(engine.canPlace(0, 'power_plant', 12, 12), false);
+  assert.ok(engine.place(0, 'power_plant', 17, 10));
+  assert.ok(engine.build(0, 'barracks'));
+  assert.ok(engine.place(0, 'barracks', 18, 6));
+  const before = engine.getPlayer(0)!.credits;
+  assert.ok(engine.build(0, 'gi'));
+  assert.equal(engine.getPlayer(0)!.credits, before - CATALOG.gi.cost);
+  assert.equal(engine.entities.filter(e => e.type === 'gi').length, 1);
+  engine.setDebugInstantProduction(false);
+  assert.ok(engine.build(0, 'gi')); assert.ok(engine.build(0, 'gi'));
+  assert.equal(engine.getPlayer(0)!.queues.infantry.length, 2);
+  engine.setDebugInstantProduction(true);
+  assert.equal(engine.getPlayer(0)!.queues.infantry.length, 0);
+  assert.equal(engine.entities.filter(e => e.type === 'gi').length, 3);
+  engine.getPlayer(0)!.credits = 0;
+  assert.equal(engine.build(0, 'gi'), false);
+  assert.equal(game().debugInstantProduction, false);
+});
+
 test('refinery grants a miner that harvests ore and delivers real income', () => {
   const engine = game(); deploy(engine);
   finishBuilding(engine, 'power_plant', 17, 10);

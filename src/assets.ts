@@ -89,6 +89,7 @@ export class SoundSystem {
   enabled = true;
   musicEnabled = false;
   volume = 0.45;
+  muted = false;
   private musicElement?: HTMLAudioElement;
   private musicSource?: string;
   private voiceElement?: HTMLAudioElement;
@@ -158,7 +159,7 @@ export class SoundSystem {
   }
 
   private start(key: string, src: string | undefined, cooldown: number, voice = false): boolean {
-    if (!this.enabled || !src) return false;
+    if (this.muted || !this.enabled || !src) return false;
     const now = performance.now();
     if (now - (this.lastPlayed.get(key) ?? -Infinity) < cooldown) return false;
     this.lastPlayed.set(key, now);
@@ -189,7 +190,7 @@ export class SoundSystem {
 
   setMusic(enabled: boolean, track = 'hm2') {
     this.musicEnabled = enabled;
-    if (!enabled) { this.musicElement?.pause(); return; }
+    if (this.muted || !enabled) { this.musicElement?.pause(); return; }
     const music = this.assets.manifest.music;
     if (!music) return;
     const src = Array.isArray(music) ? music[0] : typeof music === 'string' ? music : (music[track]?.src || music.hm2?.src || Object.values(music)[0]?.src);
@@ -202,6 +203,11 @@ export class SoundSystem {
     }
     this.musicElement.volume = Math.max(0, Math.min(1, this.volume * 0.55));
     this.musicElement.play().catch(() => {});
+  }
+  setMuted(muted: boolean) {
+    this.muted = muted;
+    if (muted) this.stop();
+    else if (this.musicEnabled) this.setMusic(true);
   }
   stop() {
     this.musicElement?.pause();
