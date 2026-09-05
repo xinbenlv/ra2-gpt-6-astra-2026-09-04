@@ -40,3 +40,6 @@ html[lang=en] .player-table select{padding-right:6px}html[lang=en] .item-name{fo
 .setup-upload .setup-file-note{font-size:11px;color:#a8af98}.setup-upload .setup-selected-file{color:#e5d297}
 .setup-upload.drag-over{background:#33462b;border-color:#d9e2b4;outline:2px solid #d9e2b4;outline-offset:3px}
 .setup-upload[aria-busy=true]{opacity:.65}.setup-upload button:focus-visible{outline:2px solid #eddaa5;outline-offset:3px}
+.source-code-link{color:#eddaa5;font:12px/1.5 Tahoma,sans-serif;letter-spacing:0;text-decoration:underline;text-underline-offset:3px}
+.source-code-link:focus-visible{outline:2px solid #eddaa5;outline-offset:3px}
+.setup-language{justify-content:space-between;align-items:center;gap:12px}

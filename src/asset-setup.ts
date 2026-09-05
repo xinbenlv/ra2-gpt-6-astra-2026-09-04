@@ -1,5 +1,5 @@
 import { APP_TITLE } from './project';
-import { projectNotice } from './project-notice';
+import { projectNotice, sourceCodeLink } from './project-notice';
 import { connectAssetStorage, originalsReady, SOURCE_BYTES, SOURCE_PAGE_URL, SOURCE_URL, type SetupProgress } from './browser-storage';
 import { t, getLocale, localizeElement, languageControl, bindLanguageControl } from './i18n';
 export class OriginalAssetsError extends Error { constructor(message:string){super(message);this.name='OriginalAssetsError';} }
@@ -29,7 +29,7 @@ export function showAssetSetup(app:HTMLElement,reason?:string):void {
   let worker:Worker|undefined,busy=false,last:SetupProgress|undefined,sourceFile:File|undefined;
   function render(){
     app.innerHTML=`<main class="asset-setup-screen"><section class="asset-setup-panel">
-      <div class="setup-language">${languageControl()}</div><h1 class="app-title">${APP_TITLE}</h1>
+      <div class="setup-language">${sourceCodeLink()}${languageControl()}</div><h1 class="app-title">${APP_TITLE}</h1>
       <p class="eyebrow">${copy('SKIRMISH · FIRST LAUNCH','遭遇战 · 首次启动')}</p>
       <h2>${copy('Bring the battlefield to your browser','将战场载入你的浏览器')}</h2>
       <p class="setup-copy">${copy('Download the original installer, or choose a copy you already have. Your browser unpacks the graphics, maps, voices and music, saves them locally, and starts the game automatically.','在线下载安装包，或选择你已下载的文件。浏览器会解包原版画面、地图、语音和音乐，保存到本机并自动启动游戏。')}</p>

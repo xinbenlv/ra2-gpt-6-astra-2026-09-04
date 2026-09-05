@@ -1,6 +1,8 @@
 import { registerTranslations } from './i18n';
+import { SOURCE_CODE_URL } from './project';
 
 registerTranslations({
+  'GitHub 源代码': 'GitHub Source Code',
   '关于项目与免责声明': 'About & disclaimer',
   '本项目由开发者 ': 'This project was created by developer ',
   ' 于 2026-09-04 测试当时最新的模型 ChatGPT 6 Astra 时，以一次提示（one-shot）开发。他使用这种方法对不同模型进行 benchmark 对比。': ' in a one-shot development experiment on 2026-09-04 while testing the then-latest model, ChatGPT 6 Astra. He uses this approach to benchmark different models.',
@@ -8,6 +10,10 @@ registerTranslations({
   '本项目也与 OpenAI 或 ChatGPT 没有关联、赞助或背书关系。OpenAI、ChatGPT 及相关商标和标志归 OpenAI 及相应权利人所有；模型名称仅用于标识本次实验所使用的工具。': 'This project is also not associated with, sponsored by or endorsed by OpenAI or ChatGPT. OpenAI, ChatGPT and related trademarks and logos belong to OpenAI and their respective owners. The model name only identifies the tool used for this experiment.',
   '无意侵犯任何人的版权或其他权利。本项目不主张拥有原版素材，也不授予使用第三方内容的许可。任何疑问、权利问题或下架请求，请联系 ': 'No infringement of anyone’s copyright or other rights is intended. This project claims no ownership of the original assets and grants no license to third-party content. For questions, rights concerns or takedown requests, contact ',
 });
+
+export function sourceCodeLink(): string {
+  return `<a class="source-code-link" href="${SOURCE_CODE_URL}" target="_blank" rel="noopener noreferrer">GitHub 源代码</a>`;
+}
 
 /** Source text stays available to the existing live language switcher. */
 export function projectNotice(): string {

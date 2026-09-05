@@ -1,6 +1,6 @@
 import './style.css';
 import { APP_TITLE } from './project';
-import { projectNotice } from './project-notice';
+import { projectNotice, sourceCodeLink } from './project-notice';
 import { mountDebugPanel } from './debug-panel';
 import { appUrl } from './urls';
 import { t, registerTranslations, localizeElement, languageControl, bindLanguageControl } from './i18n';
@@ -66,7 +66,7 @@ function renderLobby() {
     <section class="settings-panel metal">${bolts}<div class="panel-title"><h2>作战部署</h2><span>COMBATANTS / ${slots.filter(s=>s.difficulty!=='closed').length}</span></div><table class="player-table"><thead><tr><th></th><th>指挥官</th><th>国家</th><th>颜色</th><th>盟友</th><th>位置</th></tr></thead><tbody>${slots.map((slot,i)=>renderSlot(slot,i,def.players)).join('')}</tbody></table><p class="country-note" id="country-note">${escape(countryById(slots[0].country).name)}：${escape(countryById(slots[0].country).description)}</p>
     <div class="lobby-options"><div class="field"><label for="credits">初始资金</label><select id="credits">${[5000,10000,20000,30000,50000].map(v=>option(v,`$ ${v.toLocaleString()}`,credits)).join('')}</select></div><div class="field"><label for="units">初始部队</label><select id="units">${[0,3,5,10].map(v=>option(v,`${v} 支部队 + 基地车`,startingUnits)).join('')}</select></div><div class="field"><label for="speed">游戏速度</label><select id="speed">${option(.75,'慢速',gameSpeed)}${option(1,'正常',gameSpeed)}${option(1.5,'快速',gameSpeed)}${option(2,'最快',gameSpeed)}</select></div></div><div class="checks"><label><input type="checkbox" id="fog" ${fog?'checked':''}/>战争迷雾</label><label><input type="checkbox" id="superweapons" ${superweapons?'checked':''}/>超级武器</label><label><input type="checkbox" id="short-game" ${shortGame?'checked':''}/>快速游戏</label><label><input type="checkbox" id="music" ${sound.musicEnabled?'checked':''}/>原版音乐</label></div>
     </section></div>
-    <div class="lobby-bottom"><div class="transmission"><span class="symbol">▣</span><div><strong>指挥官，等待您的命令。</strong><br>建立基地，开采资源，消灭敌方势力。盟军与苏军 9 国已就绪。</div></div><button id="start" class="primary start-button">开始作战</button></div>${projectNotice()}<footer class="footer"><span>WESTWOOD ORIGINAL ASSETS · ${listMaps().length} SKIRMISH MAPS</span><span>RA2 / TYPESCRIPT · LOCAL SKIRMISH</span></footer>
+    <div class="lobby-bottom"><div class="transmission"><span class="symbol">▣</span><div><strong>指挥官，等待您的命令。</strong><br>建立基地，开采资源，消灭敌方势力。盟军与苏军 9 国已就绪。</div></div><button id="start" class="primary start-button">开始作战</button></div>${sourceCodeLink()}${projectNotice()}<footer class="footer"><span>WESTWOOD ORIGINAL ASSETS · ${listMaps().length} SKIRMISH MAPS</span>${sourceCodeLink()}</footer>
   </main>`;
   translateUI();bindLanguage();
   drawMapPreview($('#map-preview'), selectedMap);
@@ -235,7 +235,7 @@ function notice(text:string,warn=false){notices.push({text,until:performance.now
 function toast(text:string){document.querySelector('.error-toast')?.remove();const el=document.createElement('div');el.className='error-toast';el.textContent=t(text);document.body.append(el);setTimeout(()=>el.remove(),5000);}
 function showPause(){
   if(!game||shownResult)return;
-  showModal('游戏暂停',`<div class="pause-items"><button id="resume" class="primary">返回战场</button><button id="pause-help">操作说明</button><button id="pause-music">${sound.musicEnabled?'关闭':'开启'}原版音乐</button><button id="pause-sound">${sound.enabled?'关闭':'开启'}游戏音效</button><button id="surrender">投降并结束战斗</button><button id="leave">退出到遭遇战设置</button></div>${projectNotice()}`,'',true);
+  showModal('游戏暂停',`<div class="pause-items"><button id="resume" class="primary">返回战场</button><button id="pause-help">操作说明</button><button id="pause-music">${sound.musicEnabled?'关闭':'开启'}原版音乐</button><button id="pause-sound">${sound.enabled?'关闭':'开启'}游戏音效</button><button id="surrender">投降并结束战斗</button><button id="leave">退出到遭遇战设置</button></div>${sourceCodeLink()}${projectNotice()}`,'',true);
   $('#resume').onclick=closeModal;$('#pause-help').onclick=showHelp;$('#pause-music').onclick=()=>{sound.setMusic(!sound.musicEnabled);$('#pause-music').textContent=t(`${sound.musicEnabled?'关闭':'开启'}原版音乐`);};$('#pause-sound').onclick=()=>{sound.enabled=!sound.enabled;$('#pause-sound').textContent=t(`${sound.enabled?'关闭':'开启'}游戏音效`);};$('#surrender').onclick=()=>{closeModal();game!.surrender(0);updateUI();};$('#leave').onclick=()=>{closeModal();renderLobby();};
 }
 function showResult(){
