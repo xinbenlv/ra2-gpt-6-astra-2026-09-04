@@ -17,7 +17,7 @@ A subsequent `scripts/browser_locale_audit.mjs` run verified English in the lobb
 
 A source-only checkout also built successfully and ran 32 tests, with the six native-map integration tests explicitly skipped because originals were absent.
 
-Reproduce with the production preview running. Use a new profile directory to include first-run consent and a real download; a reused profile tests the cached path:
+Reproduce the browser-only test with `RA2_LOCAL_ASSETS=0 npm run preview` running (local originals are otherwise preferred). Use a new profile directory to include first-run consent and a real download; a reused profile tests the cached path:
 
 ```sh
 RA2_BROWSER_URL=http://127.0.0.1:4173 \
@@ -63,3 +63,7 @@ The source no longer imports extracted original JSON at build time. Both Git ori
 CI runs the source tests without originals. Before building, it creates synthetic files in the ignored original-resource directories, then checks that none of those directories or known original file types appears in `dist/`. This verifies the build boundary with local resource files present, rather than assuming a clean filesystem is sufficient.
 
 These checks do not establish frame-for-frame compatibility with the Westwood engine. Gameplay simplifications and unsupported mechanisms are documented in the main README.
+
+## Restored local startup
+
+The local preview now prefers the complete original files already extracted into the project. Both a fresh Chromium profile (without a service worker) and the earlier browser-cache profile (with its existing worker) reached the lobby, loaded native MP3 audio and all images without failures, and deployed on Arctic Circle. Neither test contacted Internet Archive or downloaded conversion tools. Existing browser data was preserved. The integrated 38-test suite and production asset-exclusion check passed.

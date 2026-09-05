@@ -1,4 +1,4 @@
-/** Original data is only ever written to this browser's origin-private storage. */
+/** Browser-cache fallback for installations without existing local original files. */
 export const ORIGINAL_CACHE = 'ra2-originals-v2';
 export const ARCHIVE_CACHE = 'ra2-download-v1';
 export const ORIGINAL_VERSION = 2;
@@ -21,12 +21,31 @@ export async function originalsReady(): Promise<boolean> {
   } catch { return false; }
 }
 
+/** The local preview can reuse originals already extracted in this project. */
+export async function localOriginalsAvailable(): Promise<boolean> {
+  if (!['localhost','127.0.0.1','[::1]'].includes(location.hostname)) return false;
+  try {
+    const response = await fetch('/api/local-assets', {cache:'no-store'});
+    return response.ok && (await response.json()).available === true;
+  } catch { return false; }
+}
+
 export async function connectAssetStorage(): Promise<void> {
   if (!isSecureContext || !('serviceWorker' in navigator) || !('caches' in window))
     throw new Error('Browser storage requires HTTPS or localhost and a browser with Service Worker support.');
-  await navigator.serviceWorker.register('/ra2-sw.js', { scope:'/' });
+  const registration = await navigator.serviceWorker.register('/ra2-sw.js', { scope:'/', updateViaCache:'none' });
+  await registration.update();
+  const pending = registration.installing || registration.waiting;
+  if (pending && pending.state !== 'activated') await new Promise<void>((resolve,reject) => {
+    const timeout = setTimeout(() => reject(new Error('Browser storage update timed out. Please reload.')),15000);
+    const check = () => {
+      if (pending.state === 'activated') {clearTimeout(timeout);resolve();}
+      if (pending.state === 'redundant') {clearTimeout(timeout);reject(new Error('Browser storage update failed. Please reload.'));}
+    };
+    pending.addEventListener('statechange',check);check();
+  });
   await navigator.serviceWorker.ready;
-  if (!navigator.serviceWorker.controller) await new Promise<void>((resolve, reject) => {
+  if (!navigator.serviceWorker.controller || navigator.serviceWorker.controller !== registration.active) await new Promise<void>((resolve, reject) => {
     const timeout = setTimeout(() => reject(new Error('Browser storage could not start. Please reload.')), 15000);
     navigator.serviceWorker.addEventListener('controllerchange', () => { clearTimeout(timeout); resolve(); }, {once:true});
   });

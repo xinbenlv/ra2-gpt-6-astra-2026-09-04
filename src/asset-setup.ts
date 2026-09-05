@@ -1,7 +1,14 @@
-import { connectAssetStorage, originalsReady, type SetupProgress } from './browser-storage';
+import { connectAssetStorage, localOriginalsAvailable, originalsReady, type SetupProgress } from './browser-storage';
 import { t, getLocale, languageControl, bindLanguageControl } from './i18n';
 export class OriginalAssetsError extends Error { constructor(message:string){super(message);this.name='OriginalAssetsError';} }
-export async function probeOriginalAssets():Promise<boolean>{await connectAssetStorage();return originalsReady();}
+export async function probeOriginalAssets():Promise<boolean>{
+  if (await localOriginalsAvailable()) {
+    // Update an older cache-only worker before it can hide the local files.
+    if (navigator.serviceWorker?.controller) await connectAssetStorage();
+    return true;
+  }
+  await connectAssetStorage();return originalsReady();
+}
 const escape=(value:string)=>value.replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]!));
 const copy=(en:string,zh:string)=>getLocale()==='en'?en:zh;
 const stages:Record<string,[string,string]>={
