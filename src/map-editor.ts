@@ -1,7 +1,9 @@
 import './map-editor.css';
 import { bindLanguageControl, languageControl, localizeElement, registerTranslations, t } from './i18n';
 import { createCustomMap, parseCustomMap, parseCustomMapDraft, serializeCustomMap, validateCustomMap, CUSTOM_MAP_EXTENSION, MAX_CUSTOM_MAP_BYTES, TERRAIN_COLORS, type CustomMapDocument } from './custom-maps';
-import type { Terrain } from './maps';
+import { nativeTerrainCatalog, type Terrain } from './maps';
+import type { Assets } from './assets';
+import { compileCustomTerrain, type ResolvedTerrainCell } from './custom-terrain';
 import { TerrainPainter, projectTile, unprojectPoint } from './terrain-painter';
 import { expandMapForBrush, paintCustomMap, resizeCustomMap, type MapBounds, type ResizeResult } from './map-editing';
 
@@ -34,6 +36,8 @@ registerTranslations({
   '草稿仅保存在当前浏览器。下载文件才能跨设备保存和分享。': 'Drafts stay in this browser. Download a file to save or share across devices.',
   '显示网格': 'Show Grid', '绘制': 'Paint', '移动出生点': 'Move Start', '读取地图中…': 'Reading map…',
   '未命名地图': 'Untitled Map',
+  '地图编辑器缺少原版地形图像。请重新安装原版素材。': 'Original terrain artwork is missing from the map editor. Reinstall the original assets.',
+  '地图编辑器缺少原版矿产图像。请重新安装原版素材。': 'Original resource artwork is missing from the map editor. Reinstall the original assets.',
   '自动扩展地图': 'Auto-expand Map', '画笔越过边缘时自动扩展，最大 96×96 格。': 'Painting past an edge expands the map, up to 96×96 cells.',
   '调整地图边界': 'Adjust Map Bounds', '拖动边或角调整范围；松开应用，可撤销。': 'Drag an edge or corner to resize. Release to apply; Undo restores it.',
   '完成边界调整': 'Finish Bounds', '显示出生点': 'Show Starts', '待放置': 'Unplaced', '需要重新放置的出生点：': 'Starting positions to replace: ',
@@ -85,7 +89,7 @@ type EditorSnapshot = { doc: CustomMapDocument; origin: Point };
 type HandleName = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 type CropDrag = { handle: HandleName; before: EditorSnapshot; bounds: MapBounds; start: Point };
 
-export function mountMapEditor(container: HTMLElement, options: { onBack: () => void; onUse: (doc: CustomMapDocument) => void }): () => void {
+export function mountMapEditor(container: HTMLElement, options: { assets: Assets; onBack: () => void; onUse: (doc: CustomMapDocument) => void }): () => void {
   const screen = document.createElement('section');
   screen.className = 'map-editor';
   screen.innerHTML = `<header class="editor-header">
@@ -172,7 +176,22 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
   let spaceHeld = false;
   let spaceUsedForPan = false;
   let strokeLimitReported = false;
-  const painter = new TerrainPainter();
+  const painter = new TerrainPainter(options.assets);
+  let terrainRevision = 0;
+  let compiledRevision = -1;
+  let compiledDocument: CustomMapDocument | null = null;
+  let compiledTerrain: ResolvedTerrainCell[] = [];
+  let compiledTransitions = 0;
+  let compiledResources = 0;
+  function nativeTerrain(): ResolvedTerrainCell[] {
+    if (compiledDocument !== doc || compiledRevision !== terrainRevision) {
+      compiledTerrain = compileCustomTerrain(doc, nativeTerrainCatalog());
+      compiledTransitions = compiledTerrain.filter(cell => cell.layers.length > 1).length;
+      compiledResources = compiledTerrain.filter(cell => cell.overlayKey).length;
+      compiledDocument = doc; compiledRevision = terrainRevision;
+    }
+    return compiledTerrain;
+  }
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
   let disposed = false;
   let readingFile = false;
@@ -312,30 +331,34 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
     if (fitted) camera = { x: camera.x + (next.x - viewport.x) / 2, y: camera.y + (next.y - viewport.y) / 2 };
     viewport = next; pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(viewport.x * pixelRatio); canvas.height = Math.round(viewport.y * pixelRatio);
+    context.imageSmoothingEnabled = false;
     canvas.style.width = `${viewport.x}px`; canvas.style.height = `${viewport.y}px`;
     if (!fitted) fitMap(); else draw();
   }
   function draw(): void {
     if (disposed || !viewport.x || !viewport.y) return;
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    context.imageSmoothingEnabled = false;
     context.clearRect(0, 0, viewport.x, viewport.y);
     context.fillStyle = '#0c1512'; context.fillRect(0, 0, viewport.x, viewport.y);
     context.strokeStyle = '#78958015'; context.lineWidth = 1;
     for (let x = camera.x % 32; x < viewport.x; x += 32) { context.beginPath(); context.moveTo(x, 0); context.lineTo(x, viewport.y); context.stroke(); }
     for (let y = camera.y % 32; y < viewport.y; y += 32) { context.beginPath(); context.moveTo(0, y); context.lineTo(viewport.x, y); context.stroke(); }
     context.save(); context.translate(camera.x, camera.y); context.scale(zoom, zoom);
-    const visible: { x: number; y: number; px: number; py: number; terrain: Terrain }[] = [];
-    // Match the battlefield's two passes: all ground first, then raised resources.
+    const resolved = nativeTerrain();
+    const visible: { px: number; py: number; cell: ResolvedTerrainCell }[] = [];
+    const drawBounds = painter.getDrawBounds();
+    // Match battlefield depth order, including native tile extras: x ascends within each diagonal.
     for (let depth = 0; depth <= doc.width + doc.height - 2; depth++) {
-      for (let y = Math.max(0, depth - doc.width + 1); y <= Math.min(doc.height - 1, depth); y++) {
-        const x = depth - y, p = projectTile(x + origin.x, y + origin.y);
-        if (camera.x + (p.x + 40) * zoom < 0 || camera.x + (p.x - 40) * zoom > viewport.x || camera.y + (p.y + 25) * zoom < 0 || camera.y + (p.y - 40) * zoom > viewport.y) continue;
-        const terrain = doc.cells[y * doc.width + x];
-        painter.drawGround(context, terrain, doc.theater, x, y, p.x, p.y);
-        visible.push({ x, y, px: p.x, py: p.y, terrain });
+      for (let x = Math.max(0, depth - doc.height + 1); x <= Math.min(doc.width - 1, depth); x++) {
+        const y = depth - x, p = projectTile(x + origin.x, y + origin.y);
+        if (camera.x + (p.x + drawBounds.right) * zoom < 0 || camera.x + (p.x - drawBounds.left) * zoom > viewport.x || camera.y + (p.y + drawBounds.bottom) * zoom < 0 || camera.y + (p.y - drawBounds.top) * zoom > viewport.y) continue;
+        const cell = resolved[y * doc.width + x];
+        if (!painter.drawResolvedGround(context, cell, p.x, p.y)) throw new Error(t('地图编辑器缺少原版地形图像。请重新安装原版素材。'));
+        visible.push({ px: p.x, py: p.y, cell });
       }
     }
-    for (const cell of visible) if (cell.terrain === 'ore' || cell.terrain === 'gem') painter.drawResources(context, cell.px, cell.py, cell.x, cell.y, cell.terrain === 'gem');
+    for (const tile of visible) if (tile.cell.overlayKey && !painter.drawResolvedResources(context, tile.cell, tile.px, tile.py)) throw new Error(t('地图编辑器缺少原版矿产图像。请重新安装原版素材。'));
     context.restore();
     if (showGrid && zoom > .09) {
       context.strokeStyle = '#17241b60'; context.lineWidth = .65;
@@ -364,7 +387,7 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
       context.fillStyle = '#fff3b92b'; context.strokeStyle = '#ffedb6'; context.lineWidth = 1.5;
       context.beginPath(); polygon(boundsPoints({ x: hover.x - radius, y: hover.y - radius, width: size, height: size })); context.fill(); context.stroke();
     }
-    Object.assign(canvas.dataset, { zoom: String(zoom), cameraX: String(camera.x), cameraY: String(camera.y), originX: String(origin.x), originY: String(origin.y), mapWidth: String(doc.width), mapHeight: String(doc.height), cropMode: String(cropMode), cropHandles: JSON.stringify(cropMode ? cropHandles() : []) });
+    Object.assign(canvas.dataset, { zoom: String(zoom), cameraX: String(camera.x), cameraY: String(camera.y), originX: String(origin.x), originY: String(origin.y), mapWidth: String(doc.width), mapHeight: String(doc.height), cropMode: String(cropMode), cropHandles: JSON.stringify(cropMode ? cropHandles() : []), nativeTileCount: String(resolved.length), transitionCount: String(compiledTransitions), resourceCount: String(compiledResources) });
     canvas.style.cursor = panDrag ? 'grabbing' : spaceHeld ? 'grab' : cropMode ? 'crosshair' : 'crosshair';
   }
   function applyResize(result: ResizeResult): void {
@@ -378,7 +401,7 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
     const local = { x: point.x - origin.x, y: point.y - origin.y };
     if (tool === 'spawn') {
       if (local.x >= 0 && local.y >= 0 && local.x < doc.width && local.y < doc.height) doc.spawns[selectedSpawn] = local;
-    } else paintCustomMap(doc, local, tool, brushSize);
+    } else { paintCustomMap(doc, local, tool, brushSize); terrainRevision++; }
   }
   function strokeTo(point: Point): void {
     const world = { x: point.x + origin.x, y: point.y + origin.y };

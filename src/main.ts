@@ -113,6 +113,7 @@ function openMapEditor() {
   closeModal();disposeEditor?.();
   app.replaceChildren();
   disposeEditor=mountMapEditor(app,{
+    assets,
     onBack:renderLobby,
     onUse:document=>{const map=customMapToMapData(document);registerImportedMap(map);useLobbyMap(map);toast('地图已加入遭遇战。');},
   });

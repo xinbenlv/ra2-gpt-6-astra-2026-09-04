@@ -161,7 +161,7 @@ export function createCustomMap(width = 48, height = 48, theater: CustomMapDocum
   return doc;
 }
 
-/** Adapt portable terrain to the existing renderer and simulation without loading native tiles. */
+/** Adapt portable terrain for simulation. The shared rendering resolver chooses native artwork from these cells. */
 export function customMapToMapData(doc: CustomMapDocument): MapData {
   requireValid(doc);
   const clean = copyDocument(doc), count = clean.width * clean.height;

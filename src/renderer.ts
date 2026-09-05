@@ -3,9 +3,12 @@ import type { GameEngine, Entity, Definition, GameMap, Point } from './game';
 import { getDefinition, PLAYER_COLORS } from './game';
 import type { Assets, Sprite } from './assets';
 import { projectTile, TerrainPainter, unprojectPoint } from './terrain-painter';
+import { compileCustomTerrain, type ResolvedTerrainCell } from './custom-terrain';
+import { nativeTerrainCatalog } from './maps';
 
 export type RenderMap = GameMap & {
-  tiles?: { x: number; y: number; tileId: number; subTile: number; elevation?: number; z?: number; overlay?: number; overlayFrame?: number }[];
+  layout?: 'rectangular';
+  tiles?: { x: number; y: number; tileId: number; subTile: number; theater?: string; elevation?: number; z?: number; overlay?: number; overlayFrame?: number }[];
   tileIds?: Int32Array | number[]; elevations?: Uint8Array | number[]; radarColors?: Uint32Array | number[];
   terrainObjects?: { x: number; y: number; type: string }[];
   structures?: {x:number;y:number;type:string;health?:number}[];
@@ -14,6 +17,7 @@ export interface RendererHooks { onSelection(ids: number[]): void; onCommand(kin
 export interface WorldRect { minX: number; maxX: number; minY: number; maxY: number }
 export class BattlefieldRenderer {
   ctx: CanvasRenderingContext2D;
+  readonly nativeTerrain: readonly ResolvedTerrainCell[];
   camera = { x: 0, y: 0 }; zoom = 1;
   selection = new Set<number>();
   keys = new Set<string>();
@@ -23,7 +27,7 @@ export class BattlefieldRenderer {
   attackMove = false;
   tool: 'select' | 'repair' | 'sell' | 'support' = 'select';
   width = 0; height = 0;
-  private terrainPainter = new TerrainPainter();
+  private terrainPainter: TerrainPainter;
   private tinted = new Map<string, HTMLCanvasElement>();
   private tileLookup = new Map<number, NonNullable<RenderMap['tiles']>[number]>();
   private startDrag?: { x: number; y: number; cameraX: number; cameraY: number; button: number };
@@ -41,6 +45,11 @@ export class BattlefieldRenderer {
   private time = 0;
   edgeScroll = true;
   constructor(public canvas: HTMLCanvasElement, public game: GameEngine, public map: RenderMap, public assets: Assets, private hooks: RendererHooks, public localId = 0) {
+    this.terrainPainter = new TerrainPainter(assets);
+    // Native maps may contain missing tile IDs; only editor documents need compilation.
+    this.nativeTerrain = map.layout === 'rectangular'
+      ? compileCustomTerrain({ width: map.width, height: map.height, theater: map.theater ?? 'temperate', cells: map.cells }, nativeTerrainCatalog())
+      : [];
     this.ctx = canvas.getContext('2d', { alpha: false })!;
     for (const tile of map.tiles || []) this.tileLookup.set(tile.y * map.width + tile.x, tile);
     this.worldBounds = this.calculateBounds();
@@ -209,7 +218,10 @@ export class BattlefieldRenderer {
       const p = this.project(x, y); p.y -= this.elevation(x, y) * 15;
       if (!this.game.explored(this.localId, x, y)) { this.diamond(ctx, p.x, p.y, '#020706'); continue; }
       const tile = this.tileLookup.get(idx);
-      if (!this.drawOriginalTile(ctx, tile, p.x, p.y)) this.terrainPainter.drawGround(ctx, terrain, this.map.theater ?? '', x, y, p.x, p.y);
+      const resolved = this.nativeTerrain[idx];
+      const drawn = resolved ? this.terrainPainter.drawResolvedGround(ctx, resolved, p.x, p.y)
+        : this.terrainPainter.drawNativeTile(ctx, tile, this.map.theater, p.x, p.y);
+      if (!drawn) this.terrainPainter.drawGround(ctx, terrain, this.map.theater ?? '', x, y, p.x, p.y);
     }
     // Bridges span multiple cells. Paint their complete raw frames after all terrain.
     for (let sum = x1+y1; sum <= x2+y2; sum++) for(let x=x1;x<=x2;x++){
@@ -217,9 +229,18 @@ export class BattlefieldRenderer {
       const idx=y*this.map.width+x,terrain=this.map.cells[idx],tile=this.tileLookup.get(idx);
       if(!terrain||terrain==='void'||!this.game.explored(this.localId,x,y))continue;
       const p=this.project(x,y);p.y-=this.elevation(x,y)*15;
+      const resolved = this.nativeTerrain[idx];
+      if (resolved) {
+        const resource = terrain === 'ore' || terrain === 'gem';
+        if (!resource || this.game.ore[idx] > 0) {
+          const drawn = this.terrainPainter.drawResolvedResources(ctx, resolved, p.x, p.y);
+          if (!drawn && resource) this.terrainPainter.drawResources(ctx, p.x, p.y, x, y, terrain === 'gem');
+        }
+        continue;
+      }
       if(tile && tile.overlay != null && tile.overlay !== 255 && (terrain !== 'ore' && terrain !== 'gem' || this.game.ore[idx]>0)) {
         const overlay = this.assets.manifest.overlays?.[`${this.map.theater}:${tile.overlay}`];
-        if(overlay) this.drawAtlas(ctx,overlay,p.x,p.y,tile.overlayFrame || 0);
+        if(overlay) this.terrainPainter.drawOverlay(ctx,overlay,p.x,p.y,tile.overlayFrame || 0);
         else if(terrain==='ore' || terrain==='gem')this.terrainPainter.drawResources(ctx,p.x,p.y,x,y,terrain==='gem');
       } else if((terrain==='ore' || terrain==='gem') && this.game.ore[idx]>0) {
         // Editor maps describe resources directly, without original overlay artwork.
@@ -234,7 +255,7 @@ export class BattlefieldRenderer {
       if(!sprite)continue;
       const [fw,fh]=sprite.foundation||[1,1],x=obj.x+(fw-1)/2,y=obj.y+(fh-1)/2;
       const p=this.project(x,y);p.y-=this.elevation(obj.x,obj.y)*15;
-      objects.push({sort:x+y+fh*.3,draw:()=>this.drawAtlas(ctx,sprite,p.x,p.y)});
+      objects.push({sort:x+y+fh*.3,draw:()=>this.terrainPainter.drawOverlay(ctx,sprite,p.x,p.y)});
     }
     for(const entity of this.game.entities){if(entity.hp<=0||entity.transportedBy||!this.onScreen(entity.x,entity.y)||!(entity.kind==='building'?this.game.explored(this.localId,entity.x,entity.y):this.game.visible(this.localId,entity.x,entity.y)))continue;
       objects.push({sort:entity.x+entity.y+(getDefinition(entity.type).flying?12:0),draw:()=>this.drawEntity(ctx,entity)});
@@ -252,7 +273,7 @@ export class BattlefieldRenderer {
         if(effect.weapon==='tesla'){for(let i=1;i<=6;i++)ctx.lineTo(p.x+(target.x-p.x)*i/6+(Math.random()-.5)*12,p.y-15+(target.y-p.y)*i/6+(Math.random()-.5)*12);}
         else ctx.lineTo(p.x+(target.x-p.x)*t2,p.y-12+(target.y-p.y)*t2);ctx.stroke();
       } else if (effect.kind === 'explosion' || effect.kind === 'nuke') {
-        const explosion=this.assets.sprite(effect.kind==='nuke'?'twlt100':'twlt050');if(explosion&&this.drawAtlas(ctx,explosion,p.x,p.y,Math.min(explosion.frames-1,Math.floor(t*explosion.frames))))continue;
+        const explosion=this.assets.sprite(effect.kind==='nuke'?'twlt100':'twlt050');if(explosion&&this.terrainPainter.drawOverlay(ctx,explosion,p.x,p.y,Math.min(explosion.frames-1,Math.floor(t*explosion.frames))))continue;
         const radius = effect.kind === 'nuke' ? 180 : 18;
         ctx.globalAlpha = Math.max(0, 1 - t); const grad = ctx.createRadialGradient(p.x,p.y-10,0,p.x,p.y-10,Math.max(1,radius*t));grad.addColorStop(0,'#fff7b4');grad.addColorStop(.4,'#ffd545');grad.addColorStop(.75,'#e55419');grad.addColorStop(1,'#342d23');
         ctx.fillStyle=grad;ctx.beginPath();ctx.arc(p.x,p.y-10,Math.max(1,radius*t),0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
@@ -337,17 +358,6 @@ export class BattlefieldRenderer {
     else if(def.kind==='building'){const w=(def.size?.[0]||2)*25;ctx.fillStyle='#535a4d';ctx.fillRect(-w,-45,w*2,45);ctx.fillStyle=color;ctx.fillRect(-w,-45,w*2,5);ctx.strokeRect(-w,-45,w*2,45);ctx.fillStyle='#c0c8a4';ctx.font='10px Tahoma';ctx.textAlign='center';ctx.fillText(t(def.name),0,-16);}
     else{ctx.scale(1,.65);ctx.rotate(e.angle+Math.PI/4);ctx.fillStyle='#242c26';ctx.fillRect(-17,-13,34,8);ctx.fillRect(-17,7,34,8);ctx.fillStyle='#85917a';ctx.fillRect(-16,-9,32,20);ctx.fillStyle=color;ctx.fillRect(-9,-7,17,15);ctx.fillStyle='#717b65';ctx.fillRect(0,-2,25,5);ctx.strokeRect(-16,-9,32,20);}
     ctx.restore();
-  }
-  private drawOriginalTile(ctx: CanvasRenderingContext2D, tile: NonNullable<RenderMap['tiles']>[number] | undefined, x:number,y:number):boolean{
-    if(!tile)return false;
-    const sprite=this.assets.terrain[`${this.map.theater?.toLowerCase() || 'snow'}:${tile.tileId===65535?0:tile.tileId}:${tile.subTile}`];
-    if(!sprite)return false;const image=this.assets.images.get(sprite.src);if(!image)return false;
-    ctx.drawImage(image,sprite.x,sprite.y,sprite.width,sprite.height,x-sprite.anchorX,y-sprite.anchorY,sprite.width,sprite.height);return true;
-  }
-  private drawAtlas(ctx:CanvasRenderingContext2D,sprite:Sprite,x:number,y:number,frame=0){
-    const image=this.assets.images.get(sprite.src);if(!image)return false;
-    frame=Math.min(Math.max(0,frame),sprite.frames-1);
-    ctx.drawImage(image,frame%sprite.columns*sprite.frameWidth,Math.floor(frame/sprite.columns)*sprite.frameHeight,sprite.frameWidth,sprite.frameHeight,x-sprite.anchorX,y-sprite.anchorY,sprite.frameWidth,sprite.frameHeight);return true;
   }
   private diamond(ctx:CanvasRenderingContext2D,x:number,y:number,fill:string,stroke?:string){ctx.beginPath();ctx.moveTo(x,y-15);ctx.lineTo(x+30,y);ctx.lineTo(x,y+15);ctx.lineTo(x-30,y);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=.6;ctx.stroke();}}
   attachMinimap(canvas:HTMLCanvasElement){

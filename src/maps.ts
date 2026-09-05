@@ -103,6 +103,12 @@ export function nativeTileDefinition(theater: string, tileId: number): TileDefin
   return tileDefinitions[theater.toLowerCase()]?.[tileId === 65535 ? 0 : tileId];
 }
 
+/** Original tile metadata already installed on this device, used by the editor's native terrain resolver. */
+export function nativeTerrainCatalog(): Record<string, TileDefinition[]> {
+  requireMapData();
+  return tileDefinitions;
+}
+
 export async function loadMap(id: string): Promise<MapData> {
   if (imported.has(id)) return imported.get(id)!;
   const definition = getMapDefinition(id);
