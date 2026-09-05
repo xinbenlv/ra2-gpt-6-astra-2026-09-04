@@ -1,3 +1,7 @@
+> **One Shot 结果**：如果你想查看这个项目的 One Shot 结果，请访问 [v0.1.0](https://github.com/xinbenlv/ra2-gpt-6-astra-2026-09-04/commit/3b9e9eaa2aa3b13db1f1bb1daca0f833d48986bf)。该版本的源代码保存在链接指向的对应提交中；仓库中的历史标签为 `v.0.1.0`。
+>
+> **Original One Shot result:** Use the v0.1.0 link above to open the exact commit containing that version's source code.
+
 # Fan Re-created Red Alert2 (via ChatGPT 6 Astra on 2026-09-04)
 
 Current release: **v0.2.0** — browser-only asset preparation. The earlier local-file startup version is preserved as **v.0.1.0**.
