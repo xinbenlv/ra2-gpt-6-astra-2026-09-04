@@ -1,6 +1,6 @@
-/* Hosted sites use browser-only originals; loopback previews may reuse local files. */
+/* Original resources are never fetched from the application host. */
 const ORIGINALS = 'ra2-originals-v2';
-const APP = 'ra2-app-v4';
+const APP = 'ra2-app-v5';
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(APP);
@@ -20,12 +20,6 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin || event.request.method !== 'GET') return;
   if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/maps/')) {
     event.respondWith((async () => {
-      if (['localhost','127.0.0.1','[::1]'].includes(url.hostname)) {
-        try {
-          const local = await fetch(event.request);
-          if (local.ok && local.headers.get('X-RA2-Local-Asset') === '1') return local;
-        } catch { /* An offline visit can still use previously prepared browser data. */ }
-      }
       const cache = await caches.open(ORIGINALS);
       const response = await cache.match(url.pathname);
       if (!response) return new Response('Original asset is not present in this browser.', {status:404});

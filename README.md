@@ -1,5 +1,7 @@
 # Red Alert 2 · TypeScript Skirmish
 
+Current release: **v0.2.0** — browser-only asset preparation. The earlier local-file startup version is preserved as **v.0.1.0**.
+
 A browser RTS focused on Red Alert 2 skirmishes, with original Westwood artwork, maps, voices and music converted on the player's device. The game engine, AI, rendering and interface are independently written in TypeScript. No existing implementation on the user's computer or at `github.com/xinbenlv` was consulted.
 
 ## Play
@@ -15,21 +17,17 @@ The interface defaults to English; use the English / 中文 selector to switch l
 
 Open the printed address, normally [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
-If this project already has the complete original resources in `public/assets/` and `public/maps/`, the local preview opens the skirmish lobby directly using those files. No browser download or conversion is needed. Local files remain excluded from Git and production builds.
-
-Without local originals:
-
 1. On first launch, read and accept the download-and-storage prompt.
 2. The browser downloads the approximately **207 MB** original installer directly from Internet Archive, verifies SHA-256, then extracts and converts the resources in a Web Worker. The Windows executable is never run.
 3. The browser stores the original download and converted resources in its own site storage. When preparation completes, the skirmish lobby opens automatically. Later visits reuse that storage.
 
-Playing requires **no Python, 7-Zip, FFmpeg, backend or server-side conversion**. Initial preparation also downloads the Pyodide conversion runtime and its Python packages from a CDN. A deployed production site serves code and conversion tools; it does not host, receive or proxy original game resources. The loopback-only local preview can additionally read your already-extracted files.
+Playing requires **no Python, 7-Zip, FFmpeg, backend or server-side conversion**. Initial preparation also downloads the Pyodide conversion runtime and its Python packages from a CDN. The application host serves code and conversion tools; it does not host, receive or proxy the original game resources.
 
 Use a current desktop browser with Service Worker, WebAssembly, CacheStorage and OffscreenCanvas support. Preparation takes several minutes and temporarily uses substantially more memory than the download size. Production builds cache the application shell for subsequent offline play. Browser storage is specific to the site's origin and browser profile; clearing site data removes the installation, and storage eviction may require preparing it again.
 
 ### 中文快速开始
 
-运行 `npm ci`、`npm run dev` 后打开网址。项目已有完整素材时直接进入游戏，无需再次下载。没有本机素材时，首次启动需确认允许下载并存储原版素材；浏览器直接从 Internet Archive 下载约 207 MB 资源包，在本机浏览器内解包、转换并缓存，完成后自动进入遭遇战。无需安装 Python、7-Zip 或 FFmpeg，也不需要素材服务器。下次打开会复用浏览器缓存；清除该网站的数据会移除素材。
+运行 `npm ci`、`npm run dev` 后打开网址。首次启动需确认允许下载并存储原版素材；浏览器直接从 Internet Archive 下载约 207 MB 资源包，在本机浏览器内解包、转换并缓存，完成后自动进入遭遇战。无需安装 Python、7-Zip 或 FFmpeg，也不需要素材服务器。下次打开会复用浏览器缓存；清除该网站的数据会移除素材。
 
 ## Build and host
 
@@ -121,8 +119,6 @@ The optional developer CLI can reproduce native assets on disk for conversion wo
 npm run assets:setup
 npm run assets:check
 ```
-
-Set `RA2_LOCAL_ASSETS=0` when starting the preview to test the browser-only installation path even when local files exist.
 
 This CLI requires Python 3.10+, native 7-Zip and FFmpeg. It writes ignored `.cache/ra2-assets/`, `public/assets/` and `public/maps/` directories; those files are not the browser installation and are never included in the static site. See [asset conversion documentation](scripts/assets/README.md).
 

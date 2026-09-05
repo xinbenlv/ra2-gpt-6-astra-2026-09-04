@@ -17,7 +17,7 @@ A subsequent `scripts/browser_locale_audit.mjs` run verified English in the lobb
 
 A source-only checkout also built successfully and ran 32 tests, with the six native-map integration tests explicitly skipped because originals were absent.
 
-Reproduce the browser-only test with `RA2_LOCAL_ASSETS=0 npm run preview` running (local originals are otherwise preferred). Use a new profile directory to include first-run consent and a real download; a reused profile tests the cached path:
+Reproduce with the production preview running. Use a new profile directory to include first-run consent and a real download; a reused profile tests the cached path:
 
 ```sh
 RA2_BROWSER_URL=http://127.0.0.1:4173 \
@@ -64,6 +64,8 @@ CI runs the source tests without originals. Before building, it creates syntheti
 
 These checks do not establish frame-for-frame compatibility with the Westwood engine. Gameplay simplifications and unsupported mechanisms are documented in the main README.
 
-## Restored local startup
+## v0.2.0 release verification (2026-09-05)
 
-The local preview now prefers the complete original files already extracted into the project. Both a fresh Chromium profile (without a service worker) and the earlier browser-cache profile (with its existing worker) reached the lobby, loaded native MP3 audio and all images without failures, and deployed on Arctic Circle. Neither test contacted Internet Archive or downloaded conversion tools. Existing browser data was preserved. The integrated 38-test suite and production asset-exclusion check passed.
+Tag `v.0.1.0` preserves the local-original-files startup version. Version `v0.2.0` restores explicit browser consent and browser-only original storage, including on localhost. The service worker upgrades its application cache without discarding previously prepared originals, and an existing worker remains usable when an update cannot reach the network offline.
+
+All 38 tests and the production asset-exclusion check passed. A fresh Chromium context showed **Agree & download** with no Internet Archive request before consent. Clicking it requested Internet Archive's own CORS endpoint; intentionally aborting that test request displayed the retry action. Direct HTTP requests confirmed the application host did not serve original metadata. The previously prepared Chromium profile reused its 130 sprites with zero failed images, reloaded offline and deployed an MCV on Arctic Circle with no JavaScript errors. This release reused the unchanged converter worker validated by the full download/conversion test above.

@@ -25,7 +25,7 @@ The first-run page asks for explicit permission to download and store originals.
 
 Service Worker storage requires HTTPS or localhost. Clearing the site's browser data removes the installation. Conversion runs in a worker and can require substantial temporary memory; using WORKERFS avoids duplicating the complete downloaded installer in the 7-Zip virtual filesystem. The current IA CORS endpoint returns a full `200` stream even when a Range header is supplied, so byte-range download resumption is not assumed.
 
-`src/browser-storage.ts`, `src/asset-worker.ts`, `src/asset-setup.ts` and `public/ra2-sw.js` implement this flow. Browser files do not become project filesystem files, and deployed builds never serve original media. The loopback-only preview can read existing developer extracts in `public/` directly, bypassing browser preparation. Set `RA2_LOCAL_ASSETS=0` to test browser-only setup.
+`src/browser-storage.ts`, `src/asset-worker.ts`, `src/asset-setup.ts` and `public/ra2-sw.js` implement this flow. Browser files do not become project filesystem files, and the application host never serves original media. Developer extracts in `public/` are unrelated to the browser cache.
 
 ## Optional native developer pipeline
 

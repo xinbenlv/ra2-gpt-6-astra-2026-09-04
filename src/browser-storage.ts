@@ -1,4 +1,4 @@
-/** Browser-cache fallback for installations without existing local original files. */
+/** Original data is only ever written to this browser's origin-private storage. */
 export const ORIGINAL_CACHE = 'ra2-originals-v2';
 export const ARCHIVE_CACHE = 'ra2-download-v1';
 export const ORIGINAL_VERSION = 2;
@@ -21,20 +21,12 @@ export async function originalsReady(): Promise<boolean> {
   } catch { return false; }
 }
 
-/** The local preview can reuse originals already extracted in this project. */
-export async function localOriginalsAvailable(): Promise<boolean> {
-  if (!['localhost','127.0.0.1','[::1]'].includes(location.hostname)) return false;
-  try {
-    const response = await fetch('/api/local-assets', {cache:'no-store'});
-    return response.ok && (await response.json()).available === true;
-  } catch { return false; }
-}
-
 export async function connectAssetStorage(): Promise<void> {
   if (!isSecureContext || !('serviceWorker' in navigator) || !('caches' in window))
     throw new Error('Browser storage requires HTTPS or localhost and a browser with Service Worker support.');
   const registration = await navigator.serviceWorker.register('/ra2-sw.js', { scope:'/', updateViaCache:'none' });
-  await registration.update();
+  try { await registration.update(); }
+  catch (error) { if (!registration.active) throw error; } // Reuse the installed worker offline.
   const pending = registration.installing || registration.waiting;
   if (pending && pending.state !== 'activated') await new Promise<void>((resolve,reject) => {
     const timeout = setTimeout(() => reject(new Error('Browser storage update timed out. Please reload.')),15000);

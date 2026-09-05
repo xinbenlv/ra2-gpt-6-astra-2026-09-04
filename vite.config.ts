@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import fs from 'node:fs';
 import path from 'node:path';
-import { localAssetsPlugin } from './scripts/local-assets';
 
 // Deliberately disable Vite's public directory copying: it may contain originals
 // from offline development, and those must never become hosted build artifacts.
@@ -9,7 +8,7 @@ export default defineConfig({
   publicDir: false,
   build: { assetsDir:'app' },
   worker: { format:'es' },
-  plugins:[localAssetsPlugin(), {
+  plugins:[{
     name:'browser-only-originals',
     configureServer(server) {
       server.middlewares.use((req,res,next) => {
