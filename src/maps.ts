@@ -25,6 +25,7 @@ export interface MapData {
   preview?: string; previewData?: { width: number; height: number; rgb: Uint8Array };
   ini: IniFile; official: boolean; source: string; warnings: string[];
   specialMode?: 'megawealth' | 'unfinished'; notes?: string;
+  layout?: 'rectangular';
 }
 export interface TileDefinition { file: string; set: number; name: string; subtiles: (null | [number, number, number, number[], number[]])[] }
 export interface OverlayDefinition { id: number; name: string; wall: boolean; ore: boolean; land: string }
@@ -87,9 +88,10 @@ export function terrainAt(map: Pick<MapData, 'width' | 'height' | 'cells'>, x: n
   x = Math.floor(x); y = Math.floor(y);
   return x < 0 || y < 0 || x >= map.width || y >= map.height ? 'cliff' : map.cells[y * map.width + x]!;
 }
-/** Original LocalSize is a rectangle in the game's projected map coordinate system. */
-export function isWithinPlayableArea(map: Pick<MapData, 'width' | 'height' | 'originalSize' | 'localSize'>, x: number, y: number): boolean {
+/** Original LocalSize uses projected coordinates; editor maps use every rectangular cell. */
+export function isWithinPlayableArea(map: Pick<MapData, 'width' | 'height' | 'originalSize' | 'localSize' | 'layout'>, x: number, y: number): boolean {
   if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || y < 0 || x >= map.width || y >= map.height) return false;
+  if (map.layout === 'rectangular') return true;
   const mapWidth = map.originalSize[2]!;
   const u = (x - y + mapWidth - 1) / 2;
   const v = (x + y - mapWidth + 1) / 2;

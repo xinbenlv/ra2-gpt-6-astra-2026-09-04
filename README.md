@@ -16,6 +16,16 @@ This project is also **not associated with, sponsored by or endorsed by OpenAI o
 
 A browser RTS focused on Red Alert 2 skirmishes, with original Westwood artwork, maps, voices and music converted on the player's device. The game engine, AI, rendering and interface are independently written in TypeScript. No existing implementation on the user's computer or at `github.com/xinbenlv` was consulted.
 
+## Create and share maps
+
+After entering the skirmish lobby, open **Map editor / 地图编辑器** in the same web app. Choose a map size, theater and 2–8 starting positions; paint land, water, roads, cliffs, snow, ore and gems. Select a starting position and click the grid to move it. Brush strokes and template/file replacement support undo and redo. The editor keeps a draft in this browser when local storage is available.
+
+Click **Download map** to save a `.ra2map` file, then share that file. The recipient opens **Upload map / 上传地图** in the skirmish lobby (also available under **Choose map**), selects the file, configures opponents and starts the match. **Use in skirmish** sends the editor's current map directly to the lobby. Open a shared `.ra2map` in the editor to continue editing it.
+
+Files contain versioned JSON with the map name, dimensions, theater, terrain/resources and starting positions. Import validates the file before adding it to the lobby, including a clear 5×5 area around each starting position for base deployment. `.ra2map` is this web app's format, not the original game's `.map` format; original `.map` / `.mpr` imports remain supported in the lobby. Shared files contain no original artwork or audio, and each player still needs the normal browser asset preparation. Imported lobby maps last for the page session; keep the downloaded file for later use. Files are read locally in the browser.
+
+The sharing acceptance script uses two separate Chromium profiles copied from an already prepared asset profile. Run the app at the same origin used for that profile, then run `RA2_BROWSER_URL=http://127.0.0.1:4174/ RA2_BROWSER_PROFILE=.cache/browser-acceptance node scripts/browser_map_editor.mjs`. It checks editing, download contents, draft recovery, mobile/English controls and a second browser uploading the file and deploying a base. Test profiles, downloads and screenshots stay under ignored `.cache/`.
+
 ## Play
 
 [Play on GitHub Pages](https://xinbenlv.github.io/ra2-gpt-6-astra-2026-09-04/) — hosted on the default `github.io` domain, with no custom domain.

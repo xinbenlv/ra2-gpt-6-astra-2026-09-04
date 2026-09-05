@@ -6,11 +6,22 @@ import { appUrl } from './urls';
 import { t, registerTranslations, localizeElement, languageControl, bindLanguageControl } from './i18n';
 import { probeOriginalAssets, showAssetSetup, OriginalAssetsError } from './asset-setup';
 import { Assets, SoundSystem } from './assets';
-import { initializeMaps, listMaps, loadMap, importMap, registerImportedMap, isWithinPlayableArea, type MapData, type MapDefinition } from './maps';
+import { initializeMaps, listMaps, loadMap, registerImportedMap, isWithinPlayableArea, type MapData, type MapDefinition } from './maps';
+import { customMapToMapData } from './custom-maps';
+import { readSkirmishMap } from './map-files';
+import { mountMapEditor } from './map-editor';
 import { GameEngine, COUNTRIES, CATALOG, CATEGORY_NAMES, PLAYER_COLORS, countryById, getDefinition, type CountryId, type Difficulty, type PlayerConfig, type ProductionCategory, type Entity } from './game';
 import { BattlefieldRenderer, type RenderMap } from './renderer';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+registerTranslations({
+  '地图编辑器':'Map editor', '上传地图':'Upload map', '编辑器地图':'Editor map',
+  '上传地图文件':'Upload map file', '自定义地图文件超过 2 MB。':'Custom map files must be under 2 MB.',
+  '地图文件超过 16 MB。':'Map files must be under 16 MB.',
+  '下载的 .ra2map 文件可在此上传使用，也支持原版 .map / .mpr。':'Upload a shared .ra2map file here, or an original .map / .mpr file.',
+  '上传 .ra2map / .map / .mpr':'Upload .ra2map / .map / .mpr',
+  '地图已加入遭遇战。':'Map added to skirmish.',
+});
 for (const [name, file] of Object.entries({ 'menu-map':'mnscrnl', 'loading-art':'glsl', 'allied-sidebar':'sidec01-top', 'soviet-sidebar':'sidec02-top' }))
   document.documentElement.style.setProperty(`--${name}`, `url("${appUrl(`/assets/ui/${file}.png`)}")`);
 registerTranslations(Object.fromEntries(COUNTRIES.map(country => [country.name, country.nameEn])));
@@ -40,6 +51,7 @@ let notices: {text:string;until:number;warn:boolean}[] = [];
 let shownResult = false;
 let buildSignature = '';
 let supportSignature = '';
+let disposeEditor: (() => void) | undefined;
 const groups = new Map<string, number[]>();
 
 async function init() {
@@ -58,19 +70,24 @@ function countryOptions(value: string, random = true) {
 }
 function option(value: number | string, text: string, current: number | string) { return `<option value="${value}" ${value===current?'selected':''}>${text}</option>`; }
 function renderLobby() {
+  disposeEditor?.();disposeEditor=undefined;
   playing = false; shownResult = false; cancelAnimationFrame(animation); renderer?.destroy();renderer=undefined;game=undefined;
   const def = listMaps().find(m=>m.id===selectedMapId)!;
   app.innerHTML = `<main class="shell">
     <header class="header"><div class="brand"><h1 class="app-title">${APP_TITLE}</h1><div class="brand-caption"><strong>遭遇战</strong><span class="eyebrow">SKIRMISH OPERATIONS</span></div></div><div class="header-right">${languageControl()}<span class="technical"><i class="status-light"></i>本地战场已就绪</span><button id="sound-toggle" class="icon-button" title="音效">${sound.enabled?'♪':'♩'}</button><button id="help">操作说明</button></div></header>
-    <div class="lobby"><section class="map-panel metal">${bolts}<div class="panel-title"><h2>战场情报</h2><span>THEATER / ${escape(def.theater.toUpperCase())}</span></div><div class="map-viewport"><canvas id="map-preview" aria-label="北极圈原版地图预览"></canvas><i class="map-corner tl"></i><i class="map-corner tr"></i><i class="map-corner bl"></i><i class="map-corner br"></i><span class="map-coordinate">SATELLITE RECONNAISSANCE · ${escape(def.id.toUpperCase())}</span></div><div class="map-info"><div><h3>${escape(def.name)}</h3><p>${escape(def.nameEn.toUpperCase())} · ${def.players} PLAYERS</p></div><button id="choose-map">选择地图 ▸</button></div><div class="map-details"><div><label>战场规模</label><strong>${def.width} × ${def.height}</strong></div><div><label>作战地形</label><strong>${({snow:'雪地 · 海岛',temperate:'温带',urban:'城市'} as Record<string,string>)[def.theater] || def.theater}</strong></div><div><label>地图来源</label><strong>${def.official?'Westwood 原版':'本地导入'}</strong></div></div></section>
+    <div class="lobby"><section class="map-panel metal">${bolts}<div class="panel-title"><h2>战场情报</h2><span>THEATER / ${escape(def.theater.toUpperCase())}</span></div><div class="map-viewport"><canvas id="map-preview" aria-label="${escape(def.name)}"></canvas><i class="map-corner tl"></i><i class="map-corner tr"></i><i class="map-corner bl"></i><i class="map-corner br"></i><span class="map-coordinate">SATELLITE RECONNAISSANCE · ${escape(def.id.toUpperCase())}</span></div><div class="map-info"><div><h3>${escape(def.name)}</h3><p>${escape(def.nameEn.toUpperCase())} · ${def.players} PLAYERS</p></div><button id="choose-map">选择地图 ▸</button></div><div class="map-details"><div><label>战场规模</label><strong>${def.width} × ${def.height}</strong></div><div><label>作战地形</label><strong>${({snow:'雪地 · 海岛',temperate:'温带',urban:'城市'} as Record<string,string>)[def.theater] || def.theater}</strong></div><div><label>地图来源</label><strong>${def.official?'Westwood 原版':selectedMap.layout==='rectangular'?'编辑器地图':'本地导入'}</strong></div></div></section>
     <section class="settings-panel metal">${bolts}<div class="panel-title"><h2>作战部署</h2><span>COMBATANTS / ${slots.filter(s=>s.difficulty!=='closed').length}</span></div><table class="player-table"><thead><tr><th></th><th>指挥官</th><th>国家</th><th>颜色</th><th>盟友</th><th>位置</th></tr></thead><tbody>${slots.map((slot,i)=>renderSlot(slot,i,def.players)).join('')}</tbody></table><p class="country-note" id="country-note">${escape(countryById(slots[0].country).name)}：${escape(countryById(slots[0].country).description)}</p>
     <div class="lobby-options"><div class="field"><label for="credits">初始资金</label><select id="credits">${[5000,10000,20000,30000,50000].map(v=>option(v,`$ ${v.toLocaleString()}`,credits)).join('')}</select></div><div class="field"><label for="units">初始部队</label><select id="units">${[0,3,5,10].map(v=>option(v,`${v} 支部队 + 基地车`,startingUnits)).join('')}</select></div><div class="field"><label for="speed">游戏速度</label><select id="speed">${option(.75,'慢速',gameSpeed)}${option(1,'正常',gameSpeed)}${option(1.5,'快速',gameSpeed)}${option(2,'最快',gameSpeed)}</select></div></div><div class="checks"><label><input type="checkbox" id="fog" ${fog?'checked':''}/>战争迷雾</label><label><input type="checkbox" id="superweapons" ${superweapons?'checked':''}/>超级武器</label><label><input type="checkbox" id="short-game" ${shortGame?'checked':''}/>快速游戏</label><label><input type="checkbox" id="music" ${sound.musicEnabled?'checked':''}/>原版音乐</label></div>
     </section></div>
+    <div class="map-sharing-bar"><div><strong>地图编辑器</strong><p>下载的 .ra2map 文件可在此上传使用，也支持原版 .map / .mpr。</p></div><div class="map-sharing-actions"><input id="lobby-map-file" type="file" accept=".ra2map,.json,.map,.mpr" hidden/><button id="upload-map">上传地图</button><button id="open-map-editor">地图编辑器</button></div></div>
     <div class="lobby-bottom"><div class="transmission"><span class="symbol">▣</span><div><strong>指挥官，等待您的命令。</strong><br>建立基地，开采资源，消灭敌方势力。盟军与苏军 9 国已就绪。</div></div><button id="start" class="primary start-button">开始作战</button></div>${sourceCodeLink()}${projectNotice()}<footer class="footer"><span>WESTWOOD ORIGINAL ASSETS · ${listMaps().length} SKIRMISH MAPS</span>${sourceCodeLink()}</footer>
   </main>`;
   translateUI();bindLanguage();
   drawMapPreview($('#map-preview'), selectedMap);
   $('#choose-map').onclick = openMapChooser;
+  $('#open-map-editor').onclick = openMapEditor;
+  $('#upload-map').onclick = () => $('#lobby-map-file').click();
+  $('#lobby-map-file').onchange = e => void uploadLobbyMap((e.target as HTMLInputElement));
   $('#help').onclick = showHelp;
   $('#sound-toggle').onclick = () => {sound.enabled=!sound.enabled;$('#sound-toggle').textContent=sound.enabled?'♪':'♩';if(sound.enabled)sound.play('allied_establishingbattlefieldcontrol');};
   $('#start').onclick = startGame;
@@ -86,6 +103,28 @@ function renderLobby() {
     const v = key==='color'||key==='team'||key==='position'?Number(el.value):el.value;
     Object.assign(slots[index],{[key]:v});renderLobby();
   });
+}
+function useLobbyMap(map: MapData) {
+  selectedMapId=map.id;selectedMap=map;
+  slots.forEach((slot,index)=>{if(index>=map.players)slot.difficulty='closed';if(slot.position>=map.players)slot.position=-1;});
+  closeModal();renderLobby();
+}
+function openMapEditor() {
+  closeModal();disposeEditor?.();
+  app.replaceChildren();
+  disposeEditor=mountMapEditor(app,{
+    onBack:renderLobby,
+    onUse:document=>{const map=customMapToMapData(document);registerImportedMap(map);useLobbyMap(map);toast('地图已加入遭遇战。');},
+  });
+}
+async function uploadLobbyMap(input:HTMLInputElement) {
+  const file=input.files?.[0];if(!file)return;
+  try {
+    const map=await readSkirmishMap(file);
+    if(!input.isConnected)return;
+    registerImportedMap(map);useLobbyMap(map);toast(`已导入 ${map.name}`);
+  } catch(error) {if(input.isConnected)toast(`导入失败：${error instanceof Error?error.message:String(error)}`);}
+  finally {input.value='';}
 }
 function renderSlot(s:Slot,i:number,maxPlayers:number){
   const disabled=i>=maxPlayers;const closed=s.difficulty==='closed'||disabled;
@@ -117,11 +156,11 @@ function showModal(title:string,body:string,actions:string,small=false){
 function closeModal(){document.querySelector('.modal-shade')?.remove();modalOpen=false;if(game&&modalOwnsPause){game.paused=false;modalOwnsPause=false;}}
 function openMapChooser(){
   let candidate=selectedMapId,current=selectedMap,request=0,loading=false;const maps=listMaps();
-  showModal('选择战场',`<div class="map-browser"><div><input id="map-search" class="map-search" placeholder="搜索地图名称…" aria-label="搜索地图"/><div class="map-list inset" id="map-list"></div></div><div class="preview-column"><canvas id="map-modal-preview" class="map-modal-preview"></canvas><h3 id="candidate-name">${escape(selectedMap.name)}</h3><p id="candidate-meta" class="muted">${selectedMap.players} 人 · 原版地图</p></div></div>`,`<input id="map-file" type="file" accept=".map,.mpr" hidden/><button id="import-map">导入 .map / .mpr</button><span class="spacer"></span><button id="map-cancel">取消</button><button id="map-confirm" class="primary">确认战场</button>`);
+  showModal('选择战场',`<div class="map-browser"><div><input id="map-search" class="map-search" placeholder="搜索地图名称…" aria-label="搜索地图"/><div class="map-list inset" id="map-list"></div></div><div class="preview-column"><canvas id="map-modal-preview" class="map-modal-preview"></canvas><h3 id="candidate-name">${escape(selectedMap.name)}</h3><p id="candidate-meta" class="muted">${selectedMap.players} 人 · ${escape(selectedMap.theater.toUpperCase())}</p></div></div>`,`<input id="map-file" type="file" accept=".ra2map,.json,.map,.mpr" hidden/><button id="import-map">上传 .ra2map / .map / .mpr</button><span class="spacer"></span><button id="map-cancel">取消</button><button id="map-confirm" class="primary">确认战场</button>`);
   const renderList=(query='')=>{$('#map-list').innerHTML=maps.filter(m=>(m.name+' '+m.nameEn).toLowerCase().includes(query.toLowerCase())).map(m=>`<button data-map-id="${m.id}" class="${m.id===candidate?'active':''}">${escape(m.name)}<span>${m.players} 人${m.specialMode==='megawealth'?' · 巨富':m.specialMode==='unfinished'?' · 草稿':''}</span></button>`).join('');translateUI($('#map-list'));document.querySelectorAll<HTMLButtonElement>('[data-map-id]').forEach(b=>b.onclick=async()=>{try{const token=++request,id=b.dataset.mapId!;loading=true;$<HTMLButtonElement>('#map-confirm').disabled=true;const loaded=await loadMap(id);if(token!==request||!modalOpen)return;candidate=id;current=loaded;loading=false;$<HTMLButtonElement>('#map-confirm').disabled=false;renderList($<HTMLInputElement>('#map-search').value);drawMapPreview($('#map-modal-preview'),current);$('#candidate-name').textContent=current.name;$('#candidate-meta').textContent=`${current.players} 人 · ${current.theater.toUpperCase()} · ${current.originalSize[2]} × ${current.originalSize[3]}${current.notes?' · '+current.notes:''}`;translateUI($('.preview-column'));}catch(e){loading=false;if(document.querySelector('#map-confirm'))$<HTMLButtonElement>('#map-confirm').disabled=false;toast(String(e));}});};
   renderList();drawMapPreview($('#map-modal-preview'),current);$('#map-search').oninput=e=>renderList((e.target as HTMLInputElement).value);
   $('#map-cancel').onclick=closeModal;$('#map-confirm').onclick=()=>{if(loading)return;selectedMapId=candidate;selectedMap=current;slots.forEach((s,i)=>{if(i>=current.players)s.difficulty='closed';if(s.position>=current.players)s.position=-1;});closeModal();renderLobby();};
-  $('#import-map').onclick=()=>$('#map-file').click();$('#map-file').onchange=async e=>{const file=(e.target as HTMLInputElement).files?.[0];if(!file)return;try{const data=importMap(await file.text(),file.name);const def=registerImportedMap(data);selectedMapId=def.id;selectedMap=data;slots.forEach((s,i)=>{if(i>=data.players)s.difficulty='closed';if(s.position>=data.players)s.position=-1;});closeModal();renderLobby();toast(`已导入 ${data.name}`);}catch(error){toast(`导入失败：${error instanceof Error?error.message:String(error)}`);}};
+  $('#import-map').onclick=()=>$('#map-file').click();$('#map-file').onchange=e=>void uploadLobbyMap(e.target as HTMLInputElement);
 }
 function showHelp(){
   showModal('作战操作',`<div class="help-grid"><kbd>左键 / 框选</kbd><span>选中己方单位；按住 Shift 增减选择。</span><kbd>右键</kbd><span>移动部队，点击敌军发动攻击；取消建筑放置。</span><kbd>双击基地车 / D</kbd><span>部署基地车。大兵与辐射工兵也可部署。</span><kbd>建造图标</kbd><span>点击开始生产，建筑就绪后点击图标并放置。</span><kbd>右击建造图标</kbd><span>取消该类生产队列中的一个项目。</span><kbd>方向键 / 鼠标边缘</kbd><span>移动视角。也可中键拖动或按住空格拖动。</span><kbd>滚轮</kbd><span>缩放战场。</span><kbd>H / 雷达点击</kbd><span>返回基地 / 快速移动视角。</span><kbd>A → 左键</kbd><span>攻击移动，沿途交战。</span><kbd>S / G</kbd><span>停止 / 警戒。</span><kbd>Ctrl + 1–9</kbd><span>建立编队，数字键选择编队。</span><kbd>Tab</kbd><span>切换建造分类。</span><kbd>Esc / P</kbd><span>取消当前命令 / 暂停与选项。</span></div>`,`<button id="help-close" class="primary">收到</button>`);$('#help-close').onclick=closeModal;

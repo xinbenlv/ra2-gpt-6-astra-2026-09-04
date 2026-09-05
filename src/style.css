@@ -43,3 +43,9 @@ html[lang=en] .player-table select{padding-right:6px}html[lang=en] .item-name{fo
 .source-code-link{color:#eddaa5;font:12px/1.5 Tahoma,sans-serif;letter-spacing:0;text-decoration:underline;text-underline-offset:3px}
 .source-code-link:focus-visible{outline:2px solid #eddaa5;outline-offset:3px}
 .setup-language{justify-content:space-between;align-items:center;gap:12px}
+.map-sharing-bar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;max-width:1440px;margin:0 auto;padding:12px 16px;border:1px solid #766044;background:#201b16ed;flex-shrink:0}
+.shell>.lobby{flex:1 0 auto;min-height:min-content}
+.map-sharing-bar strong{color:#e5d297;font-size:13px}.map-sharing-bar p{color:#b7a58c;font-size:11px;line-height:1.7;margin-top:4px}
+.map-sharing-actions{display:flex;gap:8px;flex-shrink:0}.map-sharing-actions button{letter-spacing:0;min-height:36px}
+.map-sharing-bar :focus-visible{outline:2px solid #eddaa5;outline-offset:3px}
+@media(max-width:800px){.map-sharing-bar{align-items:stretch;flex-direction:column;gap:10px}.map-sharing-actions button{flex:1}.map-sharing-actions{width:100%}.modal-actions{flex-wrap:wrap}}

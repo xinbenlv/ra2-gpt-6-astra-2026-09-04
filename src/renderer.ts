@@ -221,6 +221,9 @@ export class BattlefieldRenderer {
         const overlay = this.assets.manifest.overlays?.[`${this.map.theater}:${tile.overlay}`];
         if(overlay) this.drawAtlas(ctx,overlay,p.x,p.y,tile.overlayFrame || 0);
         else if(terrain==='ore' || terrain==='gem')this.drawOre(ctx,p.x,p.y,x,y,terrain==='gem');
+      } else if((terrain==='ore' || terrain==='gem') && this.game.ore[idx]>0) {
+        // Editor maps describe resources directly, without original overlay artwork.
+        this.drawOre(ctx,p.x,p.y,x,y,terrain==='gem');
       }
     }
     this.displayedSprites.clear();
