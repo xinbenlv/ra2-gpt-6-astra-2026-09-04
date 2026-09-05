@@ -1,5 +1,6 @@
 import { CATALOG } from './game/data';
 import { OriginalAssetsError } from './asset-setup';
+import { appUrl, resolveOriginalUrls } from './urls';
 
 export interface Sprite {
   src: string; width: number; height: number; frameWidth: number; frameHeight: number;
@@ -28,11 +29,11 @@ export class Assets {
   async load(onProgress?: (n: number) => void) {
     this.images.clear();this.failures=[];
     try {
-      const response = await fetch('/assets/manifest.json');
+      const response = await fetch(appUrl('/assets/manifest.json'));
       if (!response.ok) throw new OriginalAssetsError('缺少原版素材清单。');
-      this.manifest = await response.json();
-      const terrain = await fetch('/assets/terrain/manifest-tiles.json');if(!terrain.ok)throw new OriginalAssetsError('缺少原版地形素材。');this.terrain=await terrain.json();
-      const scenery = await fetch('/assets/scenery/manifest-scenery.json');if(!scenery.ok)throw new OriginalAssetsError('缺少原版场景素材。');this.scenery=await scenery.json();
+      this.manifest = resolveOriginalUrls(await response.json());
+      const terrain = await fetch(appUrl('/assets/terrain/manifest-tiles.json'));if(!terrain.ok)throw new OriginalAssetsError('缺少原版地形素材。');this.terrain=resolveOriginalUrls(await terrain.json());
+      const scenery = await fetch(appUrl('/assets/scenery/manifest-scenery.json'));if(!scenery.ok)throw new OriginalAssetsError('缺少原版场景素材。');this.scenery=resolveOriginalUrls(await scenery.json());
       const urls = new Set<string>();
       for (const sprite of Object.values(this.scenery)) urls.add(sprite.src);
       for (const tile of Object.values(this.terrain)) urls.add(tile.src);

@@ -1,4 +1,5 @@
 import { decodeMapPack, iniSection, iniValue, parseIni, type IniFile } from './map-codecs.ts';
+import { appUrl, resolveOriginalUrls } from './urls.ts';
 
 export type Terrain = 'land' | 'water' | 'ore' | 'gem' | 'cliff' | 'road' | 'snow';
 export interface MapDefinition {
@@ -51,7 +52,7 @@ export function configureMapData({ catalog, terrain, overlays }: MapMetadata): v
   if (!Array.isArray(overlays) || !overlays.length || !overlays.every(overlay => record(overlay) && Number.isInteger(overlay.id) && typeof overlay.name === 'string' && typeof overlay.land === 'string' && typeof overlay.ore === 'boolean' && typeof overlay.wall === 'boolean'))
     throw new Error('原版覆盖物数据 overlays.json 无效，请重新安装原版素材。');
   // Commit together so a corrupt or interrupted download cannot leave partially loaded metadata.
-  definitions = [...catalog] as MapDefinition[];
+  definitions = resolveOriginalUrls([...catalog]) as MapDefinition[];
   tileDefinitions = terrain as unknown as Record<string, TileDefinition[]>;
   overlayDefinitions = new Map((overlays as OverlayDefinition[]).map(overlay => [overlay.id, overlay]));
   imported.clear();
@@ -65,7 +66,7 @@ export async function initializeMaps(): Promise<void> {
     initialization = (async () => {
       const read = async (filename: string): Promise<unknown> => {
         try {
-          const response = await fetch(`/maps/${filename}`, { cache: 'no-cache' });
+          const response = await fetch(appUrl(`/maps/${filename}`), { cache: 'no-cache' });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           return await response.json();
         } catch (error) {
@@ -104,7 +105,7 @@ export async function loadMap(id: string): Promise<MapData> {
   if (imported.has(id)) return imported.get(id)!;
   const definition = getMapDefinition(id);
   if (!definition) throw new Error(`地图不存在：${id}`);
-  const response = await fetch(`/maps/${definition.filename}`);
+  const response = await fetch(appUrl(`/maps/${definition.filename}`));
   if (!response.ok) throw new Error(`无法加载地图 ${definition.name}：HTTP ${response.status}`);
   return importMap(await response.text(), definition.filename, definition);
 }

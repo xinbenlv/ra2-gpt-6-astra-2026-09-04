@@ -18,6 +18,8 @@ A browser RTS focused on Red Alert 2 skirmishes, with original Westwood artwork,
 
 ## Play
 
+[Play on GitHub Pages](https://xinbenlv.github.io/ra2-gpt-6-astra-2026-09-04/) — hosted on the default `github.io` domain, with no custom domain.
+
 For local development, install Node.js 22 or newer:
 
 ```sh
@@ -48,7 +50,16 @@ npm run build
 npm run preview
 ```
 
-Serve `dist/` from the root of an HTTPS origin; localhost is supported for development. The current application uses root-relative URLs, so a repository subpath such as `/project-name/` needs a root-hosted domain or equivalent routing.
+Serve `dist/` over HTTPS; localhost is supported for development. Root hosting works by default. For a repository subpath, use the same base for building and previewing:
+
+```sh
+RA2_BASE_PATH=/ra2-gpt-6-astra-2026-09-04/ npm run build
+RA2_BASE_PATH=/ra2-gpt-6-astra-2026-09-04/ npm run preview
+```
+
+The service worker, application files, original-asset URLs and offline cache respect that base. Browser caches are separated by app path, so this site does not take over other projects on the same `github.io` origin.
+
+The **Deploy GitHub Pages** workflow runs on pushes to `main` or manual dispatch. It tests the source, builds for the Pages base path, verifies the source-only boundary, then uploads only `dist/` and deploys it. No custom domain or `CNAME` file is used.
 
 Every build excludes original resources, **even when the developer has already extracted them into `public/`**. Vite's automatic public-directory copying is disabled. The build contains the app, conversion code, 7-Zip WebAssembly, a service worker and an application-shell manifest. Static hosting supports the complete browser preparation flow.
 

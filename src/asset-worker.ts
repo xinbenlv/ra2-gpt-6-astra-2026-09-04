@@ -1,5 +1,6 @@
 import SevenZip from '7z-wasm';
 import sevenWasm from '7z-wasm/7zz.wasm?url';
+import { scopedCache } from './urls';
 import { configureMapData, importMap, listMaps } from './maps';
 import { ARCHIVE_CACHE, ORIGINAL_CACHE, ORIGINAL_VERSION, READY_URL, SOURCE_SHA256, SOURCE_URL, type SetupProgress } from './browser-storage';
 
@@ -102,7 +103,7 @@ self.onmessage=event=>{
   if(event.data?.type!=='install'||running)return;running=true;
   const run=()=>install();
   // A second tab cannot overwrite an installation already in progress.
-  const task = navigator.locks ? navigator.locks.request('ra2-original-setup',{ifAvailable:true},lock=>{
+  const task = navigator.locks ? navigator.locks.request(scopedCache('ra2-original-setup'),{ifAvailable:true},lock=>{
     if(!lock)throw new Error('Another tab is preparing original assets. Wait for it to finish, then reload this tab.');return run();
   }):run();
   void task.catch(error=>postMessage({type:'error',stage:'error',message:error instanceof Error?error.message:String(error)} satisfies SetupProgress)).finally(()=>{running=false;});

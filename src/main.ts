@@ -2,6 +2,7 @@ import './style.css';
 import { APP_TITLE } from './project';
 import { projectNotice } from './project-notice';
 import { mountDebugPanel } from './debug-panel';
+import { appUrl } from './urls';
 import { t, registerTranslations, localizeElement, languageControl, bindLanguageControl } from './i18n';
 import { probeOriginalAssets, showAssetSetup, OriginalAssetsError } from './asset-setup';
 import { Assets, SoundSystem } from './assets';
@@ -10,6 +11,8 @@ import { GameEngine, COUNTRIES, CATALOG, CATEGORY_NAMES, PLAYER_COLORS, countryB
 import { BattlefieldRenderer, type RenderMap } from './renderer';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+for (const [name, file] of Object.entries({ 'menu-map':'mnscrnl', 'loading-art':'glsl', 'allied-sidebar':'sidec01-top', 'soviet-sidebar':'sidec02-top' }))
+  document.documentElement.style.setProperty(`--${name}`, `url("${appUrl(`/assets/ui/${file}.png`)}")`);
 registerTranslations(Object.fromEntries(COUNTRIES.map(country => [country.name, country.nameEn])));
 const nameCounts = new Map<string, number>();
 for (const definition of Object.values(CATALOG)) nameCounts.set(definition.name, (nameCounts.get(definition.name) ?? 0) + 1);

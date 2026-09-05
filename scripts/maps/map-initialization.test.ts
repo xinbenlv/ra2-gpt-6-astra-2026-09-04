@@ -12,7 +12,7 @@ test('map module imports in a standalone checkout with no original asset directo
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ra2-map-import-'));
   try {
     fs.writeFileSync(path.join(directory, 'package.json'), '{"type":"module"}');
-    for (const filename of ['maps.ts', 'map-codecs.ts'])
+    for (const filename of ['maps.ts', 'map-codecs.ts', 'urls.ts'])
       fs.copyFileSync(new URL(`../../src/${filename}`, import.meta.url), path.join(directory, filename));
     const moduleUrl = pathToFileURL(path.join(directory, 'maps.ts')).href;
     const result = spawnSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', `

@@ -78,3 +78,9 @@ The README and app now identify the fan recreation and Victor Zhou's initial one
 - The TypeScript/Vite production build and source-only repository/build checks passed with local originals present. Original assets remain excluded from Git and the hosted output.
 - Chromium checked fresh `en-US`, `zh-CN`, `zh-TW` and `ja-JP` contexts: Chinese was selected only for Chinese browser locales; a manual English choice survived reload. No original download occurred before consent.
 - A production preview using the existing browser asset cache verified the exact app title, disclosures, two consecutive credit grants, reveal on/off, instant construction followed by manual placement, immediate mute and music resumption, live language switching, keyboard navigation inside the panel, and reset of gameplay debug options on a new match. No browser runtime errors occurred. This check reused cached originals; it did not repeat the original archive download/conversion acceptance run.
+
+## GitHub Pages subpath deployment — 2026-09-05
+
+The GitHub Pages build uses `/ra2-gpt-6-astra-2026-09-04/`. All 46 source tests passed locally, including scoped-cache URL resolution and service-worker checks for root and repository hosting, original-resource isolation, cached audio ranges and offline fallback. Both root and subpath production builds passed the original-asset exclusion check.
+
+Chromium verified first-launch consent at the repository subpath without any archive request. A separate check copied already-installed local test assets into the subpath's private browser cache, then loaded the lobby, started Arctic Circle, deployed the MCV and repeated play after an offline reload. No root `/assets/` or `/maps/` requests and no browser runtime errors occurred. This reuses an existing local fixture cache rather than repeating conversion of the original installer.

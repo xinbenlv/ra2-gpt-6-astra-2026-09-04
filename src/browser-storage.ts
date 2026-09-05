@@ -1,6 +1,7 @@
+import { APP_BASE, appUrl, scopedCache } from './urls';
 /** Original data is only ever written to this browser's origin-private storage. */
-export const ORIGINAL_CACHE = 'ra2-originals-v2';
-export const ARCHIVE_CACHE = 'ra2-download-v1';
+export const ORIGINAL_CACHE = scopedCache('ra2-originals-v2');
+export const ARCHIVE_CACHE = scopedCache('ra2-download-v1');
 export const ORIGINAL_VERSION = 2;
 export const SOURCE_URL = 'https://archive.org/download/red-alert-2-multiplayer/Red-Alert-2-Multiplayer.exe';
 export const SOURCE_SHA256 = '5388c54d7d7b73060083563ff1926bca0d2663a76678b807e23e9a8d491441ce';
@@ -24,7 +25,7 @@ export async function originalsReady(): Promise<boolean> {
 export async function connectAssetStorage(): Promise<void> {
   if (!isSecureContext || !('serviceWorker' in navigator) || !('caches' in window))
     throw new Error('Browser storage requires HTTPS or localhost and a browser with Service Worker support.');
-  const registration = await navigator.serviceWorker.register('/ra2-sw.js', { scope:'/', updateViaCache:'none' });
+  const registration = await navigator.serviceWorker.register(appUrl('ra2-sw.js'), { scope:APP_BASE, updateViaCache:'none' });
   try { await registration.update(); }
   catch (error) { if (!registration.active) throw error; } // Reuse the installed worker offline.
   const pending = registration.installing || registration.waiting;

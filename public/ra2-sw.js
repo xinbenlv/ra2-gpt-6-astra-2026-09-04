@@ -1,11 +1,13 @@
 /* Original resources are never fetched from the application host. */
-const ORIGINALS = 'ra2-originals-v2';
-const APP = 'ra2-app-v5';
+const BASE = new URL(self.registration.scope).pathname;
+const cacheName = name => BASE === '/' ? name : name + ':' + BASE;
+const ORIGINALS = cacheName('ra2-originals-v2');
+const APP = cacheName('ra2-app-v6');
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(APP);
     try {
-      const response = await fetch('/app-shell.json', {cache:'no-store'});
+      const response = await fetch(BASE + 'app-shell.json', {cache:'no-store'});
       if (response.ok) {
         const files = await response.json();
         await cache.addAll(files);
@@ -17,11 +19,12 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin || event.request.method !== 'GET') return;
-  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/maps/')) {
+  if (url.origin !== self.location.origin || event.request.method !== 'GET' || !url.pathname.startsWith(BASE)) return;
+  const logicalPath = '/' + url.pathname.slice(BASE.length);
+  if (logicalPath.startsWith('/assets/') || logicalPath.startsWith('/maps/')) {
     event.respondWith((async () => {
       const cache = await caches.open(ORIGINALS);
-      const response = await cache.match(url.pathname);
+      const response = await cache.match(logicalPath);
       if (!response) return new Response('Original asset is not present in this browser.', {status:404});
       // HTMLAudioElement can request byte ranges when seeking cached PCM music.
       const range = event.request.headers.get('range');
@@ -34,14 +37,14 @@ self.addEventListener('fetch', event => {
     })());
     return;
   }
-  if (url.pathname.startsWith('/app/') || event.request.mode === 'navigate') {
+  if (logicalPath.startsWith('/app/') || event.request.mode === 'navigate') {
     event.respondWith((async () => {
       const cache = await caches.open(APP);
-      if (url.pathname.startsWith('/app/')) {
+      if (logicalPath.startsWith('/app/')) {
         const cached = await cache.match(event.request); if (cached) return cached;
       }
       try { const response = await fetch(event.request); if (response.ok) await cache.put(event.request,response.clone()); return response; }
-      catch { return await cache.match(event.request) || await cache.match('/') || new Response('Offline application unavailable.',{status:503}); }
+      catch { return await cache.match(event.request) || (event.request.mode === 'navigate' ? await cache.match(BASE) : undefined) || new Response('Offline application unavailable.',{status:503}); }
     })());
   }
 });
