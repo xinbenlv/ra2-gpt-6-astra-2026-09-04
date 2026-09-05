@@ -1,8 +1,9 @@
 import SevenZip from '7z-wasm';
 import sevenWasm from '7z-wasm/7zz.wasm?url';
 import { scopedCache } from './urls';
+import { cacheLocalArchive, OriginalArchiveError, verifyOriginalArchive } from './archive-input';
 import { configureMapData, importMap, listMaps } from './maps';
-import { ARCHIVE_CACHE, ORIGINAL_CACHE, ORIGINAL_VERSION, READY_URL, SOURCE_SHA256, SOURCE_URL, type SetupProgress } from './browser-storage';
+import { ARCHIVE_CACHE, ORIGINAL_CACHE, ORIGINAL_VERSION, READY_URL, SOURCE_BYTES, SOURCE_SHA256, SOURCE_URL, type SetupProgress } from './browser-storage';
 
 // This is Internet Archive's own CORS endpoint. No application proxy or asset mirror.
 const DOWNLOAD_URL = 'https://cors.archive.org/cors/red-alert-2-multiplayer/Red-Alert-2-Multiplayer.exe';
@@ -23,7 +24,7 @@ async function getArchive():Promise<Blob> {
     const {done,value} = await reader.read();
     if(done){controller.close();return;}
     received+=value.byteLength;
-    if(Date.now()-last>500){last=Date.now();notify('download',Math.min(25,received/206530229*25),`${(received/1e6).toFixed(1)} / 206.5 MB`);}
+    if(Date.now()-last>500){last=Date.now();notify('download',Math.min(25,received/SOURCE_BYTES*25),`${(received/1e6).toFixed(1)} / 206.5 MB`);}
     controller.enqueue(value);
   },cancel(reason){return reader.cancel(reason);}});
   try { await cache.put(SOURCE_URL,new Response(stream,{headers:{'Content-Type':'application/octet-stream'}})); }
@@ -37,10 +38,16 @@ interface PythonRuntime {
   loadPackage(names:string[]):Promise<void>;
   runPythonAsync(code:string):Promise<any>;
 }
-async function install() {
-  let archive=await getArchive();notify('verify',26);
-  const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await archive.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
-  if(digest!==SOURCE_SHA256){await (await caches.open(ARCHIVE_CACHE)).delete(SOURCE_URL);throw new Error('Original archive integrity check failed. Please retry the download.');}
+async function install(localFile?: Blob) {
+  let archive: Blob;
+  if (localFile) {
+    notify('verify',10);
+    archive = await cacheLocalArchive(localFile, () => notify('save-archive',26));
+  } else {
+    archive = await getArchive(); notify('verify',26);
+    try { await verifyOriginalArchive(archive); }
+    catch (error) { await (await caches.open(ARCHIVE_CACHE)).delete(SOURCE_URL); throw error; }
+  }
   notify('runtime',28);
   const {loadPyodide} = await import(/* @vite-ignore */ PYODIDE_URL);
   const py = await loadPyodide({indexURL:PYODIDE_URL.slice(0,PYODIDE_URL.lastIndexOf('/')+1),stdout:console.log,stderr:console.warn}) as PythonRuntime;
@@ -101,10 +108,10 @@ async function install() {
 let running=false;
 self.onmessage=event=>{
   if(event.data?.type!=='install'||running)return;running=true;
-  const run=()=>install();
+  const run=()=>install(event.data.file instanceof Blob ? event.data.file : undefined);
   // A second tab cannot overwrite an installation already in progress.
   const task = navigator.locks ? navigator.locks.request(scopedCache('ra2-original-setup'),{ifAvailable:true},lock=>{
     if(!lock)throw new Error('Another tab is preparing original assets. Wait for it to finish, then reload this tab.');return run();
   }):run();
-  void task.catch(error=>postMessage({type:'error',stage:'error',message:error instanceof Error?error.message:String(error)} satisfies SetupProgress)).finally(()=>{running=false;});
+  void task.catch(error=>postMessage({type:'error',stage:'error',message:error instanceof Error?error.message:String(error),errorCode:error instanceof OriginalArchiveError?error.code:undefined} satisfies SetupProgress)).finally(()=>{running=false;});
 };

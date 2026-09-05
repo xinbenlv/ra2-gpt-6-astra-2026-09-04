@@ -3,11 +3,14 @@ import { APP_BASE, appUrl, scopedCache } from './urls';
 export const ORIGINAL_CACHE = scopedCache('ra2-originals-v2');
 export const ARCHIVE_CACHE = scopedCache('ra2-download-v1');
 export const ORIGINAL_VERSION = 2;
+export const SOURCE_PAGE_URL = 'https://archive.org/details/red-alert-2-multiplayer';
 export const SOURCE_URL = 'https://archive.org/download/red-alert-2-multiplayer/Red-Alert-2-Multiplayer.exe';
+export const SOURCE_BYTES = 206530229;
 export const SOURCE_SHA256 = '5388c54d7d7b73060083563ff1926bca0d2663a76678b807e23e9a8d491441ce';
 export const READY_URL = '/assets/ready.json';
 export interface BrowserReady { version:number; sourceSha256:string; files:string[]; installedAt:string }
-export interface SetupProgress { type:'progress'|'complete'|'error'; stage:string; percent?:number; message?:string }
+export type ArchiveErrorCode = 'archive-size' | 'archive-hash';
+export interface SetupProgress { type:'progress'|'complete'|'error'; stage:string; percent?:number; message?:string; errorCode?:ArchiveErrorCode }
 
 export async function originalsReady(): Promise<boolean> {
   if (!('caches' in globalThis)) return false;

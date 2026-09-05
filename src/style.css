@@ -31,3 +31,12 @@ html[lang=en] .player-table select{padding-right:6px}html[lang=en] .item-name{fo
 .debug-panel :focus-visible,.project-notice :focus-visible{outline:2px solid #eddaa5;outline-offset:3px}
 @media(max-width:800px){.header{align-items:flex-start;flex-wrap:wrap;gap:12px}.header .app-title{font-size:18px}.game-top{padding:6px}.game-top .right{flex-wrap:wrap;justify-content:flex-end;max-width:160px}.game-heading .app-title{font-size:10px}.battlefield-tools{left:8px;bottom:8px}}
 .asset-setup-screen{align-items:flex-start}
+/* Local installer selection shares the browser-only preparation flow. */
+.setup-download a,.setup-upload a{color:#eddaa5;text-decoration:underline;text-underline-offset:3px}
+.setup-upload{margin-top:22px;padding:18px;border:1px dashed #8d967b;background:#131b1480;transition:background .15s,border-color .15s}
+.setup-upload h3{font-size:15px;letter-spacing:0;color:#e5d297;margin:0 0 8px}
+.setup-upload p{font:12px/1.7 Tahoma,sans-serif;color:#c0c3ab;margin:8px 0;overflow-wrap:anywhere}
+.setup-upload button{font-size:12px;letter-spacing:0;margin:5px 0;padding:9px 13px}
+.setup-upload .setup-file-note{font-size:11px;color:#a8af98}.setup-upload .setup-selected-file{color:#e5d297}
+.setup-upload.drag-over{background:#33462b;border-color:#d9e2b4;outline:2px solid #d9e2b4;outline-offset:3px}
+.setup-upload[aria-busy=true]{opacity:.65}.setup-upload button:focus-visible{outline:2px solid #eddaa5;outline-offset:3px}

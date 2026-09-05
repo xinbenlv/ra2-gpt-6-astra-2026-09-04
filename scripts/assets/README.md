@@ -14,9 +14,9 @@ The installer, extracted originals and all converted media/maps are excluded fro
 
 ## Browser preparation
 
-The first-run page asks for explicit permission to download and store originals. Once accepted:
+The first-run page offers an explicit download-and-storage action and a local-file picker/drop zone, with links to the exact Internet Archive item and installer. Selecting or dropping a file authorizes browser-local verification, storage and conversion; no file is uploaded. Only the pinned 206,530,229-byte installer and SHA-256 are accepted. A rejected local file does not overwrite an existing verified installer. Once authorized:
 
-1. A module Web Worker downloads the original installer directly from Internet Archive's own CORS endpoint, streams it into browser CacheStorage and verifies SHA-256. No application endpoint or proxy handles those bytes.
+1. A module Web Worker either receives the selected local File via structured clone or downloads the original installer directly from Internet Archive's own CORS endpoint. Both paths verify size and SHA-256. A local file is verified before being saved in browser CacheStorage, then joins the same extraction flow; it never falls back to an archive download on failure. No application endpoint or proxy handles the installer bytes.
 2. `7z-wasm` mounts the downloaded Blob with WORKERFS and reads the NSIS archive. Only the required MIX data archives are extracted.
 3. Pyodide 0.29.4 loads Pillow, PyCryptodome and audioop-lts. This runtime and its packages come from the Pyodide CDN; they contain conversion tools, not RA2 assets. The project's Python converter source is part of the application bundle.
 4. The worker decodes nested MIX directories and original INI/CSF data, exports maps and TMP metadata, and converts SHP/VXL/sidebar/scenery/terrain artwork to PNG. Browser audio is decoded to PCM WAV, so native FFmpeg is not needed.

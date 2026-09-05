@@ -84,3 +84,11 @@ The README and app now identify the fan recreation and Victor Zhou's initial one
 The GitHub Pages build uses `/ra2-gpt-6-astra-2026-09-04/`. All 46 source tests passed locally, including scoped-cache URL resolution and service-worker checks for root and repository hosting, original-resource isolation, cached audio ranges and offline fallback. Both root and subpath production builds passed the original-asset exclusion check.
 
 Chromium verified first-launch consent at the repository subpath without any archive request. A separate check copied already-installed local test assets into the subpath's private browser cache, then loaded the lobby, started Arctic Circle, deployed the MCV and repeated play after an offline reload. No root `/assets/` or `/maps/` requests and no browser runtime errors occurred. This reuses an existing local fixture cache rather than repeating conversion of the original installer.
+
+## Local installer selection and drag/drop — 2026-09-05
+
+The preparation page now links to the exact Internet Archive item and installer, both checked to return HTTP 200. Users can select or drop the pinned installer; the browser worker verifies its size and SHA-256 before replacing the cached archive, then uses the shared conversion flow. All 48 source tests and the Pages-path production build passed, including the source-only artifact check.
+
+Chromium checked both languages, incomplete-file and multiple-file rejection, and a same-size corrupt file. Selecting the real local installer while offline successfully verified and cached it; the expected failure to download conversion tools exposed a retry action. The corrupt-file attempt preserved the previously verified cached installer byte-for-byte by SHA-256.
+
+A real file drop then completed the entire browser conversion, entered the lobby automatically, started Arctic Circle and deployed an MCV. An offline reload started another skirmish successfully. Request logging recorded no Internet Archive request and no HTTP method other than GET/HEAD during the file-import run: only conversion tools and application resources were downloaded, with no installer upload. Test installers remain in ignored local cache directories and are not part of Git or the Pages artifact.

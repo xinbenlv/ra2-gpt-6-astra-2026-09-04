@@ -31,9 +31,10 @@ The interface defaults to **English**, except when the browser’s preferred lan
 
 Open the printed address, normally [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
-1. On first launch, read and accept the download-and-storage prompt.
-2. The browser downloads the approximately **207 MB** original installer directly from Internet Archive, verifies SHA-256, then extracts and converts the resources in a Web Worker. The Windows executable is never run.
-3. The browser stores the original download and converted resources in its own site storage. When preparation completes, the skirmish lobby opens automatically. Later visits reuse that storage.
+1. On first launch, choose **Agree & download**, or import an installer you have already downloaded. The page links to the [Internet Archive item](https://archive.org/details/red-alert-2-multiplayer) and the exact [Red-Alert-2-Multiplayer.exe file](https://archive.org/download/red-alert-2-multiplayer/Red-Alert-2-Multiplayer.exe).
+2. To import a local copy, click **Choose file & prepare** or drag the file into the page. The supported installer is approximately **207 MB** (206,530,229 bytes). The browser verifies its size and SHA-256 before caching it; an incorrect file leaves an existing verified installer untouched. Local files are never uploaded.
+3. Both paths extract and convert the same resources in a Web Worker. The Windows executable is never run. Conversion tools may still download on first use, even when you provide a local installer.
+4. The browser stores the verified installer and converted resources in its own site storage. When preparation completes, the skirmish lobby opens automatically. Later visits reuse that storage.
 
 Playing requires **no Python, 7-Zip, FFmpeg, backend or server-side conversion**. Initial preparation also downloads the Pyodide conversion runtime and its Python packages from a CDN. The application host serves code and conversion tools; it does not host, receive or proxy the original game resources.
 
@@ -41,7 +42,7 @@ Use a current desktop browser with Service Worker, WebAssembly, CacheStorage and
 
 ### 中文快速开始
 
-运行 `npm ci`、`npm run dev` 后打开网址。首次启动需确认允许下载并存储原版素材；浏览器直接从 Internet Archive 下载约 207 MB 资源包，在本机浏览器内解包、转换并缓存，完成后自动进入遭遇战。无需安装 Python、7-Zip 或 FFmpeg，也不需要素材服务器。下次打开会复用浏览器缓存；清除该网站的数据会移除素材。
+运行 `npm ci`、`npm run dev` 后打开网址。首次启动可同意浏览器直接从 Internet Archive 下载约 207 MB 安装包，也可点击「选择文件并准备」或拖入已下载的 Red-Alert-2-Multiplayer.exe。页面提供对应 Archive 条目和安装包直链。文件会在本机浏览器内校验、保存、解包和转换，不会上传，完成后自动进入遭遇战。无需安装 Python、7-Zip 或 FFmpeg，也不需要素材服务器。下次打开会复用浏览器缓存；清除该网站的数据会移除素材。
 
 ## Build and host
 
