@@ -72,6 +72,10 @@ function validationErrors(value: unknown, publishing: boolean): string[] {
     }
     const x = spawn.x as number, y = spawn.y as number;
     if (!dimensionsValid) continue;
+    if (x === -1 && y === -1) {
+      if (publishing) errors.push(`起点 ${index + 1} 尚未放置，请在地图内重新设置该玩家起点。`);
+      continue;
+    }
     if (x < 0 || y < 0 || x >= width || y >= height) {
       errors.push(`起点 ${index + 1} 的坐标必须位于地图内。`);
       continue;

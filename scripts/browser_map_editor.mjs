@@ -4,6 +4,7 @@
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import { setTimeout } from 'node:timers/promises';
 import { chromium } from '@playwright/test';
 
 const sourceProfile = process.env.RA2_BROWSER_PROFILE || '.cache/browser-acceptance';
@@ -29,18 +30,22 @@ async function open(profile) {
 }
 
 async function download(page) {
-  const event = page.waitForEvent('download');
-  await page.locator('[data-action="download"]').click();
-  const file = await event;
+  // Chromium suppresses bursts of repeated downloads; pace real file exports.
+  await setTimeout(1100);
+  const [file] = await Promise.all([page.waitForEvent('download'), page.locator('[data-action="download"]').click()]);
   assert.ok(file.suggestedFilename().endsWith('.ra2map'));
   return JSON.parse(await fs.readFile(await file.path(), 'utf8'));
 }
 
-async function point(page, x, y, width = 48, height = 48) {
+async function point(page, x, y) {
   const canvas = page.locator('[data-editor-canvas]');
   await canvas.scrollIntoViewIfNeeded();
-  const rect = await canvas.boundingBox();
-  return { x: rect.x + (x + .5) * rect.width / width, y: rect.y + (y + .5) * rect.height / height };
+  return canvas.evaluate((el, { x, y }) => {
+    const rect = el.getBoundingClientRect(), zoom = Number(el.dataset.zoom);
+    const wx = x + Number(el.dataset.originX), wy = y + Number(el.dataset.originY);
+    return { x: rect.x + Number(el.dataset.cameraX) + (wx - wy) * 30 * zoom,
+      y: rect.y + Number(el.dataset.cameraY) + (wx + wy) * 15 * zoom };
+  }, { x, y });
 }
 async function clickCell(page, x, y) {
   const position = await point(page, x, y);

@@ -2,6 +2,8 @@ import './map-editor.css';
 import { bindLanguageControl, languageControl, localizeElement, registerTranslations, t } from './i18n';
 import { createCustomMap, parseCustomMap, parseCustomMapDraft, serializeCustomMap, validateCustomMap, CUSTOM_MAP_EXTENSION, MAX_CUSTOM_MAP_BYTES, TERRAIN_COLORS, type CustomMapDocument } from './custom-maps';
 import type { Terrain } from './maps';
+import { TerrainPainter, projectTile, unprojectPoint } from './terrain-painter';
+import { expandMapForBrush, paintCustomMap, resizeCustomMap, type MapBounds, type ResizeResult } from './map-editing';
 
 registerTranslations({
   '地图编辑器': 'Map Editor', '战场制图室': 'BATTLEFIELD CARTOGRAPHY',
@@ -32,6 +34,17 @@ registerTranslations({
   '草稿仅保存在当前浏览器。下载文件才能跨设备保存和分享。': 'Drafts stay in this browser. Download a file to save or share across devices.',
   '显示网格': 'Show Grid', '绘制': 'Paint', '移动出生点': 'Move Start', '读取地图中…': 'Reading map…',
   '未命名地图': 'Untitled Map',
+  '自动扩展地图': 'Auto-expand Map', '画笔越过边缘时自动扩展，最大 96×96 格。': 'Painting past an edge expands the map, up to 96×96 cells.',
+  '调整地图边界': 'Adjust Map Bounds', '拖动边或角调整范围；松开应用，可撤销。': 'Drag an edge or corner to resize. Release to apply; Undo restores it.',
+  '完成边界调整': 'Finish Bounds', '显示出生点': 'Show Starts', '待放置': 'Unplaced', '需要重新放置的出生点：': 'Starting positions to replace: ',
+  '范围': 'Bounds', '保留全部出生点': 'All starting positions retained', '地图边界已调整。': 'Map bounds updated.',
+  '空格＋拖动或中键平移 · 滚轮缩放 · 方向键移动光标 · 空格绘制': 'Space + drag or middle drag to pan · Wheel to zoom · Arrows move cursor · Space paints',
+  '地图最大为 96×96 格，请缩小画笔或先裁剪空白边缘。': 'Maps can be up to 96×96 cells. Use a smaller brush or trim an unused edge first.',
+  '地图坐标必须是有效的整数格。': 'Use valid whole-number map coordinates.',
+  '画笔大小必须为 1、3、5、7 或 9 格。': 'Brush size must be 1, 3, 5, 7, or 9 cells.',
+  '地图边界坐标过大，请使用地图附近的范围。': 'Choose bounds near the existing map.',
+  '地图尺寸和地形数量无效，请重新打开地图草稿。': 'Map dimensions and terrain counts are invalid. Reopen the draft.',
+  '请选择有效的地图地形。': 'Choose a supported terrain.',
   '地图内容必须是一个 JSON 对象。': 'Map contents must be a JSON object.',
   '地图包含不支持的字段，请使用本编辑器导出的 .ra2map 文件。': 'The map contains unsupported fields. Use a .ra2map file exported by this editor.',
   '地图格式不正确，应为 ra2-web-map；请上传 .ra2map 文件。': 'The map format must be ra2-web-map. Upload a .ra2map file.',
@@ -48,6 +61,7 @@ registerTranslations({
   '地图文件不能超过 2 MB。': 'Map files cannot exceed 2 MB.',
   '地图文件不是有效的 JSON，请重新下载 .ra2map 文件后上传。': 'The map is not valid JSON. Download the .ra2map file again and upload it.',
   ...Object.fromEntries(Array.from({ length: 8 }, (_, i) => i + 1).flatMap(i => [
+    [`起点 ${i} 尚未放置，请在地图内重新设置该玩家起点。`, `Start ${i} is unplaced. Place this player's start inside the map.`],
     [`起点 ${i} 必须只包含整数坐标 x 和 y。`, `Start ${i} must contain only whole-number x and y coordinates.`],
     [`起点 ${i} 的坐标必须位于地图内。`, `Start ${i} must be inside the map.`],
     [`起点 ${i} 必须在地图内，并距边缘至少 2 格，为基地预留空间。`, `Start ${i} needs at least 2 cells of space from each map edge for its base.`],
@@ -67,6 +81,9 @@ const PAINT_TERRAINS: { terrain: Terrain; label: string; symbol: string }[] = [
 const SPAWN_COLORS = ['#f0d372', '#ee775d', '#78b9ff', '#8dce85', '#e5a76b', '#c3a1f1', '#76d4cd', '#eda5c4'];
 const clone = (value: CustomMapDocument): CustomMapDocument => ({ ...value, cells: [...value.cells], spawns: value.spawns.map(point => ({ ...point })) });
 type Point = { x: number; y: number };
+type EditorSnapshot = { doc: CustomMapDocument; origin: Point };
+type HandleName = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
+type CropDrag = { handle: HandleName; before: EditorSnapshot; bounds: MapBounds; start: Point };
 
 export function mountMapEditor(container: HTMLElement, options: { onBack: () => void; onUse: (doc: CustomMapDocument) => void }): () => void {
   const screen = document.createElement('section');
@@ -75,19 +92,19 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
     <div class="editor-heading"><button type="button" class="editor-back" data-action="back">← 返回遭遇战</button><p class="editor-eyebrow">战场制图室</p><h1>地图编辑器</h1><p class="editor-intro">绘制地形、部署出生点，把你的战场分享给其他指挥官。</p></div>
     <div class="editor-header-actions"><div class="editor-language">${languageControl()}</div><button type="button" data-action="import">导入地图文件</button><button type="button" data-action="download">↓ 下载地图</button><button type="button" class="primary" data-action="use">用于遭遇战 ▸</button></div>
   </header>
-  <div class="editor-message" data-message role="status" hidden></div>
+  <div class="editor-message" data-message role="status" hidden><span data-message-text></span><button type="button" data-action="dismiss-message" aria-label="关闭">×</button></div>
   <div class="editor-confirm" data-confirm hidden><div><strong>替换当前地图？</strong><p>替换后可以点击撤销，回到当前地图。</p><p data-replacement></p></div><button type="button" class="primary" data-action="confirm">确认替换</button><button type="button" data-action="cancel">取消</button></div>
   <div class="editor-workspace">
     <aside class="editor-tools editor-panel" aria-label="绘制工具"><h2><span>01</span> 绘制工具</h2>
       <div class="editor-palette" role="group" aria-label="地形">${PAINT_TERRAINS.map(item => `<button type="button" data-terrain="${item.terrain}" aria-pressed="${item.terrain === 'land'}"><i class="editor-swatch" style="--swatch:${TERRAIN_COLORS[item.terrain]}">${item.symbol}</i><span>${item.label}</span></button>`).join('')}</div>
-      <fieldset class="editor-brush"><legend>笔刷大小</legend><div>${[1, 3, 5].map(size => `<button type="button" data-brush="${size}" aria-pressed="${size === 1}" aria-label="${size} × ${size}">${size} × ${size}</button>`).join('')}</div></fieldset>
-      <div class="editor-spawn-tools"><h2><span>02</span> 起始位置</h2><div data-spawns class="editor-spawns" role="group" aria-label="起始位置"></div><p>选择出生点后，点击地图移动。</p></div>
+      <fieldset class="editor-brush"><legend>笔刷大小</legend><div>${[1, 3, 5, 7, 9].map(size => `<button type="button" data-brush="${size}" aria-pressed="${size === 1}" aria-label="${size} × ${size}">${size} × ${size}</button>`).join('')}</div></fieldset>
+      <div class="editor-bound-tools"><label><input type="checkbox" data-auto-expand checked>自动扩展地图</label><p>画笔越过边缘时自动扩展，最大 96×96 格。</p><button type="button" data-action="crop" aria-pressed="false">调整地图边界</button></div><div class="editor-spawn-tools"><h2><span>02</span> 起始位置</h2><div data-spawns class="editor-spawns" role="group" aria-label="起始位置"></div><p>选择出生点后，点击地图移动。</p></div>
       <p class="editor-terrain-note">出生点周围需要平坦空地；水域和悬崖会阻挡地面单位。</p>
     </aside>
-    <main class="editor-drawing editor-panel"><div class="editor-drawing-toolbar"><div class="editor-history"><button type="button" data-action="undo" title="撤销 (Ctrl/⌘ Z)">↶ <span>撤销</span></button><button type="button" data-action="redo" title="重做 (Ctrl/⌘ Shift Z)">↷ <span>重做</span></button></div><div class="editor-view-tools"><label><input type="checkbox" data-grid checked>显示网格</label><button type="button" data-action="zoom-out" aria-label="缩小">−</button><button type="button" data-action="fit">适应窗口</button><button type="button" data-action="zoom-in" aria-label="放大">+</button></div></div>
-      <div class="editor-canvas-scroll" data-canvas-scroll><div class="editor-canvas-mat"><canvas data-editor-canvas tabindex="0" aria-label="地图绘图区" aria-describedby="editor-canvas-help">地图绘图区</canvas></div></div>
+    <main class="editor-drawing editor-panel"><div class="editor-drawing-toolbar"><div class="editor-history"><button type="button" data-action="undo" title="撤销 (Ctrl/⌘ Z)">↶ <span>撤销</span></button><button type="button" data-action="redo" title="重做 (Ctrl/⌘ Shift Z)">↷ <span>重做</span></button></div><div class="editor-view-tools"><label><input type="checkbox" data-grid>显示网格</label><label><input type="checkbox" data-markers checked>显示出生点</label><button type="button" data-action="zoom-out" aria-label="缩小">−</button><button type="button" data-action="fit">适应窗口</button><button type="button" data-action="zoom-in" aria-label="放大">+</button></div></div>
+      <div class="editor-canvas-scroll" data-canvas-scroll><canvas data-editor-canvas tabindex="0" aria-label="地图绘图区" aria-describedby="editor-canvas-help">地图绘图区</canvas><div data-crop-status class="editor-crop-status" role="status" hidden></div></div>
       <div class="editor-coordinate-bar"><span data-coordinates>在地图上移动指针开始绘制</span><span data-tool-status></span></div>
-      <p class="editor-canvas-help" id="editor-canvas-help">拖动绘制 · 方向键移动光标 · 空格绘制 · Ctrl/⌘ Z 撤销</p>
+      <p class="editor-canvas-help" id="editor-canvas-help">空格＋拖动或中键平移 · 滚轮缩放 · 方向键移动光标 · 空格绘制</p>
     </main>
     <aside class="editor-inspector editor-panel"><h2><span>03</span> 地图信息</h2>
       <label class="editor-field"><span>地图名称</span><input type="text" data-name maxlength="60" autocomplete="off" spellcheck="false"></label>
@@ -128,21 +145,34 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
       draftMessage = '本地草稿无法读取，已保留原始数据；请导入备份地图。';
     }
   }
-  let undoStack: CustomMapDocument[] = [];
-  let redoStack: CustomMapDocument[] = [];
+  let undoStack: EditorSnapshot[] = [];
+  let redoStack: EditorSnapshot[] = [];
   let tool: Terrain | 'spawn' = 'land';
   let brushSize = 1;
   let selectedSpawn = 0;
   let hover: Point | null = null;
   let cursor: Point = { x: 0, y: 0 };
   let activePointer: number | null = null;
-  let strokeBefore: CustomMapDocument | null = null;
+  let strokeBefore: EditorSnapshot | null = null;
   let previousPoint: Point | null = null;
-  let nameBefore: CustomMapDocument | null = null;
+  let nameBefore: EditorSnapshot | null = null;
   let pending: { doc: CustomMapDocument; message: string } | null = null;
   let zoom = 1;
-  let cellSize = 8;
-  let showGrid = true;
+  let origin: Point = { x: 0, y: 0 };
+  let camera: Point = { x: 0, y: 0 };
+  let viewport: Point = { x: 0, y: 0 };
+  let pixelRatio = 1;
+  let fitted = false;
+  let showGrid = false;
+  let showMarkers = true;
+  let autoExpand = true;
+  let cropMode = false;
+  let cropDrag: CropDrag | null = null;
+  let panDrag: { start: Point; camera: Point } | null = null;
+  let spaceHeld = false;
+  let spaceUsedForPan = false;
+  let strokeLimitReported = false;
+  const painter = new TerrainPainter();
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
   let disposed = false;
   let readingFile = false;
@@ -152,7 +182,7 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
     const el = find<HTMLDivElement>('[data-message]');
     el.hidden = false;
     el.classList.toggle('is-error', error);
-    el.textContent = message;
+    find('[data-message-text]').textContent = message;
     localizeElement(el);
   }
   function updateDraftStatus(): void {
@@ -175,13 +205,14 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
     clearTimeout(saveTimer);
     saveTimer = setTimeout(saveDraft, 250);
   }
-  function remember(before: CustomMapDocument): void {
+  function remember(before: EditorSnapshot): void {
     undoStack.push(before);
     if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
     redoStack = [];
   }
+  function snapshot(): EditorSnapshot { return { doc: clone(doc), origin: { ...origin } }; }
   function finishName(): void {
-    if (nameBefore && nameBefore.name !== doc.name) remember(nameBefore);
+    if (nameBefore && nameBefore.doc.name !== doc.name) remember(nameBefore);
     nameBefore = null;
     updateHistory();
   }
@@ -200,10 +231,13 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
     localizeElement(find('[data-validation]'));
   }
   function updateTools(): void {
-    screen.querySelectorAll<HTMLButtonElement>('[data-terrain]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.terrain === tool)));
+    screen.querySelectorAll<HTMLButtonElement>('[data-terrain]').forEach(button => button.setAttribute('aria-pressed', String(!cropMode && button.dataset.terrain === tool)));
     screen.querySelectorAll<HTMLButtonElement>('[data-brush]').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.brush) === brushSize)));
-    screen.querySelectorAll<HTMLButtonElement>('[data-spawn]').forEach(button => button.setAttribute('aria-pressed', String(tool === 'spawn' && Number(button.dataset.spawn) === selectedSpawn)));
-    find('[data-tool-status]').textContent = tool === 'spawn' ? `移动出生点 ${selectedSpawn + 1}` : `${PAINT_TERRAINS.find(item => item.terrain === tool)!.label} · ${brushSize} × ${brushSize}`;
+    screen.querySelectorAll<HTMLButtonElement>('[data-spawn]').forEach(button => button.setAttribute('aria-pressed', String(!cropMode && tool === 'spawn' && Number(button.dataset.spawn) === selectedSpawn)));
+    find('[data-action="crop"]').setAttribute('aria-pressed', String(cropMode));
+    find('[data-action="crop"]').textContent = cropMode ? '完成边界调整' : '调整地图边界';
+    localizeElement(find('[data-action="crop"]'));
+    find('[data-tool-status]').textContent = cropMode ? '调整地图边界' : tool === 'spawn' ? `移动出生点 ${selectedSpawn + 1}` : `${PAINT_TERRAINS.find(item => item.terrain === tool)!.label} · ${brushSize} × ${brushSize}`;
     localizeElement(find('[data-tool-status]'));
     draw();
   }
@@ -213,109 +247,212 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
     find('[data-size]').textContent = `${doc.width} × ${doc.height}`;
     find('[data-theater]').textContent = { temperate: '温带', snow: '雪地', urban: '城市' }[doc.theater];
     find('[data-players]').textContent = String(doc.spawns.length);
-    find('[data-spawns]').replaceChildren(...doc.spawns.map((_, index) => {
+    find('[data-spawns]').replaceChildren(...doc.spawns.map((point, index) => {
       const button = document.createElement('button');
       button.type = 'button'; button.dataset.spawn = String(index);
       button.style.setProperty('--spawn-color', SPAWN_COLORS[index]);
-      button.textContent = String(index + 1); button.setAttribute('aria-label', `出生点 ${index + 1}`);
+      button.textContent = String(index + 1); button.setAttribute('aria-label', `出生点 ${index + 1}${point.x < 0 ? ' · 待放置' : ''}`);
+      if (point.x < 0) { button.classList.add('is-unplaced'); const label = document.createElement('small'); label.textContent = '待放置'; button.append(label); }
       return button;
     }));
     cursor = { x: Math.min(cursor.x, doc.width - 1), y: Math.min(cursor.y, doc.height - 1) };
     hover = null;
-    updateHistory(); updateValidation(); updateTools(); resizeCanvas(); localizeElement(screen);
+    updateHistory(); updateValidation(); updateTools(); localizeElement(screen);
   }
   function coordinates(point: Point | null): void {
     find('[data-coordinates]').textContent = point ? `${t('坐标')} ${String(point.x + 1).padStart(2, '0')}, ${String(point.y + 1).padStart(2, '0')}` : t('在地图上移动指针开始绘制');
   }
+  function localToScreen(point: Point): Point {
+    const p = projectTile(point.x + origin.x, point.y + origin.y);
+    return { x: camera.x + p.x * zoom, y: camera.y + p.y * zoom };
+  }
+  function screenToLocal(point: Point): Point {
+    const p = unprojectPoint((point.x - camera.x) / zoom, (point.y - camera.y) / zoom);
+    return { x: p.x - origin.x, y: p.y - origin.y };
+  }
+  function clientPoint(event: { clientX: number; clientY: number }): Point {
+    const rect = canvas.getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  }
+  function eventPoint(event: { clientX: number; clientY: number }): Point {
+    const point = screenToLocal(clientPoint(event));
+    return { x: Math.round(point.x), y: Math.round(point.y) };
+  }
+  function currentBounds(): MapBounds { return { x: 0, y: 0, width: doc.width, height: doc.height }; }
+  function boundsPoints(bounds: MapBounds): Point[] {
+    const left = bounds.x - .5, top = bounds.y - .5, right = left + bounds.width, bottom = top + bounds.height;
+    return [{ x: left, y: top }, { x: right, y: top }, { x: right, y: bottom }, { x: left, y: bottom }].map(localToScreen);
+  }
+  function polygon(points: Point[]): void {
+    context.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) context.lineTo(points[i].x, points[i].y);
+    context.closePath();
+  }
+  function cropHandles(bounds = cropDrag?.bounds ?? currentBounds()): { name: HandleName; x: number; y: number }[] {
+    const [nw, ne, se, sw] = boundsPoints(bounds), mid = (a: Point, b: Point): Point => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+    return [{ name: 'nw', ...nw }, { name: 'n', ...mid(nw, ne) }, { name: 'ne', ...ne }, { name: 'e', ...mid(ne, se) },
+      { name: 'se', ...se }, { name: 's', ...mid(sw, se) }, { name: 'sw', ...sw }, { name: 'w', ...mid(nw, sw) }];
+  }
+  function fitMap(): void {
+    if (!viewport.x || !viewport.y) return;
+    const pad = Math.min(70, viewport.x * .12, viewport.y * .13);
+    zoom = Math.max(.055, Math.min(1.4, (viewport.x - pad * 2) / ((doc.width + doc.height) * 30), (viewport.y - pad * 2) / ((doc.width + doc.height) * 15)));
+    const center = projectTile(origin.x + (doc.width - 1) / 2, origin.y + (doc.height - 1) / 2);
+    camera = { x: viewport.x / 2 - center.x * zoom, y: viewport.y / 2 - center.y * zoom };
+    fitted = true; draw();
+  }
+  function zoomAt(factor: number, anchor: Point = { x: viewport.x / 2, y: viewport.y / 2 }): void {
+    const next = Math.max(.055, Math.min(3, zoom * factor));
+    camera = { x: anchor.x - (anchor.x - camera.x) * next / zoom, y: anchor.y - (anchor.y - camera.y) * next / zoom };
+    zoom = next; draw();
+  }
   function resizeCanvas(): void {
     if (disposed) return;
-    const availableWidth = Math.max(120, scroll.clientWidth - 36);
-    const availableHeight = Math.max(120, scroll.clientHeight - 36);
-    cellSize = Math.max(3, Math.min(availableWidth / doc.width, availableHeight / doc.height)) * zoom;
-    const width = Math.round(doc.width * cellSize), height = Math.round(doc.height * cellSize);
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
-    canvas.style.width = `${width}px`; canvas.style.height = `${height}px`;
-    context.setTransform(canvas.width / (doc.width * cellSize), 0, 0, canvas.height / (doc.height * cellSize), 0, 0);
-    draw();
+    const next = { x: Math.max(1, scroll.clientWidth), y: Math.max(1, scroll.clientHeight) };
+    if (fitted) camera = { x: camera.x + (next.x - viewport.x) / 2, y: camera.y + (next.y - viewport.y) / 2 };
+    viewport = next; pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(viewport.x * pixelRatio); canvas.height = Math.round(viewport.y * pixelRatio);
+    canvas.style.width = `${viewport.x}px`; canvas.style.height = `${viewport.y}px`;
+    if (!fitted) fitMap(); else draw();
   }
   function draw(): void {
-    if (disposed) return;
-    const width = doc.width * cellSize, height = doc.height * cellSize;
-    context.clearRect(0, 0, width, height);
-    for (let y = 0; y < doc.height; y++) for (let x = 0; x < doc.width; x++) {
-      const terrain = doc.cells[y * doc.width + x];
-      context.fillStyle = TERRAIN_COLORS[terrain];
-      context.fillRect(x * cellSize, y * cellSize, cellSize + .5, cellSize + .5);
-      if ((terrain === 'ore' || terrain === 'gem') && cellSize >= 5) {
-        context.fillStyle = terrain === 'ore' ? '#f7da8b' : '#e0b0eb';
-        context.fillRect((x + .34) * cellSize, (y + .34) * cellSize, cellSize * .32, cellSize * .32);
-      }
-      if (terrain === 'water' && cellSize >= 7 && (x + y) % 3 === 0) {
-        context.fillStyle = '#7eb6bd44'; context.fillRect((x + .18) * cellSize, (y + .5) * cellSize, cellSize * .55, 1);
+    if (disposed || !viewport.x || !viewport.y) return;
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    context.clearRect(0, 0, viewport.x, viewport.y);
+    context.fillStyle = '#0c1512'; context.fillRect(0, 0, viewport.x, viewport.y);
+    context.strokeStyle = '#78958015'; context.lineWidth = 1;
+    for (let x = camera.x % 32; x < viewport.x; x += 32) { context.beginPath(); context.moveTo(x, 0); context.lineTo(x, viewport.y); context.stroke(); }
+    for (let y = camera.y % 32; y < viewport.y; y += 32) { context.beginPath(); context.moveTo(0, y); context.lineTo(viewport.x, y); context.stroke(); }
+    context.save(); context.translate(camera.x, camera.y); context.scale(zoom, zoom);
+    const visible: { x: number; y: number; px: number; py: number; terrain: Terrain }[] = [];
+    // Match the battlefield's two passes: all ground first, then raised resources.
+    for (let depth = 0; depth <= doc.width + doc.height - 2; depth++) {
+      for (let y = Math.max(0, depth - doc.width + 1); y <= Math.min(doc.height - 1, depth); y++) {
+        const x = depth - y, p = projectTile(x + origin.x, y + origin.y);
+        if (camera.x + (p.x + 40) * zoom < 0 || camera.x + (p.x - 40) * zoom > viewport.x || camera.y + (p.y + 25) * zoom < 0 || camera.y + (p.y - 40) * zoom > viewport.y) continue;
+        const terrain = doc.cells[y * doc.width + x];
+        painter.drawGround(context, terrain, doc.theater, x, y, p.x, p.y);
+        visible.push({ x, y, px: p.x, py: p.y, terrain });
       }
     }
-    if (showGrid && cellSize >= 5) {
-      context.lineWidth = .6;
-      for (let x = 0; x <= doc.width; x++) { context.strokeStyle = x % 8 === 0 ? '#050e0f66' : '#050e0f24'; context.beginPath(); context.moveTo(x * cellSize, 0); context.lineTo(x * cellSize, height); context.stroke(); }
-      for (let y = 0; y <= doc.height; y++) { context.strokeStyle = y % 8 === 0 ? '#050e0f66' : '#050e0f24'; context.beginPath(); context.moveTo(0, y * cellSize); context.lineTo(width, y * cellSize); context.stroke(); }
+    for (const cell of visible) if (cell.terrain === 'ore' || cell.terrain === 'gem') painter.drawResources(context, cell.px, cell.py, cell.x, cell.y, cell.terrain === 'gem');
+    context.restore();
+    if (showGrid && zoom > .09) {
+      context.strokeStyle = '#17241b60'; context.lineWidth = .65;
+      for (let x = 0; x <= doc.width; x++) { const a = localToScreen({ x: x - .5, y: -.5 }), b = localToScreen({ x: x - .5, y: doc.height - .5 }); context.beginPath(); context.moveTo(a.x, a.y); context.lineTo(b.x, b.y); context.stroke(); }
+      for (let y = 0; y <= doc.height; y++) { const a = localToScreen({ x: -.5, y: y - .5 }), b = localToScreen({ x: doc.width - .5, y: y - .5 }); context.beginPath(); context.moveTo(a.x, a.y); context.lineTo(b.x, b.y); context.stroke(); }
     }
-    doc.spawns.forEach((point, index) => {
-      const x = (point.x + .5) * cellSize, y = (point.y + .5) * cellSize;
-      const selected = tool === 'spawn' && selectedSpawn === index;
-      context.save();
-      context.strokeStyle = SPAWN_COLORS[index]; context.lineWidth = selected ? 2 : 1; context.setLineDash([4, 3]);
-      context.strokeRect((point.x - 2) * cellSize, (point.y - 2) * cellSize, cellSize * 5, cellSize * 5);
-      context.setLineDash([]); context.fillStyle = '#101612e8'; context.beginPath();
-      context.arc(x, y, Math.max(9, Math.min(cellSize * 1.1, 16)), 0, Math.PI * 2); context.fill(); context.stroke();
-      context.fillStyle = SPAWN_COLORS[index]; context.font = `bold ${Math.max(11, Math.min(cellSize * 1.3, 17))}px Consolas, monospace`;
-      context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillText(String(index + 1), x, y + .5); context.restore();
+    context.strokeStyle = '#c0c59285'; context.lineWidth = 1; context.beginPath(); polygon(boundsPoints(currentBounds())); context.stroke();
+    if (showMarkers || tool === 'spawn') doc.spawns.forEach((point, index) => {
+      if (point.x < 0 || point.y < 0) return;
+      const p = localToScreen(point), selected = !cropMode && tool === 'spawn' && selectedSpawn === index;
+      context.save(); context.strokeStyle = SPAWN_COLORS[index]; context.lineWidth = selected ? 2 : 1; context.setLineDash([4, 3]);
+      context.beginPath(); polygon(boundsPoints({ x: point.x - 2, y: point.y - 2, width: 5, height: 5 })); context.stroke(); context.setLineDash([]);
+      context.fillStyle = '#101612e8'; context.beginPath(); context.arc(p.x, p.y, 11, 0, Math.PI * 2); context.fill(); context.stroke();
+      context.fillStyle = SPAWN_COLORS[index]; context.font = 'bold 12px Consolas, monospace'; context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillText(String(index + 1), p.x, p.y + .5); context.restore();
     });
-    if (hover) {
+    if (cropMode) {
+      const bounds = cropDrag?.bounds ?? currentBounds();
+      if (cropDrag) {
+        context.save(); context.beginPath(); polygon(boundsPoints(currentBounds())); context.clip();
+        context.fillStyle = '#8f281d99'; context.beginPath(); context.rect(0, 0, viewport.x, viewport.y); polygon(boundsPoints(bounds)); context.fill('evenodd'); context.restore();
+      }
+      context.strokeStyle = '#f2d08d'; context.lineWidth = 2; context.setLineDash([6, 4]); context.beginPath(); polygon(boundsPoints(bounds)); context.stroke(); context.setLineDash([]);
+      for (const handle of cropHandles(bounds)) { context.fillStyle = '#efdb9b'; context.strokeStyle = '#161f13'; context.lineWidth = 2; context.fillRect(handle.x - 5, handle.y - 5, 10, 10); context.strokeRect(handle.x - 5, handle.y - 5, 10, 10); }
+    } else if (hover && !panDrag && !spaceHeld) {
       const size = tool === 'spawn' ? 1 : brushSize, radius = Math.floor(size / 2);
-      context.save(); context.strokeStyle = '#fff6c9'; context.fillStyle = '#fff3ba22'; context.lineWidth = 1.5;
-      context.fillRect((hover.x - radius) * cellSize, (hover.y - radius) * cellSize, size * cellSize, size * cellSize);
-      context.strokeRect((hover.x - radius) * cellSize + .75, (hover.y - radius) * cellSize + .75, size * cellSize - 1.5, size * cellSize - 1.5); context.restore();
+      context.fillStyle = '#fff3b92b'; context.strokeStyle = '#ffedb6'; context.lineWidth = 1.5;
+      context.beginPath(); polygon(boundsPoints({ x: hover.x - radius, y: hover.y - radius, width: size, height: size })); context.fill(); context.stroke();
     }
+    Object.assign(canvas.dataset, { zoom: String(zoom), cameraX: String(camera.x), cameraY: String(camera.y), originX: String(origin.x), originY: String(origin.y), mapWidth: String(doc.width), mapHeight: String(doc.height), cropMode: String(cropMode), cropHandles: JSON.stringify(cropMode ? cropHandles() : []) });
+    canvas.style.cursor = panDrag ? 'grabbing' : spaceHeld ? 'grab' : cropMode ? 'crosshair' : 'crosshair';
   }
-  function eventPoint(event: PointerEvent): Point | null {
-    const bounds = canvas.getBoundingClientRect();
-    const x = Math.floor((event.clientX - bounds.left) / bounds.width * doc.width), y = Math.floor((event.clientY - bounds.top) / bounds.height * doc.height);
-    return x < 0 || y < 0 || x >= doc.width || y >= doc.height ? null : { x, y };
+  function applyResize(result: ResizeResult): void {
+    doc = result.document;
+    origin = { x: origin.x - result.offset.x, y: origin.y - result.offset.y };
+    cursor = { x: cursor.x + result.offset.x, y: cursor.y + result.offset.y };
+    if (hover) hover = { x: hover.x + result.offset.x, y: hover.y + result.offset.y };
+    find('[data-size]').textContent = `${doc.width} × ${doc.height}`;
   }
-  function paint(point: Point): void {
-    if (tool === 'spawn') { doc.spawns[selectedSpawn] = { ...point }; return; }
-    const radius = Math.floor(brushSize / 2);
-    for (let y = Math.max(0, point.y - radius); y <= Math.min(doc.height - 1, point.y + radius); y++)
-      for (let x = Math.max(0, point.x - radius); x <= Math.min(doc.width - 1, point.x + radius); x++) doc.cells[y * doc.width + x] = tool;
+  function paintWorld(point: Point): void {
+    const local = { x: point.x - origin.x, y: point.y - origin.y };
+    if (tool === 'spawn') {
+      if (local.x >= 0 && local.y >= 0 && local.x < doc.width && local.y < doc.height) doc.spawns[selectedSpawn] = local;
+    } else paintCustomMap(doc, local, tool, brushSize);
   }
   function strokeTo(point: Point): void {
-    if (previousPoint && tool !== 'spawn') {
-      const steps = Math.max(Math.abs(point.x - previousPoint.x), Math.abs(point.y - previousPoint.y));
-      for (let i = 1; i <= steps; i++) paint({ x: Math.round(previousPoint.x + (point.x - previousPoint.x) * i / steps), y: Math.round(previousPoint.y + (point.y - previousPoint.y) * i / steps) });
-    } else paint(point);
-    previousPoint = point; cursor = point; hover = point; coordinates(point); draw();
+    const world = { x: point.x + origin.x, y: point.y + origin.y };
+    const previous = previousPoint ?? world;
+    try {
+      if (autoExpand && tool !== 'spawn') {
+        // Compute the whole segment's expansion before committing either resize.
+        // A rejected 96-cell limit leaves this pointer sample entirely unchanged.
+        const first = expandMapForBrush(doc, { x: previous.x - origin.x, y: previous.y - origin.y }, brushSize);
+        const intermediateOrigin = { x: origin.x - first.offset.x, y: origin.y - first.offset.y };
+        const second = expandMapForBrush(first.document, { x: world.x - intermediateOrigin.x, y: world.y - intermediateOrigin.y }, brushSize);
+        applyResize({ document: second.document, offset: { x: first.offset.x + second.offset.x, y: first.offset.y + second.offset.y }, removedSpawns: [] });
+      }
+      const steps = tool === 'spawn' ? 0 : Math.max(Math.abs(world.x - previous.x), Math.abs(world.y - previous.y));
+      if (steps) for (let i = 1; i <= steps; i++) paintWorld({ x: Math.round(previous.x + (world.x - previous.x) * i / steps), y: Math.round(previous.y + (world.y - previous.y) * i / steps) });
+      else paintWorld(world);
+      previousPoint = world;
+    } catch (error) {
+      if (!strokeLimitReported) { announce(error instanceof Error ? error.message : '地图最大为 96×96 格，请缩小画笔或先裁剪空白边缘。', true); strokeLimitReported = true; }
+      previousPoint = null;
+    }
+    cursor = { x: world.x - origin.x, y: world.y - origin.y }; hover = cursor; coordinates(cursor); draw();
   }
   function finishStroke(): void {
     if (!strokeBefore) return;
-    const before = strokeBefore;
-    strokeBefore = null; previousPoint = null;
-    if (activePointer !== null && canvas.hasPointerCapture(activePointer)) canvas.releasePointerCapture(activePointer);
-    activePointer = null;
-    if (JSON.stringify(before) !== JSON.stringify(doc)) { remember(before); updateValidation(); scheduleSave(); }
+    const before = strokeBefore; strokeBefore = null; previousPoint = null;
+    if (JSON.stringify(before) !== JSON.stringify(snapshot())) { remember(before); syncDocument(); scheduleSave(); }
     updateHistory();
   }
+  function updateCropPreview(point: Point): void {
+    if (!cropDrag) return;
+    const drag = cropDrag, width = drag.before.doc.width, height = drag.before.doc.height;
+    const dx = Math.round(point.x - drag.start.x), dy = Math.round(point.y - drag.start.y);
+    let left = 0, top = 0, right = width, bottom = height;
+    if (drag.handle.includes('w')) left = Math.max(right - 96, Math.min(right - 24, dx));
+    if (drag.handle.includes('e')) right = Math.max(24, Math.min(96, width + dx));
+    if (drag.handle.includes('n')) top = Math.max(bottom - 96, Math.min(bottom - 24, dy));
+    if (drag.handle.includes('s')) bottom = Math.max(24, Math.min(96, height + dy));
+    drag.bounds = { x: left, y: top, width: right - left, height: bottom - top };
+    cropStatus(); draw();
+  }
+  function cropStatus(): void {
+    const status = find('[data-crop-status]'); status.hidden = !cropMode;
+    if (!cropMode) return;
+    const bounds = cropDrag?.bounds ?? currentBounds();
+    const removed = doc.spawns.flatMap((p, i) => p.x < 0 || p.x < bounds.x || p.y < bounds.y || p.x >= bounds.x + bounds.width || p.y >= bounds.y + bounds.height ? [i + 1] : []);
+    status.textContent = `${t('范围')} ${bounds.width} × ${bounds.height} · ${removed.length ? t('需要重新放置的出生点：') + removed.join(', ') : t('保留全部出生点')}\n${t('拖动边或角调整范围；松开应用，可撤销。')}`;
+  }
+  function finishPointer(cancelCrop = false): void {
+    const pointer = activePointer; activePointer = null;
+    if (cropDrag) {
+      const drag = cropDrag; cropDrag = null;
+      if (!cancelCrop && (drag.bounds.x || drag.bounds.y || drag.bounds.width !== doc.width || drag.bounds.height !== doc.height)) {
+        try {
+          const result = resizeCustomMap(doc, drag.bounds); remember(drag.before); applyResize(result); syncDocument(); scheduleSave();
+          announce(result.removedSpawns.length ? `${t('需要重新放置的出生点：')}${result.removedSpawns.map(i => i + 1).join(', ')}` : '地图边界已调整。');
+        } catch (error) { announce(error instanceof Error ? error.message : '地图边界坐标过大，请使用地图附近的范围。', true); }
+      }
+    }
+    panDrag = null; finishStroke();
+    if (pointer !== null && canvas.hasPointerCapture(pointer)) canvas.releasePointerCapture(pointer);
+    cropStatus(); draw();
+  }
   function history(direction: 'undo' | 'redo'): void {
-    finishStroke(); finishName();
+    finishPointer(); finishName();
     const from = direction === 'undo' ? undoStack : redoStack;
     const to = direction === 'undo' ? redoStack : undoStack;
     const snapshot = from.pop();
     if (!snapshot) return;
-    to.push(clone(doc)); doc = snapshot; dismissReplacement(); syncDocument(); scheduleSave();
+    to.push({ doc: clone(doc), origin: { ...origin } }); doc = snapshot.doc; origin = { ...snapshot.origin }; dismissReplacement(); syncDocument(); scheduleSave();
   }
   function dismissReplacement(): void { pending = null; find('[data-confirm]').hidden = true; }
   function requestReplacement(next: CustomMapDocument, message: string): void {
-    finishName(); finishStroke();
+    finishName(); finishPointer();
     pending = { doc: next, message };
     find('[data-confirm]').hidden = false;
     find('[data-replacement]').textContent = next.name;
@@ -323,12 +460,12 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
   }
   function replaceDocument(): void {
     if (!pending) return;
-    remember(clone(doc)); doc = clone(pending.doc);
+    remember(snapshot()); doc = clone(pending.doc); origin = { x: 0, y: 0 };
     // Confirming a new/imported map also replaces an unreadable stored draft.
     // If storage itself remains unavailable, saveDraft reports that failure again.
     storageBlocked = false;
     const message = pending.message;
-    dismissReplacement(); zoom = 1; syncDocument(); scheduleSave(); announce(message);
+    dismissReplacement(); syncDocument(); fitMap(); scheduleSave(); announce(message);
   }
   async function importFile(file: File): Promise<void> {
     if (readingFile) return;
@@ -343,7 +480,7 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
     finally { readingFile = false; if (!disposed) find<HTMLButtonElement>('[data-action="import"]').disabled = false; }
   }
   function validatedDocument(): CustomMapDocument | null {
-    finishName(); finishStroke();
+    finishName(); finishPointer();
     const errors = validateCustomMap(doc);
     if (errors.length) { updateValidation(); announce(errors.join(' '), true); return null; }
     saveDraft(); return clone(doc);
@@ -362,12 +499,13 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
   screen.addEventListener('click', event => {
     const button = (event.target as Element).closest<HTMLButtonElement>('button');
     if (!button || button.disabled) return;
-    if (button.dataset.terrain) { finishStroke(); tool = button.dataset.terrain as Terrain; updateTools(); }
-    if (button.dataset.brush) { finishStroke(); brushSize = Number(button.dataset.brush); updateTools(); }
-    if (button.dataset.spawn) { finishStroke(); tool = 'spawn'; selectedSpawn = Number(button.dataset.spawn); updateTools(); }
+    if (button.dataset.terrain) { finishPointer(); cropMode = false; cropStatus(); tool = button.dataset.terrain as Terrain; updateTools(); }
+    if (button.dataset.brush) { finishPointer(); cropMode = false; cropStatus(); brushSize = Number(button.dataset.brush); updateTools(); }
+    if (button.dataset.spawn) { finishPointer(); cropMode = false; cropStatus(); tool = 'spawn'; selectedSpawn = Number(button.dataset.spawn); updateTools(); }
     switch (button.dataset.action) {
-      case 'back': finishName(); finishStroke(); saveDraft(); options.onBack(); break;
+      case 'back': finishName(); finishPointer(); saveDraft(); options.onBack(); break;
       case 'import': fileInput.click(); break;
+      case 'dismiss-message': find('[data-message]').hidden = true; break;
       case 'download': download(); break;
       case 'use': { const valid = validatedDocument(); if (valid) options.onUse(valid); break; }
       case 'undo': history('undo'); break;
@@ -379,14 +517,15 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
       }
       case 'confirm': replaceDocument(); break;
       case 'cancel': dismissReplacement(); break;
-      case 'zoom-out': zoom = Math.max(1, zoom / 1.5); resizeCanvas(); break;
-      case 'zoom-in': zoom = Math.min(4, zoom * 1.5); resizeCanvas(); break;
-      case 'fit': zoom = 1; resizeCanvas(); break;
+      case 'zoom-out': zoomAt(1 / 1.3); break;
+      case 'zoom-in': zoomAt(1.3); break;
+      case 'fit': fitMap(); break;
+      case 'crop': finishPointer(); cropMode = !cropMode; hover = null; cropStatus(); updateTools(); break;
     }
   }, { signal });
-  nameInput.addEventListener('focus', () => { nameBefore = clone(doc); }, { signal });
+  nameInput.addEventListener('focus', () => { nameBefore = snapshot(); }, { signal });
   nameInput.addEventListener('input', () => {
-    if (!nameBefore) nameBefore = clone(doc);
+    if (!nameBefore) nameBefore = snapshot();
     doc.name = nameInput.value.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 60);
     if (nameInput.value !== doc.name) nameInput.value = doc.name;
     updateValidation(); scheduleSave();
@@ -394,25 +533,46 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
   nameInput.addEventListener('blur', finishName, { signal });
   fileInput.addEventListener('change', () => { const file = fileInput.files?.[0]; fileInput.value = ''; if (file) void importFile(file); }, { signal });
   find<HTMLInputElement>('[data-grid]').addEventListener('change', event => { showGrid = (event.target as HTMLInputElement).checked; draw(); }, { signal });
+  find<HTMLInputElement>('[data-markers]').addEventListener('change', event => { showMarkers = (event.target as HTMLInputElement).checked; draw(); }, { signal });
+  find<HTMLInputElement>('[data-auto-expand]').addEventListener('change', event => { autoExpand = (event.target as HTMLInputElement).checked; }, { signal });
   canvas.addEventListener('pointerdown', event => {
-    if (event.button !== 0 || activePointer !== null) return;
-    const point = eventPoint(event); if (!point) return;
+    if ((event.button !== 0 && event.button !== 1) || activePointer !== null) return;
     event.preventDefault(); canvas.focus({ preventScroll: true }); finishName();
-    activePointer = event.pointerId; strokeBefore = clone(doc); previousPoint = null;
-    canvas.setPointerCapture(event.pointerId); strokeTo(point);
+    activePointer = event.pointerId; canvas.setPointerCapture(event.pointerId);
+    if (event.button === 1 || spaceHeld) {
+      spaceUsedForPan = true; panDrag = { start: clientPoint(event), camera: { ...camera } }; draw(); return;
+    }
+    if (cropMode) {
+      const p = clientPoint(event), handle = cropHandles().find(h => Math.hypot(h.x - p.x, h.y - p.y) <= 15);
+      if (handle) cropDrag = { handle: handle.name, before: snapshot(), bounds: currentBounds(), start: screenToLocal(p) };
+      cropStatus(); draw(); return;
+    }
+    strokeBefore = snapshot(); previousPoint = null; strokeLimitReported = false; strokeTo(eventPoint(event));
   }, { signal });
   canvas.addEventListener('pointermove', event => {
     if (activePointer !== null && event.pointerId !== activePointer) return;
+    const screenPoint = clientPoint(event);
+    if (panDrag) { camera = { x: panDrag.camera.x + screenPoint.x - panDrag.start.x, y: panDrag.camera.y + screenPoint.y - panDrag.start.y }; draw(); return; }
+    if (cropDrag) { updateCropPreview(screenToLocal(screenPoint)); return; }
     const point = eventPoint(event); hover = point; coordinates(point);
-    if (activePointer !== null && point) strokeTo(point);
-    else { if (!point) previousPoint = null; draw(); }
+    if (activePointer !== null && strokeBefore) strokeTo(point); else draw();
   }, { signal });
-  canvas.addEventListener('pointerup', event => { if (event.pointerId === activePointer) finishStroke(); }, { signal });
-  canvas.addEventListener('pointercancel', event => { if (event.pointerId === activePointer) finishStroke(); }, { signal });
-  canvas.addEventListener('lostpointercapture', finishStroke, { signal });
+  canvas.addEventListener('pointerup', event => { if (event.pointerId === activePointer) finishPointer(); }, { signal });
+  canvas.addEventListener('pointercancel', event => { if (event.pointerId === activePointer) finishPointer(true); }, { signal });
+  canvas.addEventListener('lostpointercapture', () => { if (activePointer !== null) finishPointer(true); }, { signal });
   canvas.addEventListener('pointerleave', () => { if (activePointer === null) { hover = null; coordinates(null); draw(); } }, { signal });
   canvas.addEventListener('focus', () => { hover = cursor; coordinates(cursor); draw(); }, { signal });
-  canvas.addEventListener('blur', () => { finishStroke(); hover = null; coordinates(null); draw(); }, { signal });
+  canvas.addEventListener('blur', () => { finishPointer(true); spaceHeld = false; spaceUsedForPan = false; hover = null; coordinates(null); draw(); }, { signal });
+  canvas.addEventListener('wheel', event => {
+    event.preventDefault(); if (activePointer !== null) return;
+    zoomAt(Math.exp(-Math.max(-200, Math.min(200, event.deltaY)) * .002), clientPoint(event));
+  }, { signal, passive: false });
+  canvas.addEventListener('auxclick', event => event.preventDefault(), { signal });
+  canvas.addEventListener('contextmenu', event => event.preventDefault(), { signal });
+  function keyboardPaint(): void {
+    if (cropMode || activePointer !== null) return;
+    strokeBefore = snapshot(); previousPoint = null; strokeLimitReported = false; strokeTo(cursor); finishStroke(); draw();
+  }
   screen.addEventListener('keydown', event => {
     event.stopPropagation();
     const target = event.target as HTMLElement;
@@ -420,28 +580,41 @@ export function mountMapEditor(container: HTMLElement, options: { onBack: () => 
     if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === 'z' || event.key.toLowerCase() === 'y')) {
       event.preventDefault(); history(event.shiftKey || event.key.toLowerCase() === 'y' ? 'redo' : 'undo'); return;
     }
-    if (event.key === 'Escape' && pending) { event.preventDefault(); dismissReplacement(); return; }
+    if (event.key === 'Escape') {
+      if (pending) { event.preventDefault(); dismissReplacement(); }
+      else if (activePointer !== null) {
+        event.preventDefault();
+        if (strokeBefore) { doc = strokeBefore.doc; origin = { ...strokeBefore.origin }; strokeBefore = null; previousPoint = null; syncDocument(); scheduleSave(); }
+        finishPointer(true);
+      } else if (cropMode) { event.preventDefault(); cropMode = false; cropStatus(); updateTools(); }
+      return;
+    }
     if (target !== canvas) return;
     const steps: Record<string, Point> = { ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 }, ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 } };
     if (steps[event.key]) {
       event.preventDefault(); const delta = steps[event.key]; cursor = { x: Math.max(0, Math.min(doc.width - 1, cursor.x + delta.x)), y: Math.max(0, Math.min(doc.height - 1, cursor.y + delta.y)) };
       hover = cursor; coordinates(cursor); draw();
-    } else if (event.key === ' ' || event.key === 'Enter') {
-      event.preventDefault(); if (event.repeat) return;
-      strokeBefore = clone(doc); paint(cursor); hover = cursor; finishStroke(); draw();
+    } else if (event.key === ' ') {
+      event.preventDefault(); if (!event.repeat) { spaceHeld = true; spaceUsedForPan = false; draw(); }
+    } else if (event.key === 'Enter') { event.preventDefault(); if (!event.repeat) keyboardPaint(); }
+  }, { signal });
+  screen.addEventListener('keyup', event => {
+    event.stopPropagation();
+    if (event.key === ' ' && spaceHeld) {
+      event.preventDefault(); const shouldPaint = !spaceUsedForPan && activePointer === null && event.target === canvas;
+      spaceHeld = false; spaceUsedForPan = false; if (shouldPaint) keyboardPaint(); else draw();
     }
   }, { signal });
-  screen.addEventListener('keyup', event => event.stopPropagation(), { signal });
   window.addEventListener('beforeunload', saveDraft, { signal });
-  window.addEventListener('blur', finishStroke, { signal });
-  bindLanguageControl(screen, () => { updateTools(); updateDraftStatus(); updateValidation(); coordinates(hover); });
+  window.addEventListener('blur', () => { finishPointer(true); spaceHeld = false; spaceUsedForPan = false; draw(); }, { signal });
+  bindLanguageControl(screen, () => { updateTools(); updateDraftStatus(); updateValidation(); coordinates(hover); cropStatus(); });
   const observer = new ResizeObserver(resizeCanvas); observer.observe(scroll);
-  syncDocument(); updateDraftStatus();
+  syncDocument(); resizeCanvas(); updateDraftStatus();
   if (!savedDraft && !storageBlocked) saveDraft();
 
   return () => {
-    finishStroke(); finishName(); saveDraft(); disposed = true;
-    controller.abort(); observer.disconnect(); clearTimeout(saveTimer);
+    finishPointer(); finishName(); saveDraft(); disposed = true;
+    controller.abort(); observer.disconnect(); clearTimeout(saveTimer); painter.clear();
     screen.querySelectorAll<HTMLSelectElement>('[data-language-select]').forEach(select => { select.onchange = null; });
     downloadUrls.forEach(url => URL.revokeObjectURL(url)); downloadUrls.clear(); screen.remove();
   };

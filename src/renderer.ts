@@ -1,7 +1,8 @@
 import { t } from './i18n';
-import type { GameEngine, Entity, Definition, GameMap, Point, Terrain } from './game';
+import type { GameEngine, Entity, Definition, GameMap, Point } from './game';
 import { getDefinition, PLAYER_COLORS } from './game';
 import type { Assets, Sprite } from './assets';
+import { projectTile, TerrainPainter, unprojectPoint } from './terrain-painter';
 
 export type RenderMap = GameMap & {
   tiles?: { x: number; y: number; tileId: number; subTile: number; elevation?: number; z?: number; overlay?: number; overlayFrame?: number }[];
@@ -9,7 +10,6 @@ export type RenderMap = GameMap & {
   terrainObjects?: { x: number; y: number; type: string }[];
   structures?: {x:number;y:number;type:string;health?:number}[];
 };
-const TILE_W = 60, TILE_H = 30;
 export interface RendererHooks { onSelection(ids: number[]): void; onCommand(kind?: 'move'|'attack'|'deploy'): void; onPlace(x: number, y: number): boolean; onEntityClick(entity: Entity): boolean; onNotice(text: string): void }
 export interface WorldRect { minX: number; maxX: number; minY: number; maxY: number }
 export class BattlefieldRenderer {
@@ -23,7 +23,7 @@ export class BattlefieldRenderer {
   attackMove = false;
   tool: 'select' | 'repair' | 'sell' | 'support' = 'select';
   width = 0; height = 0;
-  private terrainTextures = new Map<string, HTMLCanvasElement>();
+  private terrainPainter = new TerrainPainter();
   private tinted = new Map<string, HTMLCanvasElement>();
   private tileLookup = new Map<number, NonNullable<RenderMap['tiles']>[number]>();
   private startDrag?: { x: number; y: number; cameraX: number; cameraY: number; button: number };
@@ -112,7 +112,7 @@ export class BattlefieldRenderer {
     const dpr = Math.min(devicePixelRatio || 1, 2); this.canvas.width = Math.round(this.width * dpr); this.canvas.height = Math.round(this.height * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); this.ctx.imageSmoothingEnabled = false;
   }
-  destroy() { this.observers.disconnect(); for (const f of this.cleanup) f(); this.terrainTextures.clear(); this.tinted.clear(); }
+  destroy() { this.observers.disconnect(); for (const f of this.cleanup) f(); this.terrainPainter.clear(); this.tinted.clear(); }
   home() {
     const owned = this.game.entities.find(e => e.owner === this.localId && e.type.includes('construction_yard')) || this.game.entities.find(e => e.owner === this.localId && e.type.includes('mcv'));
     const p = owned || this.game.players.find(p => p.id === this.localId)?.spawn || this.map.spawns[0];
@@ -120,8 +120,8 @@ export class BattlefieldRenderer {
   }
   center(x: number, y: number) { const p = this.project(x, y); this.camera.x = p.x; this.camera.y = p.y; this.clampCamera(); }
   setSelection(ids: number[]) { this.selection = new Set(ids); this.hooks.onSelection(ids); }
-  project(x: number, y: number): Point { return { x: (x - y) * TILE_W / 2, y: (x + y) * TILE_H / 2 }; }
-  unproject(x: number, y: number): Point { return { x: x / TILE_W + y / TILE_H, y: y / TILE_H - x / TILE_W }; }
+  project(x: number, y: number): Point { return projectTile(x, y); }
+  unproject(x: number, y: number): Point { return unprojectPoint(x, y); }
   screenToWorld(x: number, y: number): Point { return { x: (x - this.width / 2) / this.zoom + this.camera.x, y: (y - this.height / 2) / this.zoom + this.camera.y }; }
   screenToTile(x: number, y: number): Point {
     const world = this.screenToWorld(x, y); let front:Point|undefined;
@@ -209,7 +209,7 @@ export class BattlefieldRenderer {
       const p = this.project(x, y); p.y -= this.elevation(x, y) * 15;
       if (!this.game.explored(this.localId, x, y)) { this.diamond(ctx, p.x, p.y, '#020706'); continue; }
       const tile = this.tileLookup.get(idx);
-      if (!this.drawOriginalTile(ctx, tile, p.x, p.y)) ctx.drawImage(this.texture(terrain, x, y), p.x - 30, p.y - 15);
+      if (!this.drawOriginalTile(ctx, tile, p.x, p.y)) this.terrainPainter.drawGround(ctx, terrain, this.map.theater ?? '', x, y, p.x, p.y);
     }
     // Bridges span multiple cells. Paint their complete raw frames after all terrain.
     for (let sum = x1+y1; sum <= x2+y2; sum++) for(let x=x1;x<=x2;x++){
@@ -220,10 +220,10 @@ export class BattlefieldRenderer {
       if(tile && tile.overlay != null && tile.overlay !== 255 && (terrain !== 'ore' && terrain !== 'gem' || this.game.ore[idx]>0)) {
         const overlay = this.assets.manifest.overlays?.[`${this.map.theater}:${tile.overlay}`];
         if(overlay) this.drawAtlas(ctx,overlay,p.x,p.y,tile.overlayFrame || 0);
-        else if(terrain==='ore' || terrain==='gem')this.drawOre(ctx,p.x,p.y,x,y,terrain==='gem');
+        else if(terrain==='ore' || terrain==='gem')this.terrainPainter.drawResources(ctx,p.x,p.y,x,y,terrain==='gem');
       } else if((terrain==='ore' || terrain==='gem') && this.game.ore[idx]>0) {
         // Editor maps describe resources directly, without original overlay artwork.
-        this.drawOre(ctx,p.x,p.y,x,y,terrain==='gem');
+        this.terrainPainter.drawResources(ctx,p.x,p.y,x,y,terrain==='gem');
       }
     }
     this.displayedSprites.clear();
@@ -348,21 +348,6 @@ export class BattlefieldRenderer {
     const image=this.assets.images.get(sprite.src);if(!image)return false;
     frame=Math.min(Math.max(0,frame),sprite.frames-1);
     ctx.drawImage(image,frame%sprite.columns*sprite.frameWidth,Math.floor(frame/sprite.columns)*sprite.frameHeight,sprite.frameWidth,sprite.frameHeight,x-sprite.anchorX,y-sprite.anchorY,sprite.frameWidth,sprite.frameHeight);return true;
-  }
-  private texture(terrain:Terrain,x:number,y:number):HTMLCanvasElement{
-    const seed=((x*17+y*31)&15),key=terrain+seed+this.map.theater;
-    const cache=this.terrainTextures.get(key);if(cache)return cache;
-    const c=document.createElement('canvas');c.width=60;c.height=30;const ctx=c.getContext('2d')!;const snow=this.map.theater?.toLowerCase()==='snow';
-    const base:Record<string,string>={water:'#244b64',snow:'#cbd7d7',land:snow?'#c7d3d4':'#8c8860',ore:snow?'#c8cec1':'#847b4c',gem:snow?'#c5cfc9':'#8b805f',cliff:snow?'#889b9e':'#6e7054',road:'#839091',bridge:'#817968'};
-    ctx.beginPath();ctx.moveTo(30,0);ctx.lineTo(60,15);ctx.lineTo(30,30);ctx.lineTo(0,15);ctx.closePath();ctx.clip();ctx.fillStyle=base[terrain]||base.land;ctx.fillRect(0,0,60,30);
-    let rand=seed+534;const rng=()=>{rand=(rand*1664525+1013904223)>>>0;return rand/4294967296;};
-    for(let i=0;i<85;i++){const r=rng(),px=rng()*60,py=rng()*30;ctx.fillStyle=r>.5?'#ffffff18':'#213b381c';ctx.fillRect(px,py,terrain==='water'?7:2,1);}
-    if(terrain==='water'){ctx.strokeStyle='#6b98a84a';ctx.beginPath();ctx.moveTo(seed,8+seed*.5);ctx.lineTo(seed+14,9+seed*.5);ctx.stroke();}
-    if(terrain==='road'||terrain==='bridge'){ctx.strokeStyle='#d2c7a24a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,15);ctx.lineTo(60,15);ctx.stroke();}
-    this.terrainTextures.set(key,c);return c;
-  }
-  private drawOre(ctx:CanvasRenderingContext2D,x:number,y:number,tx:number,ty:number,gem:boolean){
-    for(let i=0;i<8;i++){const a=((tx*13+ty*37+i*19)%43)/43*Math.PI*2,r=7+(i%4)*4;const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r*.45;ctx.fillStyle=gem?['#af456a','#598aa6','#b889b5'][i%3]:['#c99c24','#eac553','#aa7119'][i%3];ctx.fillRect(px,py,3+(i%2),2);ctx.fillStyle=gem?'#dfa6c5':'#ffe796';ctx.fillRect(px,py,1,1);}
   }
   private diamond(ctx:CanvasRenderingContext2D,x:number,y:number,fill:string,stroke?:string){ctx.beginPath();ctx.moveTo(x,y-15);ctx.lineTo(x+30,y);ctx.lineTo(x,y+15);ctx.lineTo(x-30,y);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=.6;ctx.stroke();}}
   attachMinimap(canvas:HTMLCanvasElement){

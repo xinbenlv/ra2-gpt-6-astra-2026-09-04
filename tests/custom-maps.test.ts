@@ -95,6 +95,18 @@ test('restores painted drafts with an empty name while strict publishing and pla
     assert.throws(() => parseCustomMapDraft(JSON.stringify({ ...createCustomMap(), name })), /地图名称/);
 });
 
+test('drafts preserve unplaced player slots but publishing requires every start to be placed', () => {
+  const doc = createCustomMap();
+  doc.spawns[0] = { x: -1, y: -1 };
+  assert.deepEqual(parseCustomMapDraft(JSON.stringify(doc)), doc);
+  assert.ok(validateCustomMap(doc).some(error => error.includes('起点 1 尚未放置')));
+  assert.throws(() => parseCustomMap(JSON.stringify(doc)), /尚未放置/);
+  assert.throws(() => serializeCustomMap(doc), /尚未放置/);
+  assert.throws(() => customMapToMapData(doc), /尚未放置/);
+  for (const spawn of [{ x: -1, y: 0 }, { x: 0, y: -1 }, { x: -2, y: -2 }])
+    assert.throws(() => parseCustomMapDraft(JSON.stringify({ ...doc, spawns: [spawn, doc.spawns[1]] })), /地图内/);
+});
+
 test('new templates support all sizes and 2–8 players with accessible nearby starting ore', () => {
   for (const [width, height] of [[24, 24], [32, 48], [48, 48], [24, 96], [96, 24], [96, 96]]) {
     for (const theater of ['temperate', 'snow', 'urban'] as const) for (let players = 2; players <= 8; players++) {
