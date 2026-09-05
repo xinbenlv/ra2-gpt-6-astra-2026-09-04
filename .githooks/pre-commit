@@ -1,0 +1,8 @@
+#!/bin/sh
+# Keep original game media out of source history, including force-added files.
+node --import tsx scripts/check-source-only.ts --staged || exit 1
+
+# Scan only staged source files; never print an unredacted secret.
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --no-banner || exit 1
+fi

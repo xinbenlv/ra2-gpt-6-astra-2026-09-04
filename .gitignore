@@ -1,0 +1,33 @@
+# Original Westwood game material and every generated derivative.
+/public/assets/
+/public/maps/
+/docs/screenshots/
+
+# Downloaded archives, extracted originals, and local caches.
+/.cache/
+*.mix
+*.map
+*.mpr
+*.shp
+*.vxl
+*.hva
+*.pal
+*.bag
+*.idx
+*.exe
+*.iso
+
+# Dependencies, build output, and test artifacts.
+/node_modules/
+/dist/
+/test-results/
+/playwright-report/
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Local settings and secrets.
+.env
+.env.*
+!.env.example
+*.log

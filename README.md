@@ -1,0 +1,127 @@
+# Red Alert 2 · TypeScript Skirmish
+
+A browser RTS focused on Red Alert 2 skirmishes, with original Westwood artwork, maps, voices and music converted on the player's device. The game engine, AI, rendering and interface are independently written in TypeScript. No existing implementation on the user's computer or at `github.com/xinbenlv` was consulted.
+
+## Play
+
+For local development, install Node.js 22 or newer:
+
+```sh
+npm ci
+npm run dev
+```
+
+The interface defaults to English; use the English / 中文 selector to switch languages at any time.
+
+Open the printed address, normally [http://127.0.0.1:5173](http://127.0.0.1:5173).
+
+1. On first launch, read and accept the download-and-storage prompt.
+2. The browser downloads the approximately **207 MB** original installer directly from Internet Archive, verifies SHA-256, then extracts and converts the resources in a Web Worker. The Windows executable is never run.
+3. The browser stores the original download and converted resources in its own site storage. When preparation completes, the skirmish lobby opens automatically. Later visits reuse that storage.
+
+Playing requires **no Python, 7-Zip, FFmpeg, backend or server-side conversion**. Initial preparation also downloads the Pyodide conversion runtime and its Python packages from a CDN. The application host serves code and conversion tools; it does not host, receive or proxy the original game resources.
+
+Use a current desktop browser with Service Worker, WebAssembly, CacheStorage and OffscreenCanvas support. Preparation takes several minutes and temporarily uses substantially more memory than the download size. Production builds cache the application shell for subsequent offline play. Browser storage is specific to the site's origin and browser profile; clearing site data removes the installation, and storage eviction may require preparing it again.
+
+### 中文快速开始
+
+运行 `npm ci`、`npm run dev` 后打开网址。首次启动需确认允许下载并存储原版素材；浏览器直接从 Internet Archive 下载约 207 MB 资源包，在本机浏览器内解包、转换并缓存，完成后自动进入遭遇战。无需安装 Python、7-Zip 或 FFmpeg，也不需要素材服务器。下次打开会复用浏览器缓存；清除该网站的数据会移除素材。
+
+## Build and host
+
+```sh
+npm run build
+npm run preview
+```
+
+Serve `dist/` from the root of an HTTPS origin; localhost is supported for development. The current application uses root-relative URLs, so a repository subpath such as `/project-name/` needs a root-hosted domain or equivalent routing.
+
+Every build excludes original resources, **even when the developer has already extracted them into `public/`**. Vite's automatic public-directory copying is disabled. The build contains the app, conversion code, 7-Zip WebAssembly, a service worker and an application-shell manifest. Static hosting supports the complete browser preparation flow.
+
+## Skirmish features
+
+- Skirmish setup and play only; no campaign, missions or boot camp.
+- All **9 original RA2 countries**: America, Korea, France, Germany, Britain, Russia, Iraq, Cuba and Libya. No Yuri's Revenge faction; the original Soviet Yuri infantry remains available.
+- One human player and up to seven AI opponents, three AI difficulties, countries, colors, alliances and spawn positions; starting credits/units, game speed, fog, superweapons and short-game settings.
+- Original map catalog including **Arctic Circle (`mp22s8`)**, native terrain, overlays, previews and spawn positions. Local `.map` / `.mpr` import is supported. The catalog includes 79 ordinary skirmish maps, two playable MegaWealth maps and two annotated unfinished archive variants.
+- Snow, temperate and urban theaters; 8,434 native TMP tile frames, bridges, ore, gems, roads, trees and neutral buildings.
+- Original SHP sprites and infantry animation, 32-direction VXL vehicle rendering, house-color masks, cameos and Allied/Soviet sidebar graphics.
+- MCV deployment, construction prerequisites, power, building placement, parallel production queues, refunds, repair/sell, mining and resource depletion.
+- Selection, movement, attack-move, automatic combat, pathfinding, land/naval/air units, transports, veterancy, fog and allied shared vision.
+- Country-specific units/support, engineer captures, oil income, hospitals and airfields, Yuri control, Crazy Ivan bombs and IFV passenger weapons.
+- Paradrops, nuclear missiles, lightning storms, Iron Curtain and Chronosphere support; AI base construction, economy and attacks; victory/defeat, pause and replaying a skirmish.
+- Original unit voices, EVA announcements, combat sounds and music including Hell March 2.
+
+## Controls
+
+| Input | Action |
+| --- | --- |
+| Left click / drag | Select friendly units; Shift adds/removes selection |
+| Right click ground / enemy | Move / attack |
+| Right click friendly transport | Board with infantry; D unloads |
+| Double-click MCV / D | Deploy; D also deploys supported units or packs a construction yard |
+| Build icon | Produce; click a ready building again to place it |
+| Right-click build icon | Cancel the last item in that production category and refund it |
+| A, then left click | Attack-move |
+| S / G | Stop / guard |
+| Ctrl/Cmd + 1–9 / number | Assign / select a control group |
+| Arrow keys / screen edge | Move camera |
+| Middle drag / Space drag | Pan camera |
+| Mouse wheel | Zoom |
+| H / radar click | Return to base / move camera |
+| Tab | Change production category |
+| Esc / P | Cancel current action / pause |
+
+Short game eliminates a player after all buildings and MCVs are destroyed. With short game disabled, all units and buildings must be destroyed.
+
+## Fidelity and limits
+
+This is an independent playable rewrite, not the original executable or a frame-compatible Westwood engine. Original media and map data are retained; simulation behavior is implemented here.
+
+Combat numbers, armor interactions, production timing, mining and AI tactics are simplified. Aircraft rearming, full projectile behavior, submarine stealth, Mirage disguise, all Spy effects, building garrisons and bridge destruction are incomplete. Voxel geometry and palettes are original, with approximate projection and lighting; some building machinery is composited into static layers.
+
+Native map geometry, overlays, scenery and starts are read, but triggers, map-specific rules, mission logic and every special mode are not fully compatible. Only the three original RA2 theaters are supported; Yuri's Revenge theaters and mod-specific assets are not. There is no online multiplayer, saved game or original replay compatibility.
+
+## Source-only publication
+
+Git excludes original archives and every extracted or converted derivative: `public/assets/`, `public/maps/`, screenshots containing original artwork, caches, build output and Python bytecode.
+
+```sh
+npm run repo:check
+npm run repo:hooks
+```
+
+The optional pre-commit hook rejects force-added original resources and scans staged files with gitleaks when available. CI tests a checkout without originals and checks a production build with synthetic resource files present, verifying that they never enter the hosted output.
+
+## Development and verification
+
+```sh
+npm test
+npm run build
+node --import tsx scripts/check-source-only.ts --build
+```
+
+Original-map integration tests run when the developer has extracted native resources locally; otherwise they are explicitly skipped. Decoder, simulation, initialization and publication-boundary tests remain runnable without originals. See [verification notes](docs/verification.md) for measured results and the limits of each test.
+
+The browser acceptance script checks first-run consent, a real Internet Archive download, conversion, automatic lobby entry, cached reload and offline Arctic Circle play. Run it against the production preview with a fresh browser profile:
+
+```sh
+RA2_BROWSER_URL=http://127.0.0.1:4173 \
+RA2_BROWSER_PROFILE=.cache/browser-acceptance-fresh \
+uv run --with playwright python scripts/browser_setup.py
+```
+
+The optional developer CLI can reproduce native assets on disk for conversion work and integration tests:
+
+```sh
+npm run assets:setup
+npm run assets:check
+```
+
+This CLI requires Python 3.10+, native 7-Zip and FFmpeg. It writes ignored `.cache/ra2-assets/`, `public/assets/` and `public/maps/` directories; those files are not the browser installation and are never included in the static site. See [asset conversion documentation](scripts/assets/README.md).
+
+## Sources and third-party components
+
+Original resources come from [Internet Archive: Red Alert 2 Multiplayer](https://archive.org/details/red-alert-2-multiplayer), an XWIS distribution containing Westwood game data. Browser downloads use Internet Archive's own CORS endpoint. The pinned installer SHA-256 is `5388c54d7d7b73060083563ff1926bca0d2663a76678b807e23e9a8d491441ce`.
+
+[7z-wasm](https://github.com/use-strict/7z-wasm) supplies 7-Zip compiled to WebAssembly. Its JavaScript/WASM files use GNU LGPL 2.1-or-later plus the unRAR restriction; see the upstream [license](https://github.com/use-strict/7z-wasm/blob/master/License.txt) and [unRAR notice](https://github.com/use-strict/7z-wasm/blob/master/unRarLicense.txt). Original 7-Zip is by Igor Pavlov; the WASM package is maintained by Alexandru Ciuca. [Pyodide](https://pyodide.org/) runs the original project converters in the browser with Pillow, PyCryptodome and audioop-lts. These components retain their own licenses; original game media is not included in the source repository.

@@ -1,0 +1,25 @@
+from playwright.sync_api import sync_playwright
+import json,time
+with sync_playwright() as p:
+    browser=p.chromium.launch(headless=True)
+    page=browser.new_page(viewport={"width":1440,"height":960},device_scale_factor=1)
+    errors=[]
+    page.on('pageerror',lambda error: errors.append(str(error)))
+    page.goto('http://127.0.0.1:5173/',wait_until='networkidle')
+    page.wait_for_selector('#start',timeout=90000)
+    page.screenshot(path='/tmp/ra2-lobby.png',full_page=True)
+    print('LOBBY',page.locator('select[aria-label="玩家 1 国家"] option').count(),page.locator('.player-table tbody tr').count())
+    page.locator('#start').click()
+    page.wait_for_selector('#battlefield-canvas')
+    page.wait_for_timeout(1000)
+    print('START',page.evaluate('({entities:ra2.game.entities.length,selected:[...ra2.renderer.selection],terrain:Object.keys(ra2.assets.terrain).length,failures:ra2.assets.failures})'))
+    page.keyboard.press('d')
+    page.wait_for_timeout(1000)
+    page.screenshot(path='/tmp/ra2-game.png')
+    print('DEPLOY',page.evaluate('ra2.game.entities.filter(e=>e.owner===0).map(e=>({id:e.id,type:e.type,x:e.x,y:e.y}))'))
+    page.locator('[data-build="power_plant"]').click()
+    page.wait_for_timeout(9000)
+    print('QUEUE',page.evaluate('ra2.game.players[0].queues.structure'))
+    page.screenshot(path='/tmp/ra2-production.png')
+    print('ERRORS',json.dumps(errors))
+    browser.close()

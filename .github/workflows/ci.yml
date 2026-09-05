@@ -1,0 +1,33 @@
+name: Source checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  source-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Ensure original assets are excluded
+        run: npm run repo:check
+      - name: Test source without original assets
+        run: npm test
+      - name: Add synthetic local-resource sentinels
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for directory in ['public/assets', 'public/maps']:
+              target = Path(directory)
+              target.mkdir(parents=True, exist_ok=True)
+              (target / 'publication-boundary-probe.json').write_text('{"synthetic":"must-never-be-hosted"}')
+          PY
+      - name: Build with local resource directories present
+        run: npm run build
+      - name: Ensure hosted output excludes original resources
+        run: node --import tsx scripts/check-source-only.ts --build

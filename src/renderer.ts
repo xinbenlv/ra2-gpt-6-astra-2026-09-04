@@ -1,0 +1,387 @@
+import { t } from './i18n';
+import type { GameEngine, Entity, Definition, GameMap, Point, Terrain } from './game';
+import { getDefinition, PLAYER_COLORS } from './game';
+import type { Assets, Sprite } from './assets';
+
+export type RenderMap = GameMap & {
+  tiles?: { x: number; y: number; tileId: number; subTile: number; elevation?: number; z?: number; overlay?: number; overlayFrame?: number }[];
+  tileIds?: Int32Array | number[]; elevations?: Uint8Array | number[]; radarColors?: Uint32Array | number[];
+  terrainObjects?: { x: number; y: number; type: string }[];
+  structures?: {x:number;y:number;type:string;health?:number}[];
+};
+const TILE_W = 60, TILE_H = 30;
+export interface RendererHooks { onSelection(ids: number[]): void; onCommand(kind?: 'move'|'attack'|'deploy'): void; onPlace(x: number, y: number): boolean; onEntityClick(entity: Entity): boolean; onNotice(text: string): void }
+export interface WorldRect { minX: number; maxX: number; minY: number; maxY: number }
+export class BattlefieldRenderer {
+  ctx: CanvasRenderingContext2D;
+  camera = { x: 0, y: 0 }; zoom = 1;
+  selection = new Set<number>();
+  keys = new Set<string>();
+  mouse = { x: -1, y: -1, inside: false };
+  hoverEntity?: Entity;
+  placement?: Definition;
+  attackMove = false;
+  tool: 'select' | 'repair' | 'sell' | 'support' = 'select';
+  width = 0; height = 0;
+  private terrainTextures = new Map<string, HTMLCanvasElement>();
+  private tinted = new Map<string, HTMLCanvasElement>();
+  private tileLookup = new Map<number, NonNullable<RenderMap['tiles']>[number]>();
+  private startDrag?: { x: number; y: number; cameraX: number; cameraY: number; button: number };
+  private dragRect?: { x: number; y: number; w: number; h: number };
+  private moving = false;
+  private observers: ResizeObserver;
+  private cleanup: (() => void)[] = [];
+  private orderMarker?: { x: number; y: number; age: number; attack: boolean };
+  private displayedSprites = new Map<number, {x: number;y: number;w: number;h: number}>();
+  private miniCtx?: CanvasRenderingContext2D;
+  private miniBase?: HTMLCanvasElement;
+  private miniScale = 1;
+  private miniOrigin = { x: 0, y: 0 };
+  private worldBounds: WorldRect;
+  private time = 0;
+  edgeScroll = true;
+  constructor(public canvas: HTMLCanvasElement, public game: GameEngine, public map: RenderMap, public assets: Assets, private hooks: RendererHooks, public localId = 0) {
+    this.ctx = canvas.getContext('2d', { alpha: false })!;
+    for (const tile of map.tiles || []) this.tileLookup.set(tile.y * map.width + tile.x, tile);
+    this.worldBounds = this.calculateBounds();
+    this.observers = new ResizeObserver(() => this.resize()); this.observers.observe(canvas);
+    this.resize(); this.bind(); this.home();
+  }
+  private listen<K extends keyof HTMLElementEventMap>(el: HTMLElement, type: K, fn: (event: HTMLElementEventMap[K]) => void) {
+    el.addEventListener(type, fn as EventListener); this.cleanup.push(() => el.removeEventListener(type, fn as EventListener));
+  }
+  private bind() {
+    this.listen(this.canvas, 'contextmenu', e => e.preventDefault());
+    this.listen(this.canvas, 'pointerdown', e => {
+      this.canvas.focus(); this.canvas.setPointerCapture(e.pointerId);
+      const p = this.eventPosition(e); this.startDrag = { ...p, cameraX: this.camera.x, cameraY: this.camera.y, button: e.button }; this.moving = false;
+      if (e.button === 1) e.preventDefault();
+    });
+    this.listen(this.canvas, 'pointermove', e => {
+      const p = this.eventPosition(e); this.mouse = { ...p, inside: true };
+      if (this.startDrag) {
+        const d = this.startDrag, dx = p.x - d.x, dy = p.y - d.y;
+        if (Math.hypot(dx, dy) > 5) this.moving = true;
+        if (d.button === 1 || (d.button === 0 && this.keys.has(' '))) {
+          this.camera.x = d.cameraX - dx / this.zoom; this.camera.y = d.cameraY - dy / this.zoom; this.clampCamera();
+        } else if (d.button === 0 && !this.placement && this.tool === 'select' && !this.attackMove && this.moving) {
+          this.dragRect = { x: Math.min(d.x, p.x), y: Math.min(d.y, p.y), w: Math.abs(dx), h: Math.abs(dy) };
+        }
+      }
+      this.hoverEntity = this.pick(p.x, p.y);
+    });
+    this.listen(this.canvas, 'pointerleave', () => { this.mouse.inside = false; this.hoverEntity = undefined; });
+    this.listen(this.canvas, 'pointerup', e => {
+      const p = this.eventPosition(e), d = this.startDrag;
+      if (!d) return;
+      if (d.button === 0 && !this.keys.has(' ')) {
+        if (this.dragRect) {
+          const r = this.dragRect;
+          const ids = this.game.entities.filter(v => v.owner === this.localId && v.kind === 'unit' && !v.transportedBy && v.hp > 0).filter(v => {
+            const s = this.toScreen(v.x, v.y); return s.x >= r.x && s.x <= r.x + r.w && s.y >= r.y && s.y <= r.y + r.h;
+          }).map(v => v.id);
+          if (!e.shiftKey) this.selection.clear(); for (const id of ids) this.selection.add(id); this.hooks.onSelection([...this.selection]);
+        } else if (!this.moving) this.leftClick(p.x, p.y, e.shiftKey);
+      } else if (d.button === 2 && !this.moving) this.rightClick(p.x, p.y);
+      this.startDrag = undefined; this.dragRect = undefined;
+      if(this.canvas.hasPointerCapture(e.pointerId)) this.canvas.releasePointerCapture(e.pointerId);
+    });
+    this.listen(this.canvas, 'dblclick', e => {
+      if (this.tool !== 'select' || this.placement) return;
+      const p = this.eventPosition(e), entity = this.pick(p.x, p.y);
+      if (entity?.owner === this.localId) {
+        const def = getDefinition(entity.type);
+        if (def.deploysTo) { this.game.deploy([entity.id]); this.hooks.onCommand('deploy'); }
+        else {
+          this.selection = new Set(this.game.entities.filter(v => v.owner === this.localId && v.type === entity.type && this.onScreen(v.x, v.y)).map(v => v.id));
+          this.hooks.onSelection([...this.selection]);
+        }
+      }
+    });
+    this.canvas.addEventListener('wheel', this.onWheel, { passive: false }); this.cleanup.push(() => this.canvas.removeEventListener('wheel', this.onWheel));
+  }
+  private onWheel = (e: WheelEvent) => {
+    e.preventDefault(); const p = this.eventPosition(e), before = this.screenToWorld(p.x, p.y);
+    this.zoom = Math.max(.45, Math.min(1.7, this.zoom * (e.deltaY > 0 ? .9 : 1.1)));
+    const after = this.screenToWorld(p.x, p.y);
+    this.camera.x += before.x - after.x; this.camera.y += before.y - after.y; this.clampCamera();
+  };
+  private eventPosition(e: MouseEvent) { const r = this.canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  resize() {
+    const rect = this.canvas.getBoundingClientRect(); this.width = rect.width; this.height = rect.height;
+    const dpr = Math.min(devicePixelRatio || 1, 2); this.canvas.width = Math.round(this.width * dpr); this.canvas.height = Math.round(this.height * dpr);
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); this.ctx.imageSmoothingEnabled = false;
+  }
+  destroy() { this.observers.disconnect(); for (const f of this.cleanup) f(); this.terrainTextures.clear(); this.tinted.clear(); }
+  home() {
+    const owned = this.game.entities.find(e => e.owner === this.localId && e.type.includes('construction_yard')) || this.game.entities.find(e => e.owner === this.localId && e.type.includes('mcv'));
+    const p = owned || this.game.players.find(p => p.id === this.localId)?.spawn || this.map.spawns[0];
+    if (p) this.center(p.x, p.y);
+  }
+  center(x: number, y: number) { const p = this.project(x, y); this.camera.x = p.x; this.camera.y = p.y; this.clampCamera(); }
+  setSelection(ids: number[]) { this.selection = new Set(ids); this.hooks.onSelection(ids); }
+  project(x: number, y: number): Point { return { x: (x - y) * TILE_W / 2, y: (x + y) * TILE_H / 2 }; }
+  unproject(x: number, y: number): Point { return { x: x / TILE_W + y / TILE_H, y: y / TILE_H - x / TILE_W }; }
+  screenToWorld(x: number, y: number): Point { return { x: (x - this.width / 2) / this.zoom + this.camera.x, y: (y - this.height / 2) / this.zoom + this.camera.y }; }
+  screenToTile(x: number, y: number): Point {
+    const world = this.screenToWorld(x, y); let front:Point|undefined;
+    for(let z=0;z<=15;z++){const raw=this.unproject(world.x,world.y+z*15);const p={x:Math.round(raw.x),y:Math.round(raw.y)};if(p.x<0||p.y<0||p.x>=this.map.width||p.y>=this.map.height||this.map.cells[p.y*this.map.width+p.x]==='void'||this.elevation(p.x,p.y)!==z)continue;const center=this.project(p.x,p.y);if(Math.abs(world.x-center.x)/30+Math.abs(world.y-(center.y-z*15))/15<=1.01&&(!front||p.x+p.y>front.x+front.y))front=p;}
+    const fallback=this.unproject(world.x,world.y);return front||{x:Math.round(fallback.x),y:Math.round(fallback.y)};
+  }
+  toScreen(x: number, y: number, elevation = true): Point {
+    const p = this.project(x, y); if (elevation) p.y -= this.elevation(x, y) * 15;
+    return { x: (p.x - this.camera.x) * this.zoom + this.width / 2, y: (p.y - this.camera.y) * this.zoom + this.height / 2 };
+  }
+  private elevation(x: number, y: number): number { if(x<0||y<0||x>=this.map.width||y>=this.map.height)return 0;const idx = Math.round(y) * this.map.width + Math.round(x); return this.map.elevations?.[idx] || this.tileLookup.get(idx)?.elevation || this.tileLookup.get(idx)?.z || 0; }
+  private onScreen(x: number, y: number) { const p = this.toScreen(x, y); return p.x > -120 && p.x < this.width + 120 && p.y > -120 && p.y < this.height + 180; }
+  private calculateBounds(): WorldRect {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let y = 0; y < this.map.height; y++) for (let x = 0; x < this.map.width; x++) {
+      if (this.map.cells[y * this.map.width + x] === 'void') continue;
+      const p = this.project(x, y); minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+    }
+    return { minX, maxX, minY, maxY };
+  }
+  private clampCamera() { const b = this.worldBounds,hx=this.width/(2*this.zoom),hy=this.height/(2*this.zoom);const clamp=(v:number,lo:number,hi:number)=>lo>hi?(lo+hi)/2:Math.max(lo,Math.min(hi,v));this.camera.x=clamp(this.camera.x,b.minX+hx-30,b.maxX-hx+30);this.camera.y=clamp(this.camera.y,b.minY+hy-80,b.maxY-hy+30); }
+  private leftClick(x: number, y: number, shift: boolean) {
+    const p = this.screenToTile(x, y);
+    if (this.placement || this.tool === 'support') { this.hooks.onPlace(p.x, p.y); return; }
+    if (this.attackMove) { this.game.commandMove([...this.selection], p.x, p.y, true); this.marker(p, true); this.attackMove = false; this.hooks.onCommand('attack'); return; }
+    const entity = this.pick(x, y);
+    if (entity && this.hooks.onEntityClick(entity)) return;
+    if (!shift) this.selection.clear();
+    if (entity && entity.owner === this.localId) {
+      if (shift && this.selection.has(entity.id)) this.selection.delete(entity.id); else this.selection.add(entity.id);
+    }
+    this.hooks.onSelection([...this.selection]);
+  }
+  private rightClick(x: number, y: number) {
+    if (this.placement || this.tool !== 'select' || this.attackMove) {
+      this.placement = undefined; this.tool = 'select'; this.attackMove = false; this.hooks.onNotice('已取消'); return;
+    }
+    const p = this.screenToTile(x, y), entity = this.pick(x, y);
+    if (!this.selection.size) return;
+    if (entity) {
+      this.game.commandAttack([...this.selection], entity.id); this.marker({ x: entity.x, y: entity.y }, true);
+    } else { this.game.commandMove([...this.selection], p.x, p.y); this.marker(p, false); }
+    const enemy=entity && this.game.players.find(v=>v.id===entity.owner)?.team!==this.game.players.find(v=>v.id===this.localId)?.team;
+    this.hooks.onCommand(enemy?'attack':'move');
+  }
+  marker(p: Point, attack: boolean) { this.orderMarker = { ...p, age: 0, attack }; }
+  pick(x: number, y: number): Entity | undefined {
+    let nearest: Entity | undefined;
+    for (let i = this.game.entities.length - 1; i >= 0; i--) {
+      const e = this.game.entities[i]; if (e.hp <= 0 || e.transportedBy || !this.game.visible(this.localId, e.x, e.y)) continue;
+      const p = this.toScreen(e.x, e.y), def = getDefinition(e.type);
+      const box = this.displayedSprites.get(e.id);
+      if (e.kind === 'building' && box && x > box.x + box.w * .15 && x < box.x + box.w * .85 && y > box.y + box.h * .3 && y < box.y + box.h * .92) return e;
+      const r = (def.category === 'infantry' ? 11 : def.naval ? 28 : 20) * this.zoom;
+      if (Math.abs(x - p.x) < r && Math.abs(y - (p.y - (def.flying ? 45 * this.zoom : 5))) < r) nearest = e;
+    }
+    return nearest;
+  }
+  update(dt: number) {
+    this.time += dt;
+    if (this.orderMarker) { this.orderMarker.age += dt; if (this.orderMarker.age > .85) this.orderMarker = undefined; }
+    let dx = 0, dy = 0;
+    if (this.keys.has('arrowleft') || this.keys.has('a-pan')) dx--;
+    if (this.keys.has('arrowright')) dx++;
+    if (this.keys.has('arrowup') || this.keys.has('w')) dy--;
+    if (this.keys.has('arrowdown')) dy++;
+    if (this.edgeScroll && this.mouse.inside && !this.startDrag) {
+      if (this.mouse.x < 12) dx--; if (this.mouse.x > this.width - 12) dx++;
+      if (this.mouse.y < 12) dy--; if (this.mouse.y > this.height - 12) dy++;
+    }
+    this.camera.x += dx * dt * 760 / this.zoom; this.camera.y += dy * dt * 600 / this.zoom;
+    if(dx || dy) this.clampCamera();
+    for (const id of this.selection) if (!this.game.entities.some(e => e.id === id && e.hp > 0)) this.selection.delete(id);
+    this.draw();
+  }
+  draw() {
+    const ctx = this.ctx; ctx.fillStyle = '#060b0b'; ctx.fillRect(0, 0, this.width, this.height);
+    const corners = [[-180, -180], [this.width + 180, -180], [-180, this.height + 330], [this.width + 180, this.height + 330]].map(([x, y]) => { const p = this.screenToWorld(x, y); return this.unproject(p.x, p.y); });
+    const x1 = Math.max(0, Math.floor(Math.min(...corners.map(p => p.x)))), x2 = Math.min(this.map.width - 1, Math.ceil(Math.max(...corners.map(p => p.x))));
+    const y1 = Math.max(0, Math.floor(Math.min(...corners.map(p => p.y)))), y2 = Math.min(this.map.height - 1, Math.ceil(Math.max(...corners.map(p => p.y))));
+    ctx.save(); ctx.translate(this.width / 2, this.height / 2); ctx.scale(this.zoom, this.zoom); ctx.translate(-this.camera.x, -this.camera.y);
+    for (let sum = x1 + y1; sum <= x2 + y2; sum++) for (let x = x1; x <= x2; x++) {
+      const y = sum - x; if (y < y1 || y > y2) continue;
+      const idx = y * this.map.width + x, terrain = this.map.cells[idx]; if (!terrain || terrain === 'void') continue;
+      const p = this.project(x, y); p.y -= this.elevation(x, y) * 15;
+      if (!this.game.explored(this.localId, x, y)) { this.diamond(ctx, p.x, p.y, '#020706'); continue; }
+      const tile = this.tileLookup.get(idx);
+      if (!this.drawOriginalTile(ctx, tile, p.x, p.y)) ctx.drawImage(this.texture(terrain, x, y), p.x - 30, p.y - 15);
+    }
+    // Bridges span multiple cells. Paint their complete raw frames after all terrain.
+    for (let sum = x1+y1; sum <= x2+y2; sum++) for(let x=x1;x<=x2;x++){
+      const y=sum-x;if(y<y1||y>y2)continue;
+      const idx=y*this.map.width+x,terrain=this.map.cells[idx],tile=this.tileLookup.get(idx);
+      if(!terrain||terrain==='void'||!this.game.explored(this.localId,x,y))continue;
+      const p=this.project(x,y);p.y-=this.elevation(x,y)*15;
+      if(tile && tile.overlay != null && tile.overlay !== 255 && (terrain !== 'ore' && terrain !== 'gem' || this.game.ore[idx]>0)) {
+        const overlay = this.assets.manifest.overlays?.[`${this.map.theater}:${tile.overlay}`];
+        if(overlay) this.drawAtlas(ctx,overlay,p.x,p.y,tile.overlayFrame || 0);
+        else if(terrain==='ore' || terrain==='gem')this.drawOre(ctx,p.x,p.y,x,y,terrain==='gem');
+      }
+    }
+    this.displayedSprites.clear();
+    const objects: {sort:number;draw:()=>void}[]=[];
+    for(const obj of [...this.map.terrainObjects || [],...this.map.structures || []]) {
+      if(!this.onScreen(obj.x,obj.y) || !this.game.explored(this.localId,obj.x,obj.y)) continue;
+      const sprite=this.assets.scenery[`${this.map.theater}:${obj.type.toLowerCase()}`] || this.assets.manifest.overlays?.[`${this.map.theater}-${obj.type.toLowerCase()}`];
+      if(!sprite)continue;
+      const [fw,fh]=sprite.foundation||[1,1],x=obj.x+(fw-1)/2,y=obj.y+(fh-1)/2;
+      const p=this.project(x,y);p.y-=this.elevation(obj.x,obj.y)*15;
+      objects.push({sort:x+y+fh*.3,draw:()=>this.drawAtlas(ctx,sprite,p.x,p.y)});
+    }
+    for(const entity of this.game.entities){if(entity.hp<=0||entity.transportedBy||!this.onScreen(entity.x,entity.y)||!(entity.kind==='building'?this.game.explored(this.localId,entity.x,entity.y):this.game.visible(this.localId,entity.x,entity.y)))continue;
+      objects.push({sort:entity.x+entity.y+(getDefinition(entity.type).flying?12:0),draw:()=>this.drawEntity(ctx,entity)});
+    }
+    objects.sort((a,b)=>a.sort-b.sort);for(const obj of objects)obj.draw();
+    for (const effect of this.game.effects) {
+      if (!this.game.visible(this.localId, effect.x, effect.y)) continue;
+      const p = this.project(effect.x, effect.y); p.y -= this.elevation(effect.x, effect.y) * 15;
+      const t = effect.age / effect.duration;
+      if (effect.kind === 'shot' && effect.toX != null && effect.toY != null) {
+        const target = this.project(effect.toX, effect.toY); target.y -= this.elevation(effect.toX, effect.toY) * 15;
+        const t1 = Math.max(0, t - .18), t2 = Math.min(1, t + .08);
+        ctx.strokeStyle = effect.weapon === 'tesla' ? '#b4e9ff' : effect.weapon === 'radiation' ? '#b0ff35' : '#ffe58a'; ctx.lineWidth = effect.weapon === 'tesla' ? 2 : 1.5;
+        ctx.beginPath();ctx.moveTo(p.x+(target.x-p.x)*t1,p.y-12+(target.y-p.y)*t1);
+        if(effect.weapon==='tesla'){for(let i=1;i<=6;i++)ctx.lineTo(p.x+(target.x-p.x)*i/6+(Math.random()-.5)*12,p.y-15+(target.y-p.y)*i/6+(Math.random()-.5)*12);}
+        else ctx.lineTo(p.x+(target.x-p.x)*t2,p.y-12+(target.y-p.y)*t2);ctx.stroke();
+      } else if (effect.kind === 'explosion' || effect.kind === 'nuke') {
+        const explosion=this.assets.sprite(effect.kind==='nuke'?'twlt100':'twlt050');if(explosion&&this.drawAtlas(ctx,explosion,p.x,p.y,Math.min(explosion.frames-1,Math.floor(t*explosion.frames))))continue;
+        const radius = effect.kind === 'nuke' ? 180 : 18;
+        ctx.globalAlpha = Math.max(0, 1 - t); const grad = ctx.createRadialGradient(p.x,p.y-10,0,p.x,p.y-10,Math.max(1,radius*t));grad.addColorStop(0,'#fff7b4');grad.addColorStop(.4,'#ffd545');grad.addColorStop(.75,'#e55419');grad.addColorStop(1,'#342d23');
+        ctx.fillStyle=grad;ctx.beginPath();ctx.arc(p.x,p.y-10,Math.max(1,radius*t),0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+      } else if(effect.kind==='radiation'){ctx.globalAlpha=.25*(1-t);ctx.fillStyle='#a4ed28';ctx.beginPath();ctx.ellipse(p.x,p.y,80,40,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+      else if(effect.kind==='text' && effect.text){ctx.font='bold 12px Tahoma';ctx.fillStyle=effect.color || '#ffeba6';ctx.fillText(effect.text,p.x,p.y-t*24);}
+    }
+    // Reapply explored-but-unseen shroud above actors and terrain.
+    for (let y = y1; y <= y2; y++) for (let x = x1; x <= x2; x++) {
+      if(this.map.cells[y*this.map.width+x] === 'void')continue;
+      if (this.game.explored(this.localId, x, y) && !this.game.visible(this.localId, x, y)) {
+        const p = this.project(x, y); p.y -= this.elevation(x, y) * 15; this.diamond(ctx, p.x, p.y, '#000912a6');
+      }
+    }
+    if (this.placement && this.mouse.inside) {
+      const p = this.screenToTile(this.mouse.x, this.mouse.y); const valid = this.game.canPlace(this.localId, this.placement.id, p.x, p.y);
+      const size = this.placement.size || [2, 2];const bounds=this.game.getPlacementBounds(this.placement.id,p.x,p.y);
+      const sx = bounds.x, sy = bounds.y;
+      for (let yy = sy; yy < sy + size[1]; yy++) for (let xx = sx; xx < sx + size[0]; xx++) {
+        const q = this.project(xx, yy); q.y -= this.elevation(xx, yy) * 15; this.diamond(ctx, q.x, q.y, valid ? '#78e67580' : '#f0403880', '#182619');
+      }
+      const q=this.project(p.x,p.y);q.y-=this.elevation(p.x,p.y)*15;
+      ctx.globalAlpha=.65;this.assets.draw(ctx,this.spriteKey(this.placement),q.x,q.y);ctx.globalAlpha=1;
+    }
+    if(this.orderMarker){const m=this.orderMarker,p=this.project(m.x,m.y);p.y-=this.elevation(m.x,m.y)*15;ctx.strokeStyle=m.attack?'#fa6253':'#76ee63';ctx.lineWidth=1;const r=10+m.age*16;ctx.globalAlpha=1-m.age;ctx.beginPath();ctx.ellipse(p.x,p.y,r,r*.5,0,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x-5,p.y);ctx.lineTo(p.x+5,p.y);ctx.moveTo(p.x,p.y-3);ctx.lineTo(p.x,p.y+3);ctx.stroke();ctx.globalAlpha=1;}
+    ctx.restore();
+    if (this.dragRect) { const r = this.dragRect; ctx.fillStyle='#89df7312';ctx.fillRect(r.x,r.y,r.w,r.h);ctx.strokeStyle='#a0f184';ctx.lineWidth=1;ctx.strokeRect(r.x+.5,r.y+.5,r.w,r.h); }
+  }
+  private spriteKey(def: Definition) { const snow = `${def.sprite}-snow`; return this.map.theater?.toLowerCase() === 'snow' && this.assets.sprite(snow) ? snow : def.sprite; }
+  private drawEntity(ctx: CanvasRenderingContext2D, e: Entity) {
+    const def = getDefinition(e.type), p = this.project(e.x-(e.kind==='building'?.5:0), e.y-(e.kind==='building'?.5:0)); p.y -= this.elevation(e.x, e.y) * 15;
+    const color = this.game.players.find(v => v.id === e.owner)?.color || PLAYER_COLORS[e.owner % PLAYER_COLORS.length] || '#898d86';
+    const selected = this.selection.has(e.id), hovered = this.hoverEntity?.id === e.id;
+    const flying = def.flying ? 45 + Math.sin(this.time * 3 + e.id) * 2 : 0;
+    const spriteKey = e.type==='ifv'&&e.turretIndex!=null?`fv-turret${e.turretIndex}`:this.spriteKey(def), sprite = this.assets.sprite(spriteKey) || this.assets.scenery[`${this.map.theater}:${def.sprite.toLowerCase()}`];
+    const shadowW = def.kind === 'building' ? 0 : def.category === 'infantry' ? 5 : def.naval ? 30 : 15;
+    if(shadowW){ctx.fillStyle='#00100a44';ctx.beginPath();ctx.ellipse(p.x+flying*.2,p.y+3,shadowW,shadowW*.4,0,0,Math.PI*2);ctx.fill();}
+    if(selected){ctx.strokeStyle='#91ef75';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(p.x,p.y,def.kind==='building'?(def.size?.[0]||2)*23:shadowW+3,def.kind==='building'?(def.size?.[1]||2)*11:8,0,0,Math.PI*2);ctx.stroke();}
+    let rendered = false; let fw = 40, fh = 40, ax = 20, ay = 28;
+    if (sprite) {
+      const image = e.owner<0?this.assets.images.get(sprite.src):this.coloredSprite(sprite, color);
+      if (image) {
+        fw = sprite.frameWidth; fh = sprite.frameHeight; ax = sprite.anchorX; ay = sprite.anchorY;
+        let frame = 0;
+        const moving = e.path.length > 0;
+        if (def.kind === 'unit' && sprite.frames > 1) {
+          const angle = ((e.angle / (Math.PI * 2)) % 1 + 1) % 1;
+          if (sprite.sequences) { const direction=Math.floor(angle*8)%8; const action=e.deployed?'deployed':this.game.time-e.lastShot<.5?'fireup':moving?'walk':'ready'; const seq=sprite.sequences[action]||sprite.sequences.ready||[0,1,1];frame=seq[0]+direction*seq[2]+Math.floor(this.time*12)%seq[1]; }
+          else frame = Math.round(angle * sprite.frames) % sprite.frames;
+        }
+        ctx.drawImage(image,(frame%sprite.columns)*fw,Math.floor(frame/sprite.columns)*fh,fw,fh,p.x-ax,p.y-ay-flying,fw,fh); rendered = true;
+        const screen = this.toScreen(e.x,e.y); this.displayedSprites.set(e.id,{x:screen.x-ax*this.zoom,y:screen.y-(ay+flying)*this.zoom,w:fw*this.zoom,h:fh*this.zoom});
+      }
+    }
+    if(!rendered){this.drawFallbackUnit(ctx,p.x,p.y-flying,e,def,color);}
+    if(selected || hovered || e.hp < e.maxHp*.65){
+      const barW = def.kind==='building'?Math.min(80,(def.size?.[0]||2)*25):def.category==='infantry'?18:32;
+      const by = p.y - flying - (def.kind==='building'?ay*.65: def.category==='infantry'?27:32);
+      ctx.fillStyle='#020702';ctx.fillRect(p.x-barW/2-1,by-1,barW+2,5);
+      ctx.fillStyle=e.hp/e.maxHp>.5?'#78dd49':e.hp/e.maxHp>.25?'#f8d947':'#e84c30';ctx.fillRect(p.x-barW/2,by,barW*e.hp/e.maxHp,3);
+      if(e.veteran>0){ctx.fillStyle='#f5e17c';ctx.font='bold 9px Tahoma';ctx.fillText('★'.repeat(Math.min(3,e.veteran)),p.x+barW/2+3,by+4);}
+    }
+    if(e.controlledBy){const controller=this.game.entities.find(v=>v.id===e.controlledBy);if(controller&&this.onScreen(controller.x,controller.y)){const cp=this.project(controller.x,controller.y);cp.y-=this.elevation(controller.x,controller.y)*15;ctx.strokeStyle='#cd79f782';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cp.x,cp.y-15);ctx.lineTo(p.x,p.y-15);ctx.stroke();}}
+    if(e.bomb){ctx.fillStyle='#ffbe70';ctx.font='bold 10px Consolas';ctx.textAlign='center';ctx.fillText(`● ${Math.max(0,Math.ceil(e.bomb.detonatesAt-this.game.time))}`,p.x,p.y-ay*.65-14);}
+    if(e.repairing){ctx.fillStyle='#a8f686';ctx.font='bold 15px Tahoma';ctx.fillText('+',p.x-5,p.y-ay*.75-8);}
+    if(e.invulnerableUntil && e.invulnerableUntil>this.game.time){ctx.strokeStyle='#f95046';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y-flying-12,24,24,0,0,Math.PI*2);ctx.stroke();}
+    if(e.hp < e.maxHp*.4 && def.kind==='building'){const phase=(this.time*15+e.id)%25;ctx.globalAlpha=.4;ctx.fillStyle='#343432';ctx.beginPath();ctx.arc(p.x+5,p.y-ay*.5-phase,5+phase*.15,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+  }
+  private coloredSprite(sprite: Sprite, color: string): CanvasImageSource | undefined {
+    const original = this.assets.images.get(sprite.src);if(!original)return;
+    const key=sprite.src+color;const existing=this.tinted.get(key);if(existing)return existing;
+    const c=document.createElement('canvas');c.width=original.width;c.height=original.height;const ctx=c.getContext('2d')!;ctx.drawImage(original,0,0);
+    const data=ctx.getImageData(0,0,c.width,c.height),d=data.data;
+    const hex=color.replace('#','');const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+    const mask=sprite.remapMaskSrc && this.assets.images.get(sprite.remapMaskSrc);let maskData:Uint8ClampedArray|undefined;
+    if(mask){const m=document.createElement('canvas');m.width=c.width;m.height=c.height;const mc=m.getContext('2d')!;mc.drawImage(mask,0,0);maskData=mc.getImageData(0,0,m.width,m.height).data;}
+    for(let i=0;i<d.length;i+=4){if(maskData ? maskData[i+3]>0 : d[i+3] && d[i]>65 && d[i]>d[i+1]*1.6 && d[i]>d[i+2]*1.35 && d[i+1]<140){const l=maskData?maskData[i]/255:d[i]/255;d[i]=Math.min(255,r*l);d[i+1]=Math.min(255,g*l);d[i+2]=Math.min(255,b*l);}}
+    ctx.putImageData(data,0,0);this.tinted.set(key,c);return c;
+  }
+  private drawFallbackUnit(ctx:CanvasRenderingContext2D,x:number,y:number,e:Entity,def:Definition,color:string){
+    ctx.save();ctx.translate(x,y);ctx.strokeStyle='#15241c';ctx.lineWidth=1;
+    if(def.category==='infantry'){ctx.fillStyle='#2c352a';ctx.fillRect(-3,-15,3,14);ctx.fillRect(1,-14,3,13);ctx.fillStyle=color;ctx.fillRect(-4,-22,8,11);ctx.fillStyle='#c1ad89';ctx.fillRect(-3,-27,6,5);ctx.fillStyle='#404e34';ctx.fillRect(-4,-29,8,4);}
+    else if(def.kind==='building'){const w=(def.size?.[0]||2)*25;ctx.fillStyle='#535a4d';ctx.fillRect(-w,-45,w*2,45);ctx.fillStyle=color;ctx.fillRect(-w,-45,w*2,5);ctx.strokeRect(-w,-45,w*2,45);ctx.fillStyle='#c0c8a4';ctx.font='10px Tahoma';ctx.textAlign='center';ctx.fillText(t(def.name),0,-16);}
+    else{ctx.scale(1,.65);ctx.rotate(e.angle+Math.PI/4);ctx.fillStyle='#242c26';ctx.fillRect(-17,-13,34,8);ctx.fillRect(-17,7,34,8);ctx.fillStyle='#85917a';ctx.fillRect(-16,-9,32,20);ctx.fillStyle=color;ctx.fillRect(-9,-7,17,15);ctx.fillStyle='#717b65';ctx.fillRect(0,-2,25,5);ctx.strokeRect(-16,-9,32,20);}
+    ctx.restore();
+  }
+  private drawOriginalTile(ctx: CanvasRenderingContext2D, tile: NonNullable<RenderMap['tiles']>[number] | undefined, x:number,y:number):boolean{
+    if(!tile)return false;
+    const sprite=this.assets.terrain[`${this.map.theater?.toLowerCase() || 'snow'}:${tile.tileId===65535?0:tile.tileId}:${tile.subTile}`];
+    if(!sprite)return false;const image=this.assets.images.get(sprite.src);if(!image)return false;
+    ctx.drawImage(image,sprite.x,sprite.y,sprite.width,sprite.height,x-sprite.anchorX,y-sprite.anchorY,sprite.width,sprite.height);return true;
+  }
+  private drawAtlas(ctx:CanvasRenderingContext2D,sprite:Sprite,x:number,y:number,frame=0){
+    const image=this.assets.images.get(sprite.src);if(!image)return false;
+    frame=Math.min(Math.max(0,frame),sprite.frames-1);
+    ctx.drawImage(image,frame%sprite.columns*sprite.frameWidth,Math.floor(frame/sprite.columns)*sprite.frameHeight,sprite.frameWidth,sprite.frameHeight,x-sprite.anchorX,y-sprite.anchorY,sprite.frameWidth,sprite.frameHeight);return true;
+  }
+  private texture(terrain:Terrain,x:number,y:number):HTMLCanvasElement{
+    const seed=((x*17+y*31)&15),key=terrain+seed+this.map.theater;
+    const cache=this.terrainTextures.get(key);if(cache)return cache;
+    const c=document.createElement('canvas');c.width=60;c.height=30;const ctx=c.getContext('2d')!;const snow=this.map.theater?.toLowerCase()==='snow';
+    const base:Record<string,string>={water:'#244b64',snow:'#cbd7d7',land:snow?'#c7d3d4':'#8c8860',ore:snow?'#c8cec1':'#847b4c',gem:snow?'#c5cfc9':'#8b805f',cliff:snow?'#889b9e':'#6e7054',road:'#839091',bridge:'#817968'};
+    ctx.beginPath();ctx.moveTo(30,0);ctx.lineTo(60,15);ctx.lineTo(30,30);ctx.lineTo(0,15);ctx.closePath();ctx.clip();ctx.fillStyle=base[terrain]||base.land;ctx.fillRect(0,0,60,30);
+    let rand=seed+534;const rng=()=>{rand=(rand*1664525+1013904223)>>>0;return rand/4294967296;};
+    for(let i=0;i<85;i++){const r=rng(),px=rng()*60,py=rng()*30;ctx.fillStyle=r>.5?'#ffffff18':'#213b381c';ctx.fillRect(px,py,terrain==='water'?7:2,1);}
+    if(terrain==='water'){ctx.strokeStyle='#6b98a84a';ctx.beginPath();ctx.moveTo(seed,8+seed*.5);ctx.lineTo(seed+14,9+seed*.5);ctx.stroke();}
+    if(terrain==='road'||terrain==='bridge'){ctx.strokeStyle='#d2c7a24a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,15);ctx.lineTo(60,15);ctx.stroke();}
+    this.terrainTextures.set(key,c);return c;
+  }
+  private drawOre(ctx:CanvasRenderingContext2D,x:number,y:number,tx:number,ty:number,gem:boolean){
+    for(let i=0;i<8;i++){const a=((tx*13+ty*37+i*19)%43)/43*Math.PI*2,r=7+(i%4)*4;const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r*.45;ctx.fillStyle=gem?['#af456a','#598aa6','#b889b5'][i%3]:['#c99c24','#eac553','#aa7119'][i%3];ctx.fillRect(px,py,3+(i%2),2);ctx.fillStyle=gem?'#dfa6c5':'#ffe796';ctx.fillRect(px,py,1,1);}
+  }
+  private diamond(ctx:CanvasRenderingContext2D,x:number,y:number,fill:string,stroke?:string){ctx.beginPath();ctx.moveTo(x,y-15);ctx.lineTo(x+30,y);ctx.lineTo(x,y+15);ctx.lineTo(x-30,y);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=.6;ctx.stroke();}}
+  attachMinimap(canvas:HTMLCanvasElement){
+    this.miniCtx=canvas.getContext('2d')!;canvas.width=400;canvas.height=280;
+    const click=(e:MouseEvent)=>{const r=canvas.getBoundingClientRect();const x=(e.clientX-r.left)*canvas.width/r.width,y=(e.clientY-r.top)*canvas.height/r.height;const wx=(x-this.miniOrigin.x)/this.miniScale,wy=(y-this.miniOrigin.y)/this.miniScale;this.camera.x=wx;this.camera.y=wy;this.clampCamera();};
+    canvas.addEventListener('click',click);this.cleanup.push(()=>canvas.removeEventListener('click',click));
+    this.makeMinimapBase(canvas.width,canvas.height);
+  }
+  private makeMinimapBase(w:number,h:number){
+    const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d')!;const b=this.worldBounds;
+    this.miniScale=Math.min((w-10)/(b.maxX-b.minX+60),(h-14)/(b.maxY-b.minY+30));this.miniOrigin={x:(w-(b.minX+b.maxX)*this.miniScale)/2,y:(h-(b.minY+b.maxY)*this.miniScale)/2};
+    const colors:Record<string,string>={water:'#153f57',snow:'#b9cbcf',land:this.map.theater==='snow'?'#b6c8c9':'#797c50',ore:'#c6a551',gem:'#aa7c9d',cliff:'#7f9396',road:'#778384',bridge:'#b3a185'};
+    for(let y=0;y<this.map.height;y++)for(let x=0;x<this.map.width;x++){const t=this.map.cells[y*this.map.width+x];if(t==='void')continue;const p=this.project(x,y);const raw=this.map.radarColors?.[y*this.map.width+x];ctx.fillStyle=raw?`#${raw.toString(16).padStart(6,'0')}`:colors[t]||'#809383';ctx.fillRect(p.x*this.miniScale+this.miniOrigin.x-1,p.y*this.miniScale+this.miniOrigin.y-1,Math.max(2,60*this.miniScale),Math.max(1,30*this.miniScale));}
+    this.miniBase=c;
+  }
+  drawMinimap(){
+    const ctx=this.miniCtx;if(!ctx||!this.miniBase)return;const w=ctx.canvas.width,h=ctx.canvas.height;ctx.fillStyle='#07130e';ctx.fillRect(0,0,w,h);
+    const player=this.game.players.find(v=>v.id===this.localId)!;const online=player.powerProduced>=player.powerConsumed&&this.game.entities.some(e=>e.owner===this.localId&&e.hp>0&&['radar','airforce_command'].includes(e.type));
+    if(!online){const raw=this.assets.manifest.ui?.[`${player.faction==='soviet'?'sidec02':'sidec01'}-radar`] as Sprite|undefined;const img=raw&&this.assets.images.get(raw.src);if(raw&&img)ctx.drawImage(img,0,0,raw.frameWidth,raw.frameHeight,0,0,w,h);ctx.fillStyle='#061017ab';ctx.fillRect(0,h-31,w,31);ctx.fillStyle='#afbaa8';ctx.font='14px Tahoma';ctx.textAlign='center';ctx.fillText(t(player.powerConsumed>player.powerProduced?'电力不足':'雷达离线'),w/2,h-11);return;}
+    ctx.drawImage(this.miniBase,0,0);
+    for(let y=0;y<this.map.height;y++)for(let x=0;x<this.map.width;x++){if(!this.game.explored(this.localId,x,y)){const p=this.project(x,y);ctx.fillStyle='#020a08';ctx.fillRect(p.x*this.miniScale+this.miniOrigin.x-1,p.y*this.miniScale+this.miniOrigin.y-1,Math.max(2,60*this.miniScale),Math.max(1,30*this.miniScale));}}
+    for(const e of this.game.entities){if(e.hp<=0||e.transportedBy||!this.game.visible(this.localId,e.x,e.y))continue;const p=this.project(e.x,e.y);ctx.fillStyle=this.game.players.find(v=>v.id===e.owner)?.color||PLAYER_COLORS[e.owner]||'#a6aaa0';const s=e.kind==='building'?5:3;ctx.fillRect(p.x*this.miniScale+this.miniOrigin.x-s/2,p.y*this.miniScale+this.miniOrigin.y-s/2,s,s);}
+    ctx.strokeStyle='#dde7aa';ctx.lineWidth=1;ctx.strokeRect((this.camera.x-this.width/(2*this.zoom))*this.miniScale+this.miniOrigin.x,(this.camera.y-this.height/(2*this.zoom))*this.miniScale+this.miniOrigin.y,this.width/this.zoom*this.miniScale,this.height/this.zoom*this.miniScale);
+  }
+}
