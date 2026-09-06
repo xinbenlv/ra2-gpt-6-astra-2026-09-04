@@ -159,7 +159,7 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
   let cursor: Point = { x: 0, y: 0 };
   let activePointer: number | null = null;
   const touchPointers = new Map<number, Point>();
-  let touchBaseline: { state: EditorSnapshot; cursor: Point; notice: { hidden: boolean; text: string; error: boolean } } | null = null;
+  let touchBaseline: { state: EditorSnapshot; cursor: Point; notice: { hidden: boolean; nodes: Node[]; error: boolean } } | null = null;
   let touchNavigation = false;
   let touchInterrupted = false;
   let pinch: { ids: [number, number]; distance: number; zoom: number; anchor: Point } | null = null;
@@ -481,7 +481,8 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
       doc = touchBaseline.state.doc; origin = { ...touchBaseline.state.origin }; cursor = { ...touchBaseline.cursor };
       const notice = find('[data-message]');
       notice.hidden = touchBaseline.notice.hidden; notice.classList.toggle('is-error', touchBaseline.notice.error);
-      find('[data-message-text]').textContent = touchBaseline.notice.text;
+      // Preserve i18n's source-text tracking on the original notice nodes.
+      find('[data-message-text]').replaceChildren(...touchBaseline.notice.nodes);
     }
     touchBaseline = null; strokeBefore = null; previousPoint = null; cropDrag = null; panDrag = null; activePointer = null;
     hover = null; strokeLimitReported = false; syncDocument(); cropStatus(); coordinates(null);
@@ -635,7 +636,7 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
         rebasePinch(); draw(); return;
       }
       const notice = find('[data-message]');
-      touchBaseline = { state: snapshot(), cursor: { ...cursor }, notice: { hidden: notice.hidden, text: find('[data-message-text]').textContent ?? '', error: notice.classList.contains('is-error') } };
+      touchBaseline = { state: snapshot(), cursor: { ...cursor }, notice: { hidden: notice.hidden, nodes: [...find('[data-message-text]').childNodes], error: notice.classList.contains('is-error') } };
     }
     activePointer = event.pointerId; canvas.setPointerCapture(event.pointerId);
     if (event.button === 1 || spaceHeld) {
