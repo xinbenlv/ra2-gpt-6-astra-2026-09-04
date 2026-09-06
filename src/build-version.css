@@ -1,0 +1,22 @@
+.build-version {
+  position: fixed;
+  right: calc(8px + env(safe-area-inset-right, 0px));
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: calc(100vw - 16px);
+  padding: 5px 8px;
+  border: 1px solid #a3ad8952;
+  border-radius: 3px;
+  background: #101610ed;
+  color: #d5d9c6;
+  font: 11px/1.4 Consolas, ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.build-version code { color: #f0e2b7; font: inherit; }
+.build-version time { white-space: nowrap; }
+/* Keep feedback readable above the persistent version label. */
+body .map-editor > .editor-message, body .error-toast { bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }

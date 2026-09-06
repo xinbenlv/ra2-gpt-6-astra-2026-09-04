@@ -1,13 +1,24 @@
 import { defineConfig } from 'vite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 const base = '/' + (process.env.RA2_BASE_PATH ?? '').replace(/^\/+|\/+$/g, '') + '/';
 const deployBase = base === '//' ? '/' : base;
+// Embed the checkout used for this bundle, so an older cached page reports its own version.
+let buildInfo: { hash: string; committedAt: string | null } = { hash: 'unknown', committedAt: null };
+try {
+  const [hash, committedAt] = execFileSync('git', ['show', '-s', '--format=%H%n%cI', 'HEAD'], {
+    cwd: path.dirname(fileURLToPath(import.meta.url)), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+  }).trim().split('\n');
+  if (/^[a-f0-9]{40}$/.test(hash) && Number.isFinite(Date.parse(committedAt))) buildInfo = { hash, committedAt };
+} catch { /* Source archives without Git still run, with an explicit unknown version. */ }
 
 // Deliberately disable Vite's public directory copying: it may contain originals
 // from offline development, and those must never become hosted build artifacts.
 export default defineConfig({
   base: deployBase,
+  define: { __BUILD_INFO__: JSON.stringify(buildInfo) },
   publicDir: false,
   build: { assetsDir:'app' },
   worker: { format:'es' },

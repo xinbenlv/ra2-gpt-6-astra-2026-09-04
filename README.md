@@ -38,6 +38,8 @@ The sharing acceptance script uses two separate Chromium profiles copied from an
 
 [Play on GitHub Pages](https://xinbenlv.github.io/ra2-gpt-6-astra-2026-09-04/) — hosted on the default `github.io` domain, with no custom domain.
 
+The fixed bottom-right label identifies the code currently running: a six-character Git commit hash and its commit time in UTC. These values are embedded during the build, so a cached page keeps its own version label. Online navigation revalidates the page; offline play retains the last loaded version and installed original assets.
+
 For local development, install Node.js 22 or newer:
 
 ```sh

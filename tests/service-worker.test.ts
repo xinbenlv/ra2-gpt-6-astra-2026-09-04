@@ -10,6 +10,7 @@ for (const base of ['/', '/ra2-gpt-6-astra-2026-09-04/']) {
     const stores = new Map<string, Map<string, Response>>();
     const network: string[] = [];
     let offline = false;
+    let deployedShell = 'first deployment';
     const key = (request: string | { url: string }) => new URL(typeof request === 'string' ? request : request.url, origin).pathname;
     const store = (name: string) => { if (!stores.has(name)) stores.set(name, new Map()); return stores.get(name)!; };
     runInNewContext(readFileSync(new URL('../public/ra2-sw.js', import.meta.url), 'utf8'), {
@@ -20,9 +21,11 @@ for (const base of ['/', '/ra2-gpt-6-astra-2026-09-04/']) {
         put: async (request: string | { url: string }, response: Response) => store(name).set(key(request), response),
         addAll: async (paths: string[]) => { for (const path of paths) store(name).set(path, new Response(path.endsWith('.js') ? 'synthetic application' : 'synthetic shell')); },
       }) },
-      fetch: async (request: string | { url: string }) => {
+      fetch: async (request: string | { url: string; mode?: string }, options?: { cache?: string }) => {
         network.push(key(request));
         if (offline) throw new Error('offline');
+        if (typeof request !== 'string' && request.mode === 'navigate')
+          return new Response(options?.cache === 'no-cache' ? deployedShell : 'stale HTTP-cached shell');
         return key(request) === base + 'app-shell.json' ? Response.json([base, base + 'app/main.js']) : new Response('network');
       },
     });
@@ -43,8 +46,12 @@ for (const base of ['/', '/ra2-gpt-6-astra-2026-09-04/']) {
     assert.equal((await request(base + 'assets/missing.png'))!.status, 404);
     assert.deepEqual(network, [base + 'app-shell.json'], 'originals never fall through to the host');
     if (base !== '/') assert.equal(request('/other-project/assets/test.wav'), undefined);
+    assert.equal(await (await request(base, 'navigate'))!.text(), 'first deployment');
+    deployedShell = 'updated deployment';
+    assert.equal(await (await request(base, 'navigate'))!.text(), 'updated deployment', 'navigation revalidates stale HTTP HTML after a deployment');
     offline = true;
-    assert.equal(await (await request(base, 'navigate'))!.text(), 'synthetic shell');
+    assert.equal(await (await request(base, 'navigate'))!.text(), 'updated deployment', 'offline navigation retains the last successfully loaded build');
+    assert.equal(await (await request(base + 'assets/test.wav'))!.text(), '0123456789', 'updating the app leaves installed originals available offline');
     assert.equal(await (await request(base + 'app/main.js'))!.text(), 'synthetic application');
     assert.equal((await request(base + 'app/missing.js'))!.status, 503, 'missing scripts must not receive HTML');
   });

@@ -1,4 +1,5 @@
 import './style.css';
+import { mountBuildVersion } from './build-version';
 import { APP_TITLE } from './project';
 import { projectNotice, sourceCodeLink } from './project-notice';
 import { mountDebugPanel } from './debug-panel';
@@ -14,6 +15,7 @@ import { GameEngine, COUNTRIES, CATALOG, CATEGORY_NAMES, PLAYER_COLORS, countryB
 import { BattlefieldRenderer, type RenderMap } from './renderer';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+mountBuildVersion();
 registerTranslations({
   '地图编辑器':'Map editor', '上传地图':'Upload map', '编辑器地图':'Editor map',
   '上传地图文件':'Upload map file', '自定义地图文件超过 2 MB。':'Custom map files must be under 2 MB.',

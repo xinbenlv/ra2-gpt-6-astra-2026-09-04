@@ -43,7 +43,8 @@ self.addEventListener('fetch', event => {
       if (logicalPath.startsWith('/app/')) {
         const cached = await cache.match(event.request); if (cached) return cached;
       }
-      try { const response = await fetch(event.request); if (response.ok) await cache.put(event.request,response.clone()); return response; }
+      // Revalidate HTML so Pages' HTTP cache cannot keep navigation on an older bundle.
+      try { const response = await fetch(event.request, event.request.mode === 'navigate' ? {cache:'no-cache'} : undefined); if (response.ok) await cache.put(event.request,response.clone()); return response; }
       catch { return await cache.match(event.request) || (event.request.mode === 'navigate' ? await cache.match(BASE) : undefined) || new Response('Offline application unavailable.',{status:503}); }
     })());
   }
