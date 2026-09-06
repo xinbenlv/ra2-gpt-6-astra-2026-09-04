@@ -19,6 +19,7 @@ registerTranslations({
   '创建新地图': 'Create New Map', '替换当前地图？': 'Replace the current map?',
   '替换后可以点击撤销，回到当前地图。': 'After replacing, use Undo to return to your current map.', '确认替换': 'Replace Map',
   '撤销': 'Undo', '重做': 'Redo', '缩小': 'Zoom Out', '放大': 'Zoom In', '适应窗口': 'Fit Map',
+  '缩放比例': 'Zoom Level', '单指绘制 · 双指缩放或平移': 'One finger to paint · Two fingers to zoom or pan',
   '地图绘图区': 'Map Drawing Area', '坐标': 'Cell', '在地图上移动指针开始绘制': 'Move over the map to begin drawing',
   '拖动绘制 · 方向键移动光标 · 空格绘制 · Ctrl/⌘ Z 撤销': 'Drag to paint · Arrow keys move cursor · Space paints · Ctrl/⌘ Z undoes',
   '出生点周围需要平坦空地；水域和悬崖会阻挡地面单位。': 'Keep flat ground around starting positions. Water and cliffs block ground units.',
@@ -105,10 +106,10 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
       <div class="editor-bound-tools"><label><input type="checkbox" data-auto-expand checked>自动扩展地图</label><p>画笔越过边缘时自动扩展，最大 96×96 格。</p><button type="button" data-action="crop" aria-pressed="false">调整地图边界</button></div><div class="editor-spawn-tools"><h2><span>02</span> 起始位置</h2><div data-spawns class="editor-spawns" role="group" aria-label="起始位置"></div><p>选择出生点后，点击地图移动。</p></div>
       <p class="editor-terrain-note">出生点周围需要平坦空地；水域和悬崖会阻挡地面单位。</p>
     </aside>
-    <main class="editor-drawing editor-panel"><div class="editor-drawing-toolbar"><div class="editor-history"><button type="button" data-action="undo" title="撤销 (Ctrl/⌘ Z)">↶ <span>撤销</span></button><button type="button" data-action="redo" title="重做 (Ctrl/⌘ Shift Z)">↷ <span>重做</span></button></div><div class="editor-view-tools"><label><input type="checkbox" data-grid>显示网格</label><label><input type="checkbox" data-markers checked>显示出生点</label><button type="button" data-action="zoom-out" aria-label="缩小">−</button><button type="button" data-action="fit">适应窗口</button><button type="button" data-action="zoom-in" aria-label="放大">+</button></div></div>
+    <main class="editor-drawing editor-panel"><div class="editor-drawing-toolbar"><div class="editor-history"><button type="button" data-action="undo" title="撤销 (Ctrl/⌘ Z)">↶ <span>撤销</span></button><button type="button" data-action="redo" title="重做 (Ctrl/⌘ Shift Z)">↷ <span>重做</span></button></div><div class="editor-view-tools"><div class="editor-view-options"><label><input type="checkbox" data-grid>显示网格</label><label><input type="checkbox" data-markers checked>显示出生点</label></div><div class="editor-zoom-tools" role="group" aria-label="缩放比例"><button type="button" data-action="zoom-out" aria-label="缩小">−</button><span data-zoom-level aria-label="缩放比例">100%</span><button type="button" data-action="zoom-in" aria-label="放大">+</button><button type="button" data-action="fit">适应窗口</button></div></div></div>
       <div class="editor-canvas-scroll" data-canvas-scroll><canvas data-editor-canvas tabindex="0" aria-label="地图绘图区" aria-describedby="editor-canvas-help">地图绘图区</canvas><div data-crop-status class="editor-crop-status" role="status" hidden></div></div>
       <div class="editor-coordinate-bar"><span data-coordinates>在地图上移动指针开始绘制</span><span data-tool-status></span></div>
-      <p class="editor-canvas-help" id="editor-canvas-help">空格＋拖动或中键平移 · 滚轮缩放 · 方向键移动光标 · 空格绘制</p>
+      <p class="editor-canvas-help" id="editor-canvas-help"><span class="editor-touch-help">单指绘制 · 双指缩放或平移</span><span class="editor-desktop-help">空格＋拖动或中键平移 · 滚轮缩放 · 方向键移动光标 · 空格绘制</span></p>
     </main>
     <aside class="editor-inspector editor-panel"><h2><span>03</span> 地图信息</h2>
       <label class="editor-field"><span>地图名称</span><input type="text" data-name maxlength="60" autocomplete="off" spellcheck="false"></label>
@@ -157,6 +158,11 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
   let hover: Point | null = null;
   let cursor: Point = { x: 0, y: 0 };
   let activePointer: number | null = null;
+  const touchPointers = new Map<number, Point>();
+  let touchBaseline: { state: EditorSnapshot; cursor: Point; notice: { hidden: boolean; text: string; error: boolean } } | null = null;
+  let touchNavigation = false;
+  let touchInterrupted = false;
+  let pinch: { ids: [number, number]; distance: number; zoom: number; anchor: Point } | null = null;
   let strokeBefore: EditorSnapshot | null = null;
   let previousPoint: Point | null = null;
   let nameBefore: EditorSnapshot | null = null;
@@ -213,7 +219,8 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
     clearTimeout(saveTimer);
     // A corrupt pre-existing draft is not silently overwritten by opening the editor.
     if (storageBlocked) return;
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(doc)); draftMessage = '已保存本地草稿'; }
+    // A first finger may become a pinch. Never persist its tentative brush marks.
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(touchBaseline?.state.doc ?? doc)); draftMessage = '已保存本地草稿'; }
     catch { draftMessage = '无法保存本地草稿，请及时下载地图。'; storageBlocked = true; }
     updateDraftStatus();
   }
@@ -388,6 +395,9 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
       context.beginPath(); polygon(boundsPoints({ x: hover.x - radius, y: hover.y - radius, width: size, height: size })); context.fill(); context.stroke();
     }
     Object.assign(canvas.dataset, { zoom: String(zoom), cameraX: String(camera.x), cameraY: String(camera.y), originX: String(origin.x), originY: String(origin.y), mapWidth: String(doc.width), mapHeight: String(doc.height), cropMode: String(cropMode), cropHandles: JSON.stringify(cropMode ? cropHandles() : []), nativeTileCount: String(resolved.length), transitionCount: String(compiledTransitions), resourceCount: String(compiledResources) });
+    find('[data-zoom-level]').textContent = `${Math.round(zoom * 100)}%`;
+    find<HTMLButtonElement>('[data-action="zoom-out"]').disabled = zoom <= .055;
+    find<HTMLButtonElement>('[data-action="zoom-in"]').disabled = zoom >= 3;
     canvas.style.cursor = panDrag ? 'grabbing' : spaceHeld ? 'grab' : cropMode ? 'crosshair' : 'crosshair';
   }
   function applyResize(result: ResizeResult): void {
@@ -451,6 +461,7 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
     status.textContent = `${t('范围')} ${bounds.width} × ${bounds.height} · ${removed.length ? t('需要重新放置的出生点：') + removed.join(', ') : t('保留全部出生点')}\n${t('拖动边或角调整范围；松开应用，可撤销。')}`;
   }
   function finishPointer(cancelCrop = false): void {
+    if (touchPointers.size) interruptTouchGesture();
     const pointer = activePointer; activePointer = null;
     if (cropDrag) {
       const drag = cropDrag; cropDrag = null;
@@ -464,6 +475,59 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
     panDrag = null; finishStroke();
     if (pointer !== null && canvas.hasPointerCapture(pointer)) canvas.releasePointerCapture(pointer);
     cropStatus(); draw();
+  }
+  function rollbackTouchEdit(): void {
+    if (touchBaseline) {
+      doc = touchBaseline.state.doc; origin = { ...touchBaseline.state.origin }; cursor = { ...touchBaseline.cursor };
+      const notice = find('[data-message]');
+      notice.hidden = touchBaseline.notice.hidden; notice.classList.toggle('is-error', touchBaseline.notice.error);
+      find('[data-message-text]').textContent = touchBaseline.notice.text;
+    }
+    touchBaseline = null; strokeBefore = null; previousPoint = null; cropDrag = null; panDrag = null; activePointer = null;
+    hover = null; strokeLimitReported = false; syncDocument(); cropStatus(); coordinates(null);
+  }
+  function touchPair(ids: [number, number]): { center: Point; distance: number } | null {
+    const a = touchPointers.get(ids[0]), b = touchPointers.get(ids[1]);
+    if (!a || !b) return null;
+    const rect = canvas.getBoundingClientRect();
+    return { center: { x: (a.x + b.x) / 2 - rect.left, y: (a.y + b.y) / 2 - rect.top }, distance: Math.hypot(a.x - b.x, a.y - b.y) };
+  }
+  function rebasePinch(): void {
+    pinch = null;
+    if (touchInterrupted || touchPointers.size < 2) return;
+    const ids = [...touchPointers.keys()].slice(0, 2) as [number, number], pair = touchPair(ids);
+    if (!pair || pair.distance < 2) return;
+    pinch = { ids, distance: pair.distance, zoom, anchor: { x: (pair.center.x - camera.x) / zoom, y: (pair.center.y - camera.y) / zoom } };
+  }
+  function movePinch(): void {
+    if (touchInterrupted || touchPointers.size < 2) return;
+    if (!pinch) { rebasePinch(); return; }
+    const pair = touchPair(pinch.ids); if (!pair) { rebasePinch(); return; }
+    zoom = Math.max(.055, Math.min(3, pinch.zoom * pair.distance / pinch.distance));
+    camera = { x: pair.center.x - pinch.anchor.x * zoom, y: pair.center.y - pinch.anchor.y * zoom };
+    draw();
+  }
+  function interruptTouchGesture(clear = false): void {
+    if (!touchPointers.size) return;
+    rollbackTouchEdit(); pinch = null; touchNavigation = true; touchInterrupted = true;
+    if (clear) {
+      const ids = [...touchPointers.keys()]; touchPointers.clear(); touchNavigation = false; touchInterrupted = false;
+      for (const id of ids) if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
+    }
+  }
+  function endTouch(event: PointerEvent, canceled: boolean): boolean {
+    if (!touchPointers.has(event.pointerId)) return false;
+    touchPointers.delete(event.pointerId);
+    if (touchNavigation) {
+      if (canceled) touchInterrupted = true;
+      rebasePinch();
+    } else {
+      if (canceled) rollbackTouchEdit(); else touchBaseline = null;
+      finishPointer(canceled);
+    }
+    if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    if (!touchPointers.size) { touchNavigation = false; touchInterrupted = false; pinch = null; touchBaseline = null; }
+    hover = null; coordinates(null); draw(); return true;
   }
   function history(direction: 'undo' | 'redo'): void {
     finishPointer(); finishName();
@@ -559,8 +623,20 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
   find<HTMLInputElement>('[data-markers]').addEventListener('change', event => { showMarkers = (event.target as HTMLInputElement).checked; draw(); }, { signal });
   find<HTMLInputElement>('[data-auto-expand]').addEventListener('change', event => { autoExpand = (event.target as HTMLInputElement).checked; }, { signal });
   canvas.addEventListener('pointerdown', event => {
-    if ((event.button !== 0 && event.button !== 1) || activePointer !== null) return;
+    if (event.button !== 0 && event.button !== 1) return;
+    const touch = event.pointerType === 'touch';
+    if (touch ? touchPointers.has(event.pointerId) || (activePointer !== null && !touchPointers.size) : activePointer !== null || touchPointers.size > 0) return;
     event.preventDefault(); canvas.focus({ preventScroll: true }); finishName();
+    if (touch) {
+      touchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      canvas.setPointerCapture(event.pointerId);
+      if (touchPointers.size > 1 || touchNavigation) {
+        if (!touchNavigation) { rollbackTouchEdit(); touchNavigation = true; }
+        rebasePinch(); draw(); return;
+      }
+      const notice = find('[data-message]');
+      touchBaseline = { state: snapshot(), cursor: { ...cursor }, notice: { hidden: notice.hidden, text: find('[data-message-text]').textContent ?? '', error: notice.classList.contains('is-error') } };
+    }
     activePointer = event.pointerId; canvas.setPointerCapture(event.pointerId);
     if (event.button === 1 || spaceHeld) {
       spaceUsedForPan = true; panDrag = { start: clientPoint(event), camera: { ...camera } }; draw(); return;
@@ -573,6 +649,11 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
     strokeBefore = snapshot(); previousPoint = null; strokeLimitReported = false; strokeTo(eventPoint(event));
   }, { signal });
   canvas.addEventListener('pointermove', event => {
+    if (event.pointerType === 'touch') {
+      if (!touchPointers.has(event.pointerId)) return;
+      touchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (touchNavigation) { event.preventDefault(); movePinch(); return; }
+    } else if (touchPointers.size) return;
     if (activePointer !== null && event.pointerId !== activePointer) return;
     const screenPoint = clientPoint(event);
     if (panDrag) { camera = { x: panDrag.camera.x + screenPoint.x - panDrag.start.x, y: panDrag.camera.y + screenPoint.y - panDrag.start.y }; draw(); return; }
@@ -580,20 +661,27 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
     const point = eventPoint(event); hover = point; coordinates(point);
     if (activePointer !== null && strokeBefore) strokeTo(point); else draw();
   }, { signal });
-  canvas.addEventListener('pointerup', event => { if (event.pointerId === activePointer) finishPointer(); }, { signal });
-  canvas.addEventListener('pointercancel', event => { if (event.pointerId === activePointer) finishPointer(true); }, { signal });
-  canvas.addEventListener('lostpointercapture', () => { if (activePointer !== null) finishPointer(true); }, { signal });
+  canvas.addEventListener('pointerup', event => { if (!endTouch(event, false) && event.pointerId === activePointer) finishPointer(); }, { signal });
+  canvas.addEventListener('pointercancel', event => { if (!endTouch(event, true) && event.pointerId === activePointer) finishPointer(true); }, { signal });
+  canvas.addEventListener('lostpointercapture', event => {
+    if (touchPointers.has(event.pointerId)) { interruptTouchGesture(); draw(); }
+    else if (event.pointerId === activePointer) finishPointer(true);
+  }, { signal });
+  // Lost capture can send the final lift outside the canvas. Keep the navigation
+  // latch until those contacts actually end, without turning their moves into paint.
+  window.addEventListener('pointerup', event => { endTouch(event, false); }, { signal });
+  window.addEventListener('pointercancel', event => { endTouch(event, true); }, { signal });
   canvas.addEventListener('pointerleave', () => { if (activePointer === null) { hover = null; coordinates(null); draw(); } }, { signal });
-  canvas.addEventListener('focus', () => { hover = cursor; coordinates(cursor); draw(); }, { signal });
-  canvas.addEventListener('blur', () => { finishPointer(true); spaceHeld = false; spaceUsedForPan = false; hover = null; coordinates(null); draw(); }, { signal });
+  canvas.addEventListener('focus', () => { hover = touchNavigation ? null : cursor; coordinates(hover); draw(); }, { signal });
+  canvas.addEventListener('blur', () => { interruptTouchGesture(true); finishPointer(true); spaceHeld = false; spaceUsedForPan = false; hover = null; coordinates(null); draw(); }, { signal });
   canvas.addEventListener('wheel', event => {
-    event.preventDefault(); if (activePointer !== null) return;
+    event.preventDefault(); if (activePointer !== null || touchPointers.size) return;
     zoomAt(Math.exp(-Math.max(-200, Math.min(200, event.deltaY)) * .002), clientPoint(event));
   }, { signal, passive: false });
   canvas.addEventListener('auxclick', event => event.preventDefault(), { signal });
   canvas.addEventListener('contextmenu', event => event.preventDefault(), { signal });
   function keyboardPaint(): void {
-    if (cropMode || activePointer !== null) return;
+    if (cropMode || activePointer !== null || touchPointers.size) return;
     strokeBefore = snapshot(); previousPoint = null; strokeLimitReported = false; strokeTo(cursor); finishStroke(); draw();
   }
   screen.addEventListener('keydown', event => {
@@ -605,6 +693,7 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
     }
     if (event.key === 'Escape') {
       if (pending) { event.preventDefault(); dismissReplacement(); }
+      else if (touchPointers.size) { event.preventDefault(); interruptTouchGesture(); draw(); }
       else if (activePointer !== null) {
         event.preventDefault();
         if (strokeBefore) { doc = strokeBefore.doc; origin = { ...strokeBefore.origin }; strokeBefore = null; previousPoint = null; syncDocument(); scheduleSave(); }
@@ -629,14 +718,14 @@ export function mountMapEditor(container: HTMLElement, options: { assets: Assets
     }
   }, { signal });
   window.addEventListener('beforeunload', saveDraft, { signal });
-  window.addEventListener('blur', () => { finishPointer(true); spaceHeld = false; spaceUsedForPan = false; draw(); }, { signal });
+  window.addEventListener('blur', () => { interruptTouchGesture(true); finishPointer(true); spaceHeld = false; spaceUsedForPan = false; draw(); }, { signal });
   bindLanguageControl(screen, () => { updateTools(); updateDraftStatus(); updateValidation(); coordinates(hover); cropStatus(); });
   const observer = new ResizeObserver(resizeCanvas); observer.observe(scroll);
   syncDocument(); resizeCanvas(); updateDraftStatus();
   if (!savedDraft && !storageBlocked) saveDraft();
 
   return () => {
-    finishPointer(); finishName(); saveDraft(); disposed = true;
+    interruptTouchGesture(true); finishPointer(); finishName(); saveDraft(); disposed = true;
     controller.abort(); observer.disconnect(); clearTimeout(saveTimer); painter.clear();
     screen.querySelectorAll<HTMLSelectElement>('[data-language-select]').forEach(select => { select.onchange = null; });
     downloadUrls.forEach(url => URL.revokeObjectURL(url)); downloadUrls.clear(); screen.remove();
