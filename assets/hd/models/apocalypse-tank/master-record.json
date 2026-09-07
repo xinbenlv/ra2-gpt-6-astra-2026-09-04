@@ -1,0 +1,73 @@
+{
+  "asset": "apocalypse-tank",
+  "generation_version": "meshy-v1",
+  "parameters": {
+    "model_type": "standard",
+    "ai_model": "meshy-7",
+    "ultra_mode": false,
+    "should_texture": true,
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "should_remesh": false,
+    "image_enhancement": false,
+    "target_formats": [
+      "glb",
+      "fbx"
+    ]
+  },
+  "task_id": null,
+  "triangles": 1924286,
+  "embedded_images": 3,
+  "files": [
+    {
+      "path": "apocalypse-tank-meshy-review.blend",
+      "bytes": 95408218,
+      "sha256": "21d9149e91c0c8890fd64ea8a7d0b94f32260f8ed134c6b8c7da3195e00ae73a"
+    },
+    {
+      "path": "apocalypse-tank.fbx",
+      "bytes": 81559484,
+      "sha256": "a83b5eac20a1ac867d540c14e5db2ca5eeecc9f89ffcfe8e9c6186fef3bd2eed"
+    },
+    {
+      "path": "apocalypse-tank.glb",
+      "bytes": 79170168,
+      "sha256": "1858df18c3786df63d800278f5ee3c1b4b175acd54f8e300a474a88baea775d5"
+    },
+    {
+      "path": "preview.png",
+      "bytes": 123616,
+      "sha256": "e17e7eb609df8057445ed276fe2fc24ebf310c06c4c17ed450c6d1d69462b50d"
+    },
+    {
+      "path": "prompt.txt",
+      "bytes": 1386,
+      "sha256": "39088d2d703031bf7efd01ad1755ad133b666d017fd1bfff1946a3c65b55573d"
+    },
+    {
+      "path": "reference.png",
+      "bytes": 1265474,
+      "sha256": "ce46f69838a0c145e483be345cb18aba4ec62ce18aa437ab8e1547ffdf416f18"
+    },
+    {
+      "path": "texture-0-base_color.png",
+      "bytes": 5974127,
+      "sha256": "b78f9a946c34b0fb8c5622bf016016f4f2237076a0f9bd238ed92db24a8e3b73"
+    },
+    {
+      "path": "texture-0-metallic.png",
+      "bytes": 140798,
+      "sha256": "29c88c12601f71e270f7bdf9a201c409fa04e08f078006d607f5aeecd38acb78"
+    },
+    {
+      "path": "texture-0-normal.png",
+      "bytes": 4632834,
+      "sha256": "4ae189443782f09fa92e24cf99b2b8d85d4f4e7034a2b3deefb1e2c7fae984fa"
+    },
+    {
+      "path": "texture-0-roughness.png",
+      "bytes": 1774775,
+      "sha256": "5f89cffd651f0e39467bceffa8f4fc360153c42c887530b9bcf1dee49c5bd2ca"
+    }
+  ]
+}

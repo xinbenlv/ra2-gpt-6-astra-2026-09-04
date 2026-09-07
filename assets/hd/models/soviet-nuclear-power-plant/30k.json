@@ -1,0 +1,82 @@
+{
+  "inputName": "soviet-nuclear-power-plant.glb",
+  "inputBytes": 79596040,
+  "inputSha256": "830e762de23abb874eaa125c3fd4743065baea82fca6b026a4b58dbec9a8d91b",
+  "outputName": "30k.glb",
+  "outputBytes": 3976264,
+  "outputSha256": "e27fb0157111f1c0cb02a5f3b81c6ebc545567f0b559047c34b617d56a976647",
+  "before": {
+    "triangles": 1888058,
+    "materials": 1,
+    "textures": [
+      {
+        "bytes": 3589907,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      },
+      {
+        "bytes": 2415935,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      },
+      {
+        "bytes": 2516114,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      }
+    ],
+    "animations": 0,
+    "skins": 0
+  },
+  "after": {
+    "triangles": 29994,
+    "materials": 1,
+    "textures": [
+      {
+        "bytes": 204636,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      },
+      {
+        "bytes": 1043818,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      },
+      {
+        "bytes": 1191464,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      }
+    ],
+    "animations": 0,
+    "skins": 0
+  },
+  "recipe": {
+    "budget": 30000,
+    "ratio": 0.01588934238249037,
+    "error": 0.01,
+    "textureMaxSize": 1024,
+    "colorWebpQuality": 85,
+    "dataTextures": "lossless WebP",
+    "tangents": "MikkTSpace regenerated",
+    "geometryCompression": "none"
+  }
+}

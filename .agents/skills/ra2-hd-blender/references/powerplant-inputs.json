@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "asset": "soviet-powerplant",
+  "inputs": {
+    "original_sprite": {
+      "path": "public/assets/sprites/napowr.png",
+      "sha256": "d06b6693ffca02eeaa77dc396e9443a911d6723f9a9ba315564ba82d78ba8971"
+    },
+    "hd_reference": {
+      "path": ".cache/prototype-3d/reference/powerplant-user-reference-20260905.jpg",
+      "sha256": "4ff13aee5427360154b47efe88a54ad1efae2d89a1456bd44549ed324708d8f9"
+    },
+    "material_atlas": {
+      "path": ".cache/prototype-3d/reference-materials/industrial-reference-atlas-v1.png",
+      "sha256": "1c8109892fcb520bee90349dca7e093edb287778febef991a42964d84e8fb018"
+    }
+  },
+  "accepted_output": {
+    "path": ".cache/prototype-3d/blender-reference/atlas-v5.png",
+    "sha256": "614d2b90d5b5857d8dc0d8dc98bd0f7dd3dc7e0255e45008130d78867dfdafc7",
+    "resolution": [
+      2560,
+      1706
+    ],
+    "renderer": "Blender Cycles",
+    "samples": 128
+  },
+  "note": "Input hashes identify this accepted example, not a requirement for other assets. Binary inputs remain in ignored local directories."
+}

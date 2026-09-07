@@ -323,7 +323,14 @@ export class BattlefieldRenderer {
           if (sprite.sequences) { const direction=Math.floor(angle*8)%8; const action=e.deployed?'deployed':this.game.time-e.lastShot<.5?'fireup':moving?'walk':'ready'; const seq=sprite.sequences[action]||sprite.sequences.ready||[0,1,1];frame=seq[0]+direction*seq[2]+Math.floor(this.time*12)%seq[1]; }
           else frame = Math.round(angle * sprite.frames) % sprite.frames;
         }
-        ctx.drawImage(image,(frame%sprite.columns)*fw,Math.floor(frame/sprite.columns)*fh,fw,fh,p.x-ax,p.y-ay-flying,fw,fh); rendered = true;
+        const density = Number.isFinite(sprite.pixelRatio) && sprite.pixelRatio! > 0 ? sprite.pixelRatio! : 1;
+        // Sample the full-resolution frame, but keep world size, anchors and hit bounds logical.
+        const sourceWidth = fw, sourceHeight = fh;
+        fw /= density; fh /= density; ax /= density; ay /= density;
+        const smoothing = ctx.imageSmoothingEnabled;
+        if (density > 1) ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(image,(frame%sprite.columns)*sourceWidth,Math.floor(frame/sprite.columns)*sourceHeight,sourceWidth,sourceHeight,p.x-ax,p.y-ay-flying,fw,fh);
+        ctx.imageSmoothingEnabled = smoothing; rendered = true;
         const screen = this.toScreen(e.x,e.y); this.displayedSprites.set(e.id,{x:screen.x-ax*this.zoom,y:screen.y-(ay+flying)*this.zoom,w:fw*this.zoom,h:fh*this.zoom});
       }
     }

@@ -1,0 +1,82 @@
+{
+  "inputName": "allied-construction-yard.glb",
+  "inputBytes": 81048036,
+  "inputSha256": "fd469db73e9ee1de9c045845b998276d12219224e512d2d6a0a0f45b4eadf01e",
+  "outputName": "30k.glb",
+  "outputBytes": 3906464,
+  "outputSha256": "0144b14d87a3b8b585e95d0136ad2e19c80cac226e9de51fef99c1d1672c0026",
+  "before": {
+    "triangles": 1943266,
+    "materials": 1,
+    "textures": [
+      {
+        "bytes": 3486989,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      },
+      {
+        "bytes": 2341144,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      },
+      {
+        "bytes": 2540843,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      }
+    ],
+    "animations": 0,
+    "skins": 0
+  },
+  "after": {
+    "triangles": 29998,
+    "materials": 1,
+    "textures": [
+      {
+        "bytes": 189880,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      },
+      {
+        "bytes": 1023566,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      },
+      {
+        "bytes": 1167592,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      }
+    ],
+    "animations": 0,
+    "skins": 0
+  },
+  "recipe": {
+    "budget": 30000,
+    "ratio": 0.015437927694921848,
+    "error": 0.01,
+    "textureMaxSize": 1024,
+    "colorWebpQuality": 85,
+    "dataTextures": "lossless WebP",
+    "tangents": "MikkTSpace regenerated",
+    "geometryCompression": "none"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "description": "Authored optimized runtime models and sprites; archived master-record.json paths refer to the separate local archive, not distributed files.",
+  "files": [
+    {
+      "file": "models/allied-construction-yard/30k.glb",
+      "bytes": 3906464,
+      "sha256": "0144b14d87a3b8b585e95d0136ad2e19c80cac226e9de51fef99c1d1672c0026"
+    },
+    {
+      "file": "models/allied-construction-yard/30k.json",
+      "bytes": 1601,
+      "sha256": "edef31f739009f9ac1fd72729cbab1066779f4dfefea2edf15c765b800deee10"
+    },
+    {
+      "file": "models/allied-construction-yard/master-record.json",
+      "bytes": 2105,
+      "sha256": "85c4c49a7f9aeaa26ff377a921e00c6f5bbd973fb8ead7d318ca4b42119da9cf"
+    },
+    {
+      "file": "models/allied-construction-yard/prompt.txt",
+      "bytes": 1474,
+      "sha256": "d8db94117566ebc95c372e231c1fc304ac442d3eccaafa7ca06f04aa39d5bfc4"
+    },
+    {
+      "file": "models/apocalypse-tank/30k.glb",
+      "bytes": 3643592,
+      "sha256": "7f7478085a719fce892c858e17aa3a1051af2dc5ba0d79c124d2e640778f16e3"
+    },
+    {
+      "file": "models/apocalypse-tank/30k.json",
+      "bytes": 1557,
+      "sha256": "29603f96eb6df37bf911208cae5ed8d1a2501a772c7c8c298363fd951eb56d77"
+    },
+    {
+      "file": "models/apocalypse-tank/master-record.json",
+      "bytes": 2030,
+      "sha256": "96d1e98c196c82e7321be2a7bcdf679bd3b61b7ad4706a81243befa911724019"
+    },
+    {
+      "file": "models/apocalypse-tank/prompt.txt",
+      "bytes": 1386,
+      "sha256": "39088d2d703031bf7efd01ad1755ad133b666d017fd1bfff1946a3c65b55573d"
+    },
+    {
+      "file": "models/soviet-nuclear-power-plant/30k.glb",
+      "bytes": 3976264,
+      "sha256": "e27fb0157111f1c0cb02a5f3b81c6ebc545567f0b559047c34b617d56a976647"
+    },
+    {
+      "file": "models/soviet-nuclear-power-plant/30k.json",
+      "bytes": 1602,
+      "sha256": "d6459085c77657985ca15ab8b55e1f63303d6398a2cccd7037173e47e0d9a415"
+    },
+    {
+      "file": "models/soviet-nuclear-power-plant/master-record.json",
+      "bytes": 2109,
+      "sha256": "5d7a6b48d16753a78e9536cebb8b9a7cd181352cf9e7ac8a6ee656ecf40afe46"
+    },
+    {
+      "file": "models/soviet-nuclear-power-plant/prompt.txt",
+      "bytes": 1714,
+      "sha256": "2f5dcbd9170a56b8d8fd3e2252d79eeda5779fb3644d6607a48ced26d7922072"
+    },
+    {
+      "file": "models/tanya/30k.glb",
+      "bytes": 3221484,
+      "sha256": "7434e03ac0d3074aba0b6c42a6a926f3ae91517e79e6b3fb74e3c92bc5d2b70c"
+    },
+    {
+      "file": "models/tanya/30k.json",
+      "bytes": 1581,
+      "sha256": "a93cc1337b3ead102842b8c0bf8d0c5d4309507920429851a2e9652aae203558"
+    },
+    {
+      "file": "models/tanya/master-record.json",
+      "bytes": 2604,
+      "sha256": "cc2a27a89fdc7cbe7f3c82be7c713ae0cee662d845fb3624d3d3ba01a18d6885"
+    },
+    {
+      "file": "models/tanya/prompt.txt",
+      "bytes": 3142,
+      "sha256": "9c9d7a1dff6a54c8ec4ffd5dfe0f3a1711fd7eb5b2432153325bbdffa7fd0a7a"
+    },
+    {
+      "file": "sprites/gacnst.png",
+      "bytes": 732966,
+      "sha256": "34b4d754296d70437b6344ce45b644ddaf1bea243bc919b9a7fcc54b25807277"
+    },
+    {
+      "file": "sprites/manifest.json",
+      "bytes": 1751,
+      "sha256": "b841eebe8f89ed31a9e654589217f902fc42a9f57e10b91b0d1afd7cf3f14309"
+    },
+    {
+      "file": "sprites/mtnk.png",
+      "bytes": 1101827,
+      "sha256": "cf0993dd2aff83ad0fc1cb9765dcb0cbcfe07f1fd65eca088299af33ba8c3335"
+    },
+    {
+      "file": "sprites/nanrct.png",
+      "bytes": 510291,
+      "sha256": "c1c4b155f84faa518d91b4266b3ff52dd39c88c6a20ead33facff6e85799d05e"
+    },
+    {
+      "file": "sprites/tany.png",
+      "bytes": 110660,
+      "sha256": "c31cf2f58a32c7118a940523960893814fe19da8f173fa18d09391242f5bbd38"
+    }
+  ],
+  "totalBytes": 17228204
+}

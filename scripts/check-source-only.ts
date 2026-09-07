@@ -31,7 +31,7 @@ function main(){
   const result=spawnSync('git',staged?['diff','--cached','--name-only','--diff-filter=ACMR','-z']:['ls-files','-z'],{encoding:'utf8'});
   if(result.status!==0){process.stderr.write(result.stderr||'无法读取 Git 文件列表。\n');process.exitCode=1;return;}
   const forbidden=result.stdout.split('\0').filter(Boolean).filter(forbiddenOriginalPath);
-  if(forbidden.length){process.stderr.write('原版素材及生成资源不能提交：\n'+forbidden.map(p=>'  '+p).join('\n')+'\n请从暂存区移除这些文件；保留本机副本。\n');process.exitCode=1;}
+  if(forbidden.length){process.stderr.write('原版提取素材及其直接转换资源不能提交：\n'+forbidden.map(p=>'  '+p).join('\n')+'\n请从暂存区移除这些文件；保留本机副本。\n');process.exitCode=1;}
   else console.log('Source-only check passed: no original assets, maps, screenshots, or caches in Git.');
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)main();

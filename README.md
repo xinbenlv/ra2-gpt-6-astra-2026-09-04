@@ -152,6 +152,13 @@ The optional pre-commit hook rejects force-added original resources and scans st
 
 ## Development and verification
 
+For the low-resolution source art → built-in ImageGen → Meshy textured 3D workflow, use the
+repository skill [`$ra2-hd-blender`](.agents/skills/ra2-hd-blender/SKILL.md).
+It covers a shared reference prompt for buildings and units, Meshy task recovery,
+and model/texture downloads. Blender is optional for user-requested manual review
+or editing; the previous reconstruction guides remain as historical references.
+Authored runtime GLBs and HD sprites can be tracked under `assets/hd/`; generated master models and extracted original game art remain in ignored caches.
+
 ```sh
 npm test
 npm run build
@@ -182,3 +189,41 @@ This CLI requires Python 3.10+, native 7-Zip and FFmpeg. It writes ignored `.cac
 Original resources come from [Internet Archive: Red Alert 2 Multiplayer](https://archive.org/details/red-alert-2-multiplayer), an XWIS distribution containing Westwood game data. Browser downloads use Internet Archive's own CORS endpoint. The pinned installer SHA-256 is `5388c54d7d7b73060083563ff1926bca0d2663a76678b807e23e9a8d491441ce`.
 
 [7z-wasm](https://github.com/use-strict/7z-wasm) supplies 7-Zip compiled to WebAssembly. Its JavaScript/WASM files use GNU LGPL 2.1-or-later plus the unRAR restriction; see the upstream [license](https://github.com/use-strict/7z-wasm/blob/master/License.txt) and [unRAR notice](https://github.com/use-strict/7z-wasm/blob/master/unRarLicense.txt). Original 7-Zip is by Igor Pavlov; the WASM package is maintained by Alexandru Ciuca. [Pyodide](https://pyodide.org/) runs the original project converters in the browser with Pillow, PyCryptodome and audioop-lts. These components retain their own licenses; original game media is not included in the source repository.
+
+### GLB and Canvas 2D asset viewer
+
+```sh
+npm ci
+npm run viewer:glb
+```
+
+Open <http://127.0.0.1:4175/> for local GLB comparison, or choose **Canvas 2D 战场**
+to view the HD sprite scene at <http://127.0.0.1:4175/canvas/>. Both use one server.
+The viewer code is in `tools/glb-compare/` and `tools/canvas-hd-preview/`; authored
+runtime samples and their checksums are in [`assets/hd/`](assets/hd/README.md).
+No Codex workspace directory is required. The Canvas page uses the actual game
+`GameEngine`, `Assets`, and `BattlefieldRenderer` with optional 4× sprite density.
+
+The branch ships four optimized GLBs (about 30K triangles each, 1K WebP textures)
+and their baked sprites; no LFS download is required. The Canvas scene contains four baked sample types. Arbitrary GLBs imported on the
+3D page do not automatically become game sprites. Walking, firing and death
+animations are not included in these static/heading samples.
+
+Original-art comparison uses optional local `.cache/ra2-assets-rebuild-result/assets`.
+Without it, authored HD sprites still work with the engine's terrain fallback and
+the original-art toggle is disabled. Extracted original art is not committed.
+
+`PORT` overrides 4175. `GLB_VIEWER_DIR`, `GLB_CANVAS_DIR`, `RA2_ORIGINAL_ASSETS`
+and `RA2_MODEL_DIR` override the viewer, Canvas page, extracted original-art and
+master-model locations respectively. Run `npm run viewer:glb -- --help` for details.
+The default listener is local-only; nothing is pushed or published by this command.
+
+Browser checks (server running, local Chrome installed):
+
+```sh
+node tools/glb-compare/test-integrated.mjs
+node tools/canvas-hd-preview/verify.mjs
+```
+
+The first check also supports a cache-free checkout. The second needs original art
+for its before/after screenshots. Results go to ignored `.cache/viewer-tests/`.

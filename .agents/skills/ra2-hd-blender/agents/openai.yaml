@@ -1,0 +1,4 @@
+interface:
+  display_name: "RA2 高清素材 → 轻量 GLB"
+  short_description: "生成带贴图 RA2 模型并默认优化到约 3 万面，保留母版，按需验证旧 Canvas 引擎效果"
+  default_prompt: "用 $ra2-hd-blender 为指定 RA2 素材生成或优化带贴图 GLB，默认交付约 3 万面游戏档并保留可重新导出的母版。"

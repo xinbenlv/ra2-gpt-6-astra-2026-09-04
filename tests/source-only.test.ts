@@ -4,7 +4,7 @@ import { forbiddenOriginalPath, forbiddenBuildPath } from '../scripts/check-sour
 
 test('publication guard blocks originals and their generated forms even when force-added',()=>{
   for(const path of ['public/assets/sprites/gacnst.png','public/assets/manifest.json','public/maps/catalog.json','public/maps/MP22S8.MAP','docs/screenshots/arctic-circle.png','.cache/ra2-assets/installer.exe','dist/assets/index.js','backup/RA2.MIX','fixtures/test.mpr','scripts/assets/__pycache__/mix_extract.cpython-314.pyc'])assert.equal(forbiddenOriginalPath(path),true,path);
-  for(const path of ['src/maps.ts','scripts/maps/map-playability.test.ts','scripts/assets/export_assets.py','public/README.md','docs/verification.md','package-lock.json'])assert.equal(forbiddenOriginalPath(path),false,path);
+  for(const path of ['src/maps.ts','scripts/maps/map-playability.test.ts','scripts/assets/export_assets.py','public/README.md','docs/verification.md','package-lock.json','assets/hd/models/apocalypse-tank/30k.glb','assets/hd/sprites/tany.png'])assert.equal(forbiddenOriginalPath(path),false,path);
 });
 
 test('deployment guard excludes converted media while allowing application workers and WASM',()=>{

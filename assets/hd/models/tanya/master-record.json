@@ -1,0 +1,92 @@
+{
+  "asset": "tanya",
+  "generation_version": "meshy-fmv-v1",
+  "parameters": {
+    "ai_model": "meshy-7",
+    "ultra_mode": false,
+    "should_texture": true,
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "should_remesh": false,
+    "image_enhancement": false,
+    "target_formats": [
+      "glb",
+      "fbx"
+    ]
+  },
+  "task_id": "01a07c3b-e345-77c3-bda7-cdf1a2adc46a",
+  "triangles": 1934950,
+  "embedded_images": 3,
+  "files": [
+    {
+      "path": "inputs/back.png",
+      "bytes": 193886,
+      "sha256": "c9b8cf9879a0c0e9447a37a8ba086f5fd5ded465c864ed978f92198ae4827bb3"
+    },
+    {
+      "path": "inputs/front.png",
+      "bytes": 198614,
+      "sha256": "75adb915dff4f1571698e3d184d910f12007cf37722d162119377853d57900fd"
+    },
+    {
+      "path": "inputs/side-a.png",
+      "bytes": 174166,
+      "sha256": "3011911bc00b0d063c932e8807700b59fb19b906fea62956f818a59b86703e01"
+    },
+    {
+      "path": "inputs/side-b.png",
+      "bytes": 173008,
+      "sha256": "ec4f79348ed79b789270bd4eccc04362c23c60a943f444e3a3edb425076db767"
+    },
+    {
+      "path": "preview.png",
+      "bytes": 92028,
+      "sha256": "7ffe8a463c1d51c349971d91c3ac6d32d95d694719f83e634b4b97d6fff21555"
+    },
+    {
+      "path": "prompt.txt",
+      "bytes": 3142,
+      "sha256": "9c9d7a1dff6a54c8ec4ffd5dfe0f3a1711fd7eb5b2432153325bbdffa7fd0a7a"
+    },
+    {
+      "path": "reference.png",
+      "bytes": 1507045,
+      "sha256": "111326a70aaf9f0c83365e049f6a33c12ac081fee4ad60af1020fa5997304fa3"
+    },
+    {
+      "path": "tanya-review.blend",
+      "bytes": 95941507,
+      "sha256": "96079511a9fdd927532573a5e64597a3c0d4f4b7171971d309d29d71107ea6dc"
+    },
+    {
+      "path": "tanya.fbx",
+      "bytes": 81299964,
+      "sha256": "e3d9e52481cb48dc810292617a5cffff3e492ead33c692c94fb85e9f66bdd641"
+    },
+    {
+      "path": "tanya.glb",
+      "bytes": 61903960,
+      "sha256": "0ce9fcb701faa8f57b68d84bdae2f9a6a7fdb52e8b3969c542f1d74acc8b7466"
+    },
+    {
+      "path": "texture-0-base_color.png",
+      "bytes": 4772357,
+      "sha256": "8a3b7de7fcf17a7b84c1b093c03cf17bc2d43c2bdefb8f430094894226861a9b"
+    },
+    {
+      "path": "texture-0-metallic.png",
+      "bytes": 699132,
+      "sha256": "71bf083c1a12cdea58ca4a4847855338b50524ea6f40f09794e83da86baf8e6d"
+    },
+    {
+      "path": "texture-0-normal.png",
+      "bytes": 3171218,
+      "sha256": "b026b944b9d076908838ce5ff0dc887fb0ac66aee60b7e0b6b1d44ba702f0ce6"
+    },
+    {
+      "path": "texture-0-roughness.png",
+      "bytes": 1883610,
+      "sha256": "5cc04f991d5343724c815d83b8151458ebe93841c6b9661232c8863504869488"
+    }
+  ]
+}

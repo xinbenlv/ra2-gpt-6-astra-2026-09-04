@@ -3,6 +3,8 @@ import { OriginalAssetsError } from './asset-setup';
 import { appUrl, resolveOriginalUrls } from './urls';
 
 export interface Sprite {
+  /** Source pixels per logical game pixel; omitted legacy sprites retain density 1. */
+  pixelRatio?: number;
   src: string; width: number; height: number; frameWidth: number; frameHeight: number;
   frames: number; columns: number; anchorX: number; anchorY: number; remapMaskSrc?: string; sequences?: Record<string, [number,number,number]>; facings?: number; foundation?: [number,number]; kind?: string;
 }
@@ -65,9 +67,10 @@ export class Assets {
     if (!image) return false;
     const fw = sprite.frameWidth || sprite.width, fh = sprite.frameHeight || sprite.height;
     const columns = sprite.columns || 1;
+    const density = Number.isFinite(sprite.pixelRatio) && sprite.pixelRatio! > 0 ? sprite.pixelRatio! : 1;
     frame = ((Math.floor(frame) % (sprite.frames || 1)) + (sprite.frames || 1)) % (sprite.frames || 1);
     ctx.drawImage(image, (frame % columns) * fw, Math.floor(frame / columns) * fh, fw, fh,
-      x - (sprite.anchorX ?? fw / 2) * scale, y - (sprite.anchorY ?? fh) * scale, fw * scale, fh * scale);
+      x - (sprite.anchorX ?? fw / 2) * scale / density, y - (sprite.anchorY ?? fh) * scale / density, fw * scale / density, fh * scale / density);
     return true;
   }
 }

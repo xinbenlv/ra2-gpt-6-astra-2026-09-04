@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@gltf-transform/core": "^4.5.0",
+    "@gltf-transform/extensions": "^4.5.0",
+    "@gltf-transform/functions": "^4.5.0",
+    "meshoptimizer": "^1.2.0",
+    "mikktspace": "^1.1.1",
+    "sharp": "^0.35.4"
+  }
+}

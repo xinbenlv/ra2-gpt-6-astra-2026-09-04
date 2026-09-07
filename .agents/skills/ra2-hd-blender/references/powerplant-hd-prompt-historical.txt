@@ -1,0 +1,15 @@
+Use case: sketch-to-render / source-faithful game asset restoration.
+Create ONE high-resolution, sharply detailed reconstruction reference of the Soviet Tesla Reactor power plant from the ORIGINAL Command & Conquer: Red Alert 2 sprite provided. This is an image restoration/reconstruction study for later Blender modeling, not a redesign.
+
+Input image 1 is the original EA/Westwood game sprite with its operational electric effect. Input image 2 is an enlarged nearest-neighbor display of the ORIGINAL STATIC SHP layer, provided only to reveal the same original pixel structure beneath the electric effect. Its caption and empty background are not part of the object. Neither image is a prior 3D reconstruction. Use these original pixels as the sole visual authority.
+
+Preserve the source's 2:1 isometric projection, approximately 30-degree elevation and 45-degree azimuth, exact recognizable silhouette, relative proportions, part count, spacing, and red/bronze/silver/blue palette. Show the entire building at the SAME viewing angle, large and centered with a modest margin, on a genuinely transparent background. No text, labels, caption, UI, watermark, scenery, or extra objects.
+
+Visible structure to preserve:
+- Two squat bronze/brown rectangular machinery cabinets, the left one farther away in projection and the right one nearer, with small red inset roofs, silver edge frames, dark vertical pipe recesses and the original short outward pipe elbows.
+- Two separate forward-sloping housings with red central panels, pale metal framing and chunky dark fastener details.
+- Between the cabinets is a rigid rounded EGG-SHAPED SILVER PRESSURE VESSEL, broad in the upper middle and tapering underneath, on dark splayed supports with OPEN SPACE below. Read this carefully from image 2: do not replace it with a glowing hemisphere perched on a tall cylindrical cage. Do not add vertical cage bars around the vessel.
+- Preserve the thin separated industrial feet and central copper-edged equipment base in the sprite. Do not introduce one broad thick rectangular display plinth.
+- Concentrated blue-white electric arcs below the vessel, with restrained blue reflections on the rigid silver vessel and nearby cabinets. The vessel must retain its solid curved material and original silver-white highlights; no planet-like moving cloud pattern, orbital rings, transparent globe or abstract energy ball.
+
+Improve clarity through coherent machined edges, restrained metallic reflections, painted red surfaces, small seams and subtle original-looking wear. Reconstruct ambiguous tiny details conservatively. Keep the original compact, slightly exaggerated late-1990s pre-rendered RTS asset identity. Prioritize resemblance to the supplied ORIGINAL sprite over fashionable sci-fi redesign or maximal ornament. Deliver a crisp polished high-definition asset reference, not pixel art and not a blurred upscale.

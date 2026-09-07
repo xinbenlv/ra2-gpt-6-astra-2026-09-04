@@ -1,0 +1,93 @@
+{
+  "sprites": {
+    "mtnk": {
+      "src": "/sprites/mtnk.png",
+      "width": 4096,
+      "height": 1024,
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "frames": 16,
+      "columns": 8,
+      "anchorX": 256,
+      "anchorY": 256,
+      "pixelRatio": 4,
+      "facings": 16
+    },
+    "gacnst": {
+      "src": "/sprites/gacnst.png",
+      "width": 1136,
+      "height": 904,
+      "frameWidth": 1136,
+      "frameHeight": 904,
+      "frames": 1,
+      "columns": 1,
+      "anchorX": 568,
+      "anchorY": 664,
+      "pixelRatio": 4,
+      "facings": 1,
+      "foundation": [
+        4,
+        4
+      ]
+    },
+    "nanrct": {
+      "src": "/sprites/nanrct.png",
+      "width": 1104,
+      "height": 752,
+      "frameWidth": 1104,
+      "frameHeight": 752,
+      "frames": 1,
+      "columns": 1,
+      "anchorX": 552,
+      "anchorY": 512,
+      "pixelRatio": 4,
+      "facings": 1,
+      "foundation": [
+        4,
+        4
+      ]
+    },
+    "tany": {
+      "src": "/sprites/tany.png",
+      "width": 4160,
+      "height": 440,
+      "frameWidth": 520,
+      "frameHeight": 440,
+      "frames": 8,
+      "columns": 8,
+      "anchorX": 260,
+      "anchorY": 220,
+      "pixelRatio": 4,
+      "facings": 8,
+      "sequences": {
+        "ready": [
+          0,
+          1,
+          1
+        ]
+      }
+    }
+  },
+  "sources": [
+    {
+      "id": "mtnk",
+      "triangles": 30000,
+      "pixelsPerUnit": 33.24927415174815
+    },
+    {
+      "id": "gacnst",
+      "triangles": 29998,
+      "pixelsPerUnit": 86.24609682712544
+    },
+    {
+      "id": "nanrct",
+      "triangles": 29994,
+      "pixelsPerUnit": 88.18553355998093
+    },
+    {
+      "id": "tany",
+      "triangles": 29994,
+      "pixelsPerUnit": 15.321266619896177
+    }
+  ]
+}

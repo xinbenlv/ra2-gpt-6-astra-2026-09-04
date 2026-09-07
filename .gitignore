@@ -1,4 +1,5 @@
-# Original Westwood game material and every generated derivative.
+# Original Westwood extracted art and direct format conversions.
+# Authored runtime models/sprites in assets/hd/ are intentionally tracked.
 /public/assets/
 /public/maps/
 /docs/screenshots/
@@ -18,7 +19,7 @@
 *.iso
 
 # Dependencies, build output, and test artifacts.
-/node_modules/
+/node_modules
 /dist/
 /test-results/
 /playwright-report/
@@ -31,3 +32,6 @@ __pycache__/
 .env.*
 !.env.example
 *.log
+
+# Optional model optimization tool dependencies.
+/tools/model-opt/node_modules

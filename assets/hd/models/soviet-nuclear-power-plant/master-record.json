@@ -1,0 +1,73 @@
+{
+  "asset": "soviet-nuclear-power-plant",
+  "generation_version": "meshy-v1",
+  "parameters": {
+    "model_type": "standard",
+    "ai_model": "meshy-7",
+    "ultra_mode": false,
+    "should_texture": true,
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "should_remesh": false,
+    "image_enhancement": false,
+    "target_formats": [
+      "glb",
+      "fbx"
+    ]
+  },
+  "task_id": "01a07bf3-554a-7488-ab71-bfcaa3c3bd5c",
+  "triangles": 1888058,
+  "embedded_images": 3,
+  "files": [
+    {
+      "path": "preview.png",
+      "bytes": 180367,
+      "sha256": "3e93abba8a4b58f59197df4c2c63c9a825f446752b795dac55ca7a48059c0327"
+    },
+    {
+      "path": "prompt.txt",
+      "bytes": 1714,
+      "sha256": "2f5dcbd9170a56b8d8fd3e2252d79eeda5779fb3644d6607a48ced26d7922072"
+    },
+    {
+      "path": "reference.png",
+      "bytes": 1427687,
+      "sha256": "0ae7dae45b67330be62687b9f89b816d22f48236d51190d565ef0fae728fca3f"
+    },
+    {
+      "path": "soviet-nuclear-power-plant-meshy-review.blend",
+      "bytes": 96196369,
+      "sha256": "9508e6584b2c4fdc817b558da454925dd393831c49f4467c695f37d500b142e6"
+    },
+    {
+      "path": "soviet-nuclear-power-plant.fbx",
+      "bytes": 84219724,
+      "sha256": "f39111e9955a400480d6e8876385e243108d5e8d4fe2fb27a943e69081497d23"
+    },
+    {
+      "path": "soviet-nuclear-power-plant.glb",
+      "bytes": 79596040,
+      "sha256": "830e762de23abb874eaa125c3fd4743065baea82fca6b026a4b58dbec9a8d91b"
+    },
+    {
+      "path": "texture-0-base_color.png",
+      "bytes": 6782044,
+      "sha256": "3c1b81c4adfe469fe78a09cc1fb542100b42b34972e2bc6328df3dc16e7f0ddc"
+    },
+    {
+      "path": "texture-0-metallic.png",
+      "bytes": 1005350,
+      "sha256": "47666341304afefc5df12d65b73e447eca559c4baa495f3e3afe03236122ff26"
+    },
+    {
+      "path": "texture-0-normal.png",
+      "bytes": 5392934,
+      "sha256": "7bf46e37cfc8768fa368eead2a3a70b108e7b5d0839557605445a5b063a9db4a"
+    },
+    {
+      "path": "texture-0-roughness.png",
+      "bytes": 1731987,
+      "sha256": "2cb99fb85fcca6fba806118c1495629244a96623ec00ff59821990cb292866c2"
+    }
+  ]
+}

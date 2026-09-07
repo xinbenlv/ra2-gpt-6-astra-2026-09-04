@@ -1,0 +1,73 @@
+{
+  "asset": "allied-construction-yard",
+  "generation_version": "meshy-low-v1",
+  "parameters": {
+    "model_type": "standard",
+    "ai_model": "meshy-7",
+    "ultra_mode": false,
+    "should_texture": true,
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "should_remesh": false,
+    "image_enhancement": false,
+    "target_formats": [
+      "glb",
+      "fbx"
+    ]
+  },
+  "task_id": "01a07921-2521-75e8-9916-5800c2845f50",
+  "triangles": 1943266,
+  "embedded_images": 3,
+  "files": [
+    {
+      "path": "allied-construction-yard-meshy-review.blend",
+      "bytes": 96443331,
+      "sha256": "3890e1d8710fa69a40bc706fc8a7a3110eae2f2697f2da20594c38003a8daf1c"
+    },
+    {
+      "path": "allied-construction-yard.fbx",
+      "bytes": 85196716,
+      "sha256": "40ad7ff074c9b7897f0081c4a3bc5b049a38c7b6d559b7f587ee70eb72ec65c6"
+    },
+    {
+      "path": "allied-construction-yard.glb",
+      "bytes": 81048036,
+      "sha256": "fd469db73e9ee1de9c045845b998276d12219224e512d2d6a0a0f45b4eadf01e"
+    },
+    {
+      "path": "preview.png",
+      "bytes": 175590,
+      "sha256": "8508fefd86e3033e078164ce1c971b03d23b69905f1691a65e547b75dc6844ff"
+    },
+    {
+      "path": "prompt.txt",
+      "bytes": 1474,
+      "sha256": "d8db94117566ebc95c372e231c1fc304ac442d3eccaafa7ca06f04aa39d5bfc4"
+    },
+    {
+      "path": "reference.png",
+      "bytes": 1754604,
+      "sha256": "96dba2afcc1370f82e1e903f18e2ca40fa2e44ed6e5d819d1651151fb866135a"
+    },
+    {
+      "path": "texture-0-base_color.png",
+      "bytes": 6762102,
+      "sha256": "8f5b6a5b90b4de52943c488ceae6c296630a80d54a505da289482419c3e98bc1"
+    },
+    {
+      "path": "texture-0-metallic.png",
+      "bytes": 1164673,
+      "sha256": "48ab8a27d2120eb0189156d4ceed9cf31a8aa51975332ea8fb3aa4478f53e228"
+    },
+    {
+      "path": "texture-0-normal.png",
+      "bytes": 5529203,
+      "sha256": "62998ba25bc3d000fc371032b0ed35deffc17180a6070ef0a34d59000a424745"
+    },
+    {
+      "path": "texture-0-roughness.png",
+      "bytes": 1703225,
+      "sha256": "bd1b786639b5a3a3c74134e54ad7935d8ac4f1e40ac61d2c0b1dac647b4fc92f"
+    }
+  ]
+}

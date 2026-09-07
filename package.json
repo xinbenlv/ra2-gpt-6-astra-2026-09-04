@@ -11,7 +11,8 @@
     "assets:setup": "node --import tsx scripts/setup-assets.ts",
     "assets:check": "node --import tsx scripts/setup-assets.ts --check",
     "repo:check": "node --import tsx scripts/check-source-only.ts",
-    "repo:hooks": "git config core.hooksPath .githooks"
+    "repo:hooks": "git config core.hooksPath .githooks",
+    "viewer:glb": "node scripts/glb-viewer.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
@@ -21,6 +22,8 @@
     "vite": "^7.1.4"
   },
   "dependencies": {
-    "7z-wasm": "1.2.0"
+    "7z-wasm": "1.2.0",
+    "js-sha256": "^1.0.0",
+    "three": "^0.185.1"
   }
 }
