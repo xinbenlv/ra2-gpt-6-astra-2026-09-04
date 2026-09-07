@@ -1,4 +1,6 @@
 import { t } from './i18n';
+import { spriteAnimation, unitIsMoving } from './sprite-animation';
+import { drawHDCombatEffect, drawHDGroundMotion } from './hd-effects';
 import type { GameEngine, Entity, Definition, GameMap, Point } from './game';
 import { getDefinition, PLAYER_COLORS } from './game';
 import type { Assets, Sprite } from './assets';
@@ -44,6 +46,7 @@ export class BattlefieldRenderer {
   private worldBounds: WorldRect;
   private time = 0;
   edgeScroll = true;
+  hdEffects = false;
   constructor(public canvas: HTMLCanvasElement, public game: GameEngine, public map: RenderMap, public assets: Assets, private hooks: RendererHooks, public localId = 0) {
     this.terrainPainter = new TerrainPainter(assets);
     // Native maps may contain missing tile IDs; only editor documents need compilation.
@@ -265,6 +268,7 @@ export class BattlefieldRenderer {
       if (!this.game.visible(this.localId, effect.x, effect.y)) continue;
       const p = this.project(effect.x, effect.y); p.y -= this.elevation(effect.x, effect.y) * 15;
       const t = effect.age / effect.duration;
+      if (this.hdEffects && drawHDCombatEffect(ctx, effect, p, this.game, (x,y) => {const q=this.project(x,y);q.y-=this.elevation(x,y)*15;return q;})) continue;
       if (effect.kind === 'shot' && effect.toX != null && effect.toY != null) {
         const target = this.project(effect.toX, effect.toY); target.y -= this.elevation(effect.toX, effect.toY) * 15;
         const t1 = Math.max(0, t - .18), t2 = Math.min(1, t + .08);
@@ -317,10 +321,10 @@ export class BattlefieldRenderer {
       if (image) {
         fw = sprite.frameWidth; fh = sprite.frameHeight; ax = sprite.anchorX; ay = sprite.anchorY;
         let frame = 0;
-        const moving = e.path.length > 0;
+        const moving = sprite.hdMotion ? unitIsMoving(e,this.game.time) : e.path.length > 0;
         if (def.kind === 'unit' && sprite.frames > 1) {
           const angle = ((e.angle / (Math.PI * 2)) % 1 + 1) % 1;
-          if (sprite.sequences) { const direction=Math.floor(angle*8)%8; const action=e.deployed?'deployed':this.game.time-e.lastShot<.5?'fireup':moving?'walk':'ready'; const seq=sprite.sequences[action]||sprite.sequences.ready||[0,1,1];frame=seq[0]+direction*seq[2]+Math.floor(this.time*12)%seq[1]; }
+          if (sprite.sequences) { frame=spriteAnimation(sprite,e,this.game.time).frame; }
           else frame = Math.round(angle * sprite.frames) % sprite.frames;
         }
         const density = Number.isFinite(sprite.pixelRatio) && sprite.pixelRatio! > 0 ? sprite.pixelRatio! : 1;
@@ -329,7 +333,19 @@ export class BattlefieldRenderer {
         fw /= density; fh /= density; ax /= density; ay /= density;
         const smoothing = ctx.imageSmoothingEnabled;
         if (density > 1) ctx.imageSmoothingEnabled = true;
+        const hdMotion=this.hdEffects && sprite.hdMotion;
+        if(hdMotion){
+          drawHDGroundMotion(ctx,e,p,this.game.time);
+          ctx.save();
+          const shotAge=this.game.time-e.lastShot, hitAge=this.game.time-(e.lastHit??-Infinity);
+          if(sprite.hdMotion==='vehicle'){
+            const recoil=shotAge>=0&&shotAge<.24?Math.sin(shotAge/.24*Math.PI)*2.5:0;
+            ctx.translate(-Math.cos(e.angle)*recoil, (moving?Math.sin(this.game.time*26+e.id)*.65:0)-Math.sin(e.angle)*recoil*.5);
+          }
+          if(hitAge>=0&&hitAge<.16)ctx.filter='brightness(1.7) saturate(.6)';
+        }
         ctx.drawImage(image,(frame%sprite.columns)*sourceWidth,Math.floor(frame/sprite.columns)*sourceHeight,sourceWidth,sourceHeight,p.x-ax,p.y-ay-flying,fw,fh);
+        if(hdMotion)ctx.restore();
         ctx.imageSmoothingEnabled = smoothing; rendered = true;
         const screen = this.toScreen(e.x,e.y); this.displayedSprites.set(e.id,{x:screen.x-ax*this.zoom,y:screen.y-(ay+flying)*this.zoom,w:fw*this.zoom,h:fh*this.zoom});
       }
@@ -348,6 +364,7 @@ export class BattlefieldRenderer {
     if(e.invulnerableUntil && e.invulnerableUntil>this.game.time){ctx.strokeStyle='#f95046';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y-flying-12,24,24,0,0,Math.PI*2);ctx.stroke();}
     if(e.hp < e.maxHp*.4 && def.kind==='building'){const phase=(this.time*15+e.id)%25;ctx.globalAlpha=.4;ctx.fillStyle='#343432';ctx.beginPath();ctx.arc(p.x+5,p.y-ay*.5-phase,5+phase*.15,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
   }
+  clearSpriteColors() { for(const canvas of this.tinted.values()){canvas.width=1;canvas.height=1;}this.tinted.clear(); }
   private coloredSprite(sprite: Sprite, color: string): CanvasImageSource | undefined {
     const original = this.assets.images.get(sprite.src);if(!original)return;
     const key=sprite.src+color;const existing=this.tinted.get(key);if(existing)return existing;

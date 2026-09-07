@@ -44,6 +44,8 @@ export interface Entity {
   repairing: boolean; veteran: number; kills: number;
   /** Rendering metadata: a shot occurred at this game time. */
   lastShot: number; spawnedAt: number;
+  /** Visual timestamp of actual damage; optional hold-fire suppresses automatic acquisition only. */
+  lastHit?: number; lastMovedAt?: number; holdFire?: boolean;
   harvestTimer: number; repathTimer: number; targetId?: number;
   invulnerableUntil?: number; radiationUntil?: number;
   deployed?: boolean; transportedBy?: number; passengers?: number[];
@@ -67,9 +69,10 @@ export interface PlayerState extends PlayerConfig {
   spawn: Point; aiTimer: number; aiAttackTimer: number;
 }
 export interface Effect {
-  id: number; kind: 'shot' | 'explosion' | 'text' | 'deploy' | 'radiation' | 'nuke';
+  id: number; kind: 'shot' | 'explosion' | 'text' | 'deploy' | 'radiation' | 'nuke' | 'hit';
   x: number; y: number; toX?: number; toY?: number; age: number; duration: number;
   weapon?: Definition['weapon']; color?: string; text?: string; radius?: number;
+  sourceId?: number; targetId?: number;
 }
 export interface GameEvent { id: number; time: number; text: string; owner?: number; kind: 'info' | 'warning' | 'combat' | 'complete' }
 export interface GameOptions {

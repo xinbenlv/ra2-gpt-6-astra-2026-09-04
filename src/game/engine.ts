@@ -529,8 +529,10 @@ export class GameEngine {
       if (e.hp <= 0) continue;
       if (e.transportedBy) { const transport = this.getEntity(e.transportedBy); if (transport) { e.x = transport.x; e.y = transport.y; } continue; }
       e.cooldown = Math.max(0, e.cooldown - dt); e.repathTimer = Math.max(0, e.repathTimer - dt);
+      const previousX=e.x,previousY=e.y;
       if (e.kind === 'building') this.updateBuilding(e, dt);
       else this.updateUnit(e, dt);
+      if(e.x!==previousX||e.y!==previousY)e.lastMovedAt=this.time;
     }
     this.separateUnits(dt);
     for (const effect of this.effects) effect.age += dt;
@@ -729,6 +731,7 @@ export class GameEngine {
     return true;
   }
   private combat(e: Entity, dt: number, chase = true): boolean {
+    if (e.holdFire && e.order.kind !== 'attack') return false;
     const d = this.getCombatDefinition(e);
     if (!d.damage) return false;
     if (e.type === 'yuri' && e.controlledId && e.order.kind !== 'attack') return false;
@@ -783,7 +786,7 @@ export class GameEngine {
       this.removeEntity(e, false);
       return true;
     }
-    this.effect({ kind: 'shot', x: e.x, y: e.y, toX: target.x, toY: target.y, duration: d.weapon === 'tesla' ? .22 : .3, weapon: d.weapon, color: this.getPlayer(e.owner)?.color });
+    this.effect({ kind: 'shot', sourceId: e.id, targetId: target.id, x: e.x, y: e.y, toX: target.x, toY: target.y, duration: d.weapon === 'tesla' ? .22 : .3, weapon: d.weapon, color: this.getPlayer(e.owner)?.color });
     this.damage(target, damage, e.owner, e);
     if ((d.weapon === 'radiation' || e.type === 'prism_tank' || e.type === 'v3' || e.type === 'grand_cannon') && target.hp > 0) {
       for (const other of this.nearby(target.x, target.y, 2)) if (other.id !== target.id && other.id !== e.id && !this.isAllied(e.owner, other.owner) && distance(other, target) < 2) this.damage(other, damage * .35, e.owner, e);
@@ -793,6 +796,10 @@ export class GameEngine {
   private damage(target: Entity, amount: number, attackerOwner: number, attacker?: Entity) {
     if (target.hp <= 0 || (target.invulnerableUntil ?? 0) > this.time) return;
     target.hp -= amount;
+    if (amount > 0) {
+      target.lastHit = this.time;
+      this.effect({kind: 'hit', x: target.x, y: target.y, targetId: target.id, sourceId: attacker?.id, duration: .4, weapon: attacker ? this.getCombatDefinition(attacker).weapon : undefined});
+    }
     if (target.owner === this.localPlayerId && this.time - this.alarmAt > 10) {
       this.alarmAt = this.time; this.event(target.kind === 'building' ? '警告：我方基地正在遭受攻击！' : '我方部队正在遭受攻击！', target.owner, 'warning');
     }

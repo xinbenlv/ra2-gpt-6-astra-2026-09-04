@@ -2,6 +2,7 @@
   "sprites": {
     "mtnk": {
       "src": "/sprites/mtnk.png",
+      "remapMaskSrc": "/sprites/mtnk-remap.png",
       "width": 4096,
       "height": 1024,
       "frameWidth": 512,
@@ -11,10 +12,12 @@
       "anchorX": 256,
       "anchorY": 256,
       "pixelRatio": 4,
-      "facings": 16
+      "facings": 16,
+      "hdMotion": "vehicle"
     },
     "gacnst": {
       "src": "/sprites/gacnst.png",
+      "remapMaskSrc": "/sprites/gacnst-remap.png",
       "width": 1136,
       "height": 904,
       "frameWidth": 1136,
@@ -25,6 +28,7 @@
       "anchorY": 664,
       "pixelRatio": 4,
       "facings": 1,
+      "hdMotion": "building",
       "foundation": [
         4,
         4
@@ -32,6 +36,7 @@
     },
     "nanrct": {
       "src": "/sprites/nanrct.png",
+      "remapMaskSrc": "/sprites/nanrct-remap.png",
       "width": 1104,
       "height": 752,
       "frameWidth": 1104,
@@ -42,6 +47,7 @@
       "anchorY": 512,
       "pixelRatio": 4,
       "facings": 1,
+      "hdMotion": "building",
       "foundation": [
         4,
         4
@@ -49,23 +55,42 @@
     },
     "tany": {
       "src": "/sprites/tany.png",
-      "width": 4160,
-      "height": 440,
-      "frameWidth": 520,
-      "frameHeight": 440,
-      "frames": 8,
+      "remapMaskSrc": "/sprites/tany-remap.png",
+      "width": 1536,
+      "height": 3840,
+      "frameWidth": 192,
+      "frameHeight": 240,
+      "frames": 128,
       "columns": 8,
-      "anchorX": 260,
-      "anchorY": 220,
+      "anchorX": 96,
+      "anchorY": 176,
       "pixelRatio": 4,
       "facings": 8,
+      "hdMotion": "infantry",
       "sequences": {
         "ready": [
           0,
           1,
           1
+        ],
+        "walk": [
+          8,
+          8,
+          8
+        ],
+        "fireup": [
+          72,
+          4,
+          4
+        ],
+        "hit": [
+          104,
+          3,
+          3
         ]
-      }
+      },
+      "animationFps": 8,
+      "animationSource": "procedural vertex poses; unrigged preview"
     }
   },
   "sources": [

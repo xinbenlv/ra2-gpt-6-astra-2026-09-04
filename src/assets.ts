@@ -5,6 +5,8 @@ import { appUrl, resolveOriginalUrls } from './urls';
 export interface Sprite {
   /** Source pixels per logical game pixel; omitted legacy sprites retain density 1. */
   pixelRatio?: number;
+  animationFps?: number;
+  hdMotion?: 'infantry' | 'vehicle' | 'building';
   src: string; width: number; height: number; frameWidth: number; frameHeight: number;
   frames: number; columns: number; anchorX: number; anchorY: number; remapMaskSrc?: string; sequences?: Record<string, [number,number,number]>; facings?: number; foundation?: [number,number]; kind?: string;
 }

@@ -82,14 +82,24 @@
       "sha256": "9c9d7a1dff6a54c8ec4ffd5dfe0f3a1711fd7eb5b2432153325bbdffa7fd0a7a"
     },
     {
+      "file": "sprites/gacnst-remap.png",
+      "bytes": 75256,
+      "sha256": "0726f157e8ed8aaafdcd2f5dbc42b172dc9a61169845e7eda5913ba86d315347"
+    },
+    {
       "file": "sprites/gacnst.png",
       "bytes": 732966,
       "sha256": "34b4d754296d70437b6344ce45b644ddaf1bea243bc919b9a7fcc54b25807277"
     },
     {
       "file": "sprites/manifest.json",
-      "bytes": 1751,
-      "sha256": "b841eebe8f89ed31a9e654589217f902fc42a9f57e10b91b0d1afd7cf3f14309"
+      "bytes": 2372,
+      "sha256": "e5f21573fa8bbe6aa6b9aa034e04070a97db7bfa601c0ffd888a0f71adcf2b36"
+    },
+    {
+      "file": "sprites/mtnk-remap.png",
+      "bytes": 252402,
+      "sha256": "d7fc4632dc36047c9545b709ff1ab853dde2376d1b098656a2b1b5f9ae26479b"
     },
     {
       "file": "sprites/mtnk.png",
@@ -97,15 +107,25 @@
       "sha256": "cf0993dd2aff83ad0fc1cb9765dcb0cbcfe07f1fd65eca088299af33ba8c3335"
     },
     {
+      "file": "sprites/nanrct-remap.png",
+      "bytes": 47440,
+      "sha256": "879365547b1282ef687cabf99e6df79459b6db1d0b95eafb3d4e80b80bc2926e"
+    },
+    {
       "file": "sprites/nanrct.png",
       "bytes": 510291,
       "sha256": "c1c4b155f84faa518d91b4266b3ff52dd39c88c6a20ead33facff6e85799d05e"
     },
     {
+      "file": "sprites/tany-remap.png",
+      "bytes": 222953,
+      "sha256": "2488bd16f1ad334edf7a69f28a718c3084c0cca8632890ed4d5f30dd9766f199"
+    },
+    {
       "file": "sprites/tany.png",
-      "bytes": 110660,
-      "sha256": "c31cf2f58a32c7118a940523960893814fe19da8f173fa18d09391242f5bbd38"
+      "bytes": 835934,
+      "sha256": "a4f3e30b16d316084ba748d220b95322dd6c8a8d356374fdc655c6d46c91a601"
     }
   ],
-  "totalBytes": 17228204
+  "totalBytes": 18552150
 }
