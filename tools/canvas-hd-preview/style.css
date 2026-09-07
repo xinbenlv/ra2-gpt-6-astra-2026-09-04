@@ -3,3 +3,5 @@
 .control{display:flex;flex:1;flex-direction:column;gap:6px;font-size:12px;margin:10px 0;color:#c4cbb3}.control select{background:#354332;color:#f2f1d9;padding:8px;border:1px solid #788769}.control input{width:100%;height:34px;border:1px solid #788769;background:transparent}button:disabled{opacity:.45;cursor:default}
 
 #pose-preview{width:100%;height:160px;display:block;background:#1f2922;border:1px solid #536449;margin-top:16px}
+
+.loop-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.loop-grid>div{background:#1f2922;border:1px solid #536449;padding:5px;min-width:0}.loop-grid canvas{width:100%;display:block}.loop-grid strong,.loop-grid small{font-size:10px;display:block;color:#c4cbb3}

@@ -793,7 +793,7 @@ export class GameEngine {
     }
     return true;
   }
-  private damage(target: Entity, amount: number, attackerOwner: number, attacker?: Entity) {
+  protected damage(target: Entity, amount: number, attackerOwner: number, attacker?: Entity) {
     if (target.hp <= 0 || (target.invulnerableUntil ?? 0) > this.time) return;
     target.hp -= amount;
     if (amount > 0) {

@@ -6,7 +6,7 @@ const out='.cache/viewer-tests';await mkdir(out,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1600,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(origin+'/canvas/');await page.waitForFunction(()=>window.__hd?.ready);
+ await page.goto(origin+'/canvas/');await page.waitForFunction(()=>window.__hd?.ready);await page.click('#loop');
  const point=async(group,index)=>page.evaluate(({group,index})=>{const h=__hd,e=h[group][index],p=h.renderer.toScreen(e.x,e.y),r=h.renderer.canvas.getBoundingClientRect();return {x:p.x+r.left,y:p.y+r.top-14};},{group,index});
  const clickActor=async(group,index,button='left')=>{const p=await point(group,index);await page.mouse.click(p.x,p.y,{button});};
  await clickActor('actors',5);assert.equal(await page.evaluate(()=>__hd.renderer.selection.has(__hd.actors[5].id)),true);

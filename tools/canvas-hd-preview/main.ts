@@ -3,7 +3,7 @@ import { GameEngine } from '@game/game/engine';
 import { spriteAnimation } from '@game/sprite-animation';
 import { CATALOG } from '@game/game/data';
 import { BattlefieldRenderer } from '@game/renderer';
-import type { Terrain } from '@game/game/types';
+import type { Entity, Terrain } from '@game/game/types';
 const $=(id:string)=>document.getElementById(id)!;
 const base=import.meta.env.BASE_URL;
 const original=await (await fetch(base+'original-manifest.json')).json();
@@ -25,8 +25,16 @@ for(let i=0;i<16&&sceneryKeys.length;i++)terrainObjects.push({x:10+i%4*3,y:28+Ma
 const map={id:'hd-local-field',name:'高清精灵集结区',width,height,spawns:[{x:6,y:6},{x:40,y:40}],cells,theater:'temperate',tiles,terrainObjects};
 const placements:[string,number,number,number][]=[['construction_yard',15,18,0],['nuclear_reactor',23,14,0],['apocalypse',19,23,0],['apocalypse',22,23,Math.PI/4],['apocalypse',25,23,Math.PI/2],['tanya',18,19,0],['tanya',20,20,Math.PI/2],['tanya',22,19,Math.PI]];
 const targetPlacements:[string,number,number][]=[['apocalypse',29,20],['tanya',27,17],['construction_yard',31,12]];
+// Only this preview subclass keeps demo participants alive. Normal games retain lethal damage.
+class PreviewEngine extends GameEngine {
+ loopProtection=true;
+ protected override damage(target:Entity,amount:number,owner:number,attacker?:Entity){
+  if(this.loopProtection&&target.hp>0&&amount>0)target.hp=Math.max(target.hp,amount+Math.max(1,target.maxHp*.02));
+  super.damage(target,amount,owner,attacker);
+ }
+}
 function makeScenario(){
- const game=new GameEngine({map,players:[{id:0,name:'我方',country:'russia',team:1,color:($('own-color') as HTMLInputElement).value,ai:false},{id:1,name:'训练靶标',country:'america',team:2,color:($('enemy-color') as HTMLInputElement).value,ai:false}],startingUnits:0,startingCredits:50000,fogOfWar:false,shortGame:false,superweapons:false});
+ const game=new PreviewEngine({map,players:[{id:0,name:'我方',country:'russia',team:1,color:($('own-color') as HTMLInputElement).value,ai:false},{id:1,name:'训练靶标',country:'america',team:2,color:($('enemy-color') as HTMLInputElement).value,ai:false}],startingUnits:0,startingCredits:50000,fogOfWar:false,shortGame:false,superweapons:false});
  for(const e of game.entities)e.hp=0;
  const actors=placements.map(([type,x,y,angle])=>{const e=game.spawnEntity(type,0,x,y);e.angle=angle;e.holdFire=true;return e;});
  const targets=targetPlacements.map(([type,x,y])=>{const e=game.spawnEntity(type,1,x,y);e.holdFire=true;return e;});
@@ -34,7 +42,8 @@ function makeScenario(){
 }
 let {game,actors,targets}=makeScenario();
 const renderer=new BattlefieldRenderer($('battle') as HTMLCanvasElement,game,map,assets,{onSelection(){updateSelection();},onCommand(kind){$('status').textContent=kind==='attack'?'攻击指令已下达 · 靶标默认不还击':'移动指令已下达';},onPlace(){return false;},onEntityClick(){return false;},onNotice(text){$('status').textContent=text;}});renderer.edgeScroll=false;renderer.hdEffects=true;
-let high=true,paused=false,speed=1,retaliating=false;
+let high=true,paused=false,speed=1,retaliating=false,automatic=true;
+let loopLeg=false,nextLoop=0;
 function home(){renderer.zoom=1.15;renderer.center(23,18);renderer.draw();}
 function updateSelection(){
  const selected=[...renderer.selection].map(id=>game.getEntity(id)).filter(Boolean);
@@ -56,7 +65,47 @@ $('repair').onclick=()=>{const selected=[...renderer.selection].map(id=>game.get
 $('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'继续':'暂停';};
 $('speed').onchange=()=>speed=Number(($('speed') as HTMLSelectElement).value);
 for(const [id,player]of [['own-color',0],['enemy-color',1]] as const)$(id).oninput=()=>{game.players[player].color=($(id) as HTMLInputElement).value;renderer.clearSpriteColors();renderer.draw();updateSelection();};
-$('reset').onclick=()=>{({game,actors,targets}=makeScenario());renderer.game=game;renderer.setSelection([]);retaliating=false;$('retaliate').textContent='靶标向选中单位还击';home();};
-home();let last=performance.now(),ui=0;function frame(now:number){const dt=paused?0:Math.min((now-last)/1000,.05)*speed;last=now;game.step(dt);renderer.update(dt);ui+=dt;if(ui>.1){ui=0;updateSelection();}requestAnimationFrame(frame);}requestAnimationFrame(frame);
-$('status').textContent='已就绪 · 左键选择，右键地面移动／靶标攻击 · 高清程序动作预览';
-(window as any).__hd={get game(){return game;},renderer,assets,get actors(){return actors;},get targets(){return targets;},hd,original,ready:true,animation:(id:number)=>{const e=game.getEntity(id);return e?spriteAnimation(assets.sprite(CATALOG[e.type].sprite)!,e,game.time):undefined;}};
+function resetScenario(){
+ ({game,actors,targets}=makeScenario());game.loopProtection=automatic;renderer.game=game;renderer.setSelection([]);retaliating=false;nextLoop=0;loopLeg=false;
+ $('retaliate').textContent='靶标向选中单位还击';
+ if(automatic){
+  // Keep the walking lane separate from the stationary firing lanes.
+  const positions:[[number,number],...Array<[number,number]>]=[[15,18],[23,14],[16,25],[24,22],[28,23],[16,22],[24,17],[19,19]];
+  actors.forEach((e,i)=>{[e.x,e.y]=positions[i];});
+  targets[0].x=28;targets[0].y=20;targets[1].x=27;targets[1].y=17;
+  actors[0].hp=actors[0].maxHp*.3;game.repair(actors[0].id);
+  game.commandAttack([actors[3].id],targets[0].id);
+  game.commandAttack([actors[6].id],targets[1].id);
+  game.commandAttack([targets[0].id],actors[4].id);
+  renderer.setSelection([actors[5].id]);
+ }
+ $('loop').textContent=automatic?'切换手动操作':'开启自动循环';
+ $('loop-info').textContent=automatic?'自动循环中 · 往返移动／持续交火／建筑维修 · 受击者最低保留 2% 生命':'手动模式 · 伤害正常结算，单位可被摧毁';
+ home();
+}
+function updateLoop(){
+ if(!automatic)return;
+ if(game.time>=nextLoop){
+  loopLeg=!loopLeg;nextLoop=game.time+7;
+  game.commandMove([actors[2].id],loopLeg?22:16,25);
+  game.commandMove([actors[5].id],loopLeg?21:16,22);
+ }
+ if(actors[0].hp>=actors[0].maxHp*.95){actors[0].hp=actors[0].maxHp*.3;if(!actors[0].repairing)game.repair(actors[0].id);}
+ game.players[0].credits=Math.max(game.players[0].credits,50000);
+}
+function inspectLoops(){
+ const samples=[actors[2],actors[5],actors[3],targets[0],targets[1],actors[0]];
+ samples.forEach((e,i)=>{
+  const canvas=$('loop-pose-'+i) as HTMLCanvasElement,ctx=canvas.getContext('2d')!,sprite=assets.sprite(CATALOG[e.type].sprite);
+  ctx.clearRect(0,0,canvas.width,canvas.height);if(!sprite)return;
+  const image=(renderer as any).coloredSprite(sprite,game.getPlayer(e.owner)?.color||'#aaa');
+  if(image){const frame=spriteAnimation(sprite,e,game.time).frame,w=sprite.frameWidth,h=sprite.frameHeight,k=Math.min(176/w,130/h);ctx.drawImage(image,frame%sprite.columns*w,Math.floor(frame/sprite.columns)*h,w,h,(192-w*k)/2,(144-h*k)/2,w*k,h*k);}
+  $('loop-hp-'+i).textContent=Math.ceil(e.hp)+' / '+e.maxHp;
+ });
+}
+$('loop').onclick=()=>{automatic=!automatic;resetScenario();};
+$('reset').onclick=resetScenario;
+resetScenario();
+home();let last=performance.now(),ui=0;function frame(now:number){const dt=paused?0:Math.min((now-last)/1000,.05)*speed;last=now;if(dt>0)updateLoop();game.step(dt);renderer.update(dt);ui+=dt;if(ui>.1){ui=0;updateSelection();inspectLoops();}requestAnimationFrame(frame);}requestAnimationFrame(frame);
+$('status').textContent='已就绪 · 自动循环演示 · 可暂停、慢放或切换手动操作';
+(window as any).__hd={get automatic(){return automatic;},get game(){return game;},renderer,assets,get actors(){return actors;},get targets(){return targets;},hd,original,ready:true,animation:(id:number)=>{const e=game.getEntity(id);return e?spriteAnimation(assets.sprite(CATALOG[e.type].sprite)!,e,game.time):undefined;}};
