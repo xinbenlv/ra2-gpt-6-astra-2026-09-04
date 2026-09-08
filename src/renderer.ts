@@ -50,7 +50,8 @@ export class BattlefieldRenderer {
   edgeScroll = true;
   hdEffects = false;
   // Optional authored preview presentation; absent in normal games.
-  entityPresentation?: (entity:Entity) => {sprite?:Sprite;frame?:number;action?:string;height?:number;swimming?:boolean;lean?:number}|undefined;
+  comparisonEntities: Entity[] = [];
+  entityPresentation?: (entity:Entity) => {sprite?:Sprite;frame?:number;action?:string;label?:string;height?:number;swimming?:boolean;lean?:number}|undefined;
   worldGround?: (ctx:CanvasRenderingContext2D) => void;
   constructor(public canvas: HTMLCanvasElement, public game: GameEngine, public map: RenderMap, public assets: Assets, private hooks: RendererHooks, public localId = 0) {
     this.terrainPainter = new TerrainPainter(assets);
@@ -267,7 +268,7 @@ export class BattlefieldRenderer {
       const p=this.project(x,y);p.y-=this.elevation(obj.x,obj.y)*15;
       objects.push({sort:x+y+fh*.3,draw:()=>this.terrainPainter.drawOverlay(ctx,sprite,p.x,p.y)});
     }
-    for(const entity of this.game.entities){if(entity.hp<=0||entity.transportedBy||!this.onScreen(entity.x,entity.y)||!(entity.kind==='building'?this.game.explored(this.localId,entity.x,entity.y):this.game.visible(this.localId,entity.x,entity.y)))continue;
+    for(const entity of [...this.game.entities,...this.comparisonEntities]){if(entity.hp<=0||entity.transportedBy||!this.onScreen(entity.x,entity.y)||!(entity.kind==='building'?this.game.explored(this.localId,entity.x,entity.y):this.game.visible(this.localId,entity.x,entity.y)))continue;
       objects.push({sort:entity.x+entity.y+(getDefinition(entity.type).flying?12:0),draw:()=>this.drawEntity(ctx,entity)});
     }
     objects.sort((a,b)=>a.sort-b.sort);for(const obj of objects)obj.draw();
@@ -370,6 +371,7 @@ export class BattlefieldRenderer {
       ctx.fillStyle=e.hp/e.maxHp>.5?'#78dd49':e.hp/e.maxHp>.25?'#f8d947':'#e84c30';ctx.fillRect(p.x-barW/2,by,barW*e.hp/e.maxHp,3);
       if(e.veteran>0){ctx.fillStyle='#f5e17c';ctx.font='bold 9px Tahoma';ctx.fillText('★'.repeat(Math.min(3,e.veteran)),p.x+barW/2+3,by+4);}
     }
+    if(presentation?.label){ctx.save();ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillStyle=e.id<0?'#f4d391':'#c8f4d5';ctx.strokeStyle='#16241e';ctx.lineWidth=2;ctx.strokeText(presentation.label,p.x,p.y+16);ctx.fillText(presentation.label,p.x,p.y+16);ctx.restore();}
     if(e.controlledBy){const controller=this.game.entities.find(v=>v.id===e.controlledBy);if(controller&&this.onScreen(controller.x,controller.y)){const cp=this.project(controller.x,controller.y);cp.y-=this.elevation(controller.x,controller.y)*15;ctx.strokeStyle='#cd79f782';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cp.x,cp.y-15);ctx.lineTo(p.x,p.y-15);ctx.stroke();}}
     if(e.bomb){ctx.fillStyle='#ffbe70';ctx.font='bold 10px Consolas';ctx.textAlign='center';ctx.fillText(`● ${Math.max(0,Math.ceil(e.bomb.detonatesAt-this.game.time))}`,p.x,p.y-ay*.65-14);}
     if(e.repairing){ctx.fillStyle='#a8f686';ctx.font='bold 15px Tahoma';ctx.fillText('+',p.x-5,p.y-ay*.75-8);}

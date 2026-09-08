@@ -36,10 +36,10 @@ def main():
  for ident in ['gi','cons','engineer','rock','flakt','shk','deso','trst','ivan','spy','snipe','tany','seal','dog','adog','cleg','yuri','ccom','dron','dlph','sqd']:
   b=e.M['conquer'].get(ident+'.shp')
   if not b:print('missing unit',ident);continue
-  W,H=struct.unpack_from('<HH',b,2);entry=e.export(ident,b,up,maxframes=512,anchor=(W/2,H/2));art=e.ART.get(ident,{})
+  W,H=struct.unpack_from('<HH',b,2);entry=e.export(ident,b,up,maxframes=2048 if ident=='tany' else 512,anchor=(W/2,H/2));art=e.ART.get(ident,{})
   entry['sequence']=art.get('sequence');entry['facings']=8
   if art.get('sequence'):
-   seq=e.ART.get(art['sequence'].lower(),{});entry['sequences']={k:[int(x) for x in v.split(',') if x.strip().lstrip('-').isdigit()] for k,v in seq.items() if k in ['ready','guard','walk','fireup','prone','crawl','fireprone','idle1','idle2','die1','die2','deploy','deployed','swim']}
+   seq=e.ART.get(art['sequence'].lower(),{});entry['sequences']={k:[int(x) for x in v.split(',') if x.strip().lstrip('-').isdigit()] for k,v in seq.items() if k in ['ready','guard','walk','fireup','prone','crawl','fireprone','idle1','idle2','die1','die2','deploy','deployed','swim','down','up','tread','wetattack']}
   if art.get('cameo'):
    b=e.M['cameo'].get(art['cameo']+'.shp')
    if b:e.export(ident,b,cp,'cameos',shadow=False)

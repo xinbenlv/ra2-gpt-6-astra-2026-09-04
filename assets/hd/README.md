@@ -67,3 +67,9 @@ purges them; rewriting Git history alone does not release that quota.
 除明确升级的高清模型／动作外，预览环境只用本地安装的原版素材。水面、岸线、沙滩过渡、道路和矿石由现有原版地形编译器与图集绘制；山地保留 `valley.map` 中 `(83,86)` 起的 `13×9` 地块、subtile、坡度和高度，放在预览地图 `(24,26)`。图块底层同样来自原版 clear 地块，以填充局部地图裁切边缘的透明区域。谭雅的坡地脚底高度按原版高度与坡度插值。程序坡台、水面纹理及手画波纹已移除。
 
 启动前校验所用地形和资源覆盖物；缺少原版目录或图层时明确报错，不用程序占位替代。原版 PNG、地图及其转换数据仍只从被忽略的本地资源目录读取，不随高清素材入库。`test-native-terrain.mjs` 验证原版水面／岸线／坡地来源、无地形 fallback 和缺失素材提示。
+
+### 同场原版对照
+
+每个天启和谭雅右侧显示原版素材的同步副本，标明“高清／原版”。副本使用相同阵营、朝向、移动状态、开火时间和血量，仅参加渲染排序，不加入 GameEngine 实体或伤害／碰撞结算。车辆来自 `mtnk.vxl,mtnktur.vxl,mtnkbarl.vxl` 的既有原版转换图集；谭雅来自 `tany.shp` 和 `TanyaSequence`，卧倒／起身／卧射／游泳均使用原版序列。
+
+原版转换器对谭雅保留完整的 619 个非阴影帧（原 SHP 共 1238 帧），修复旧 512 帧上限截断游泳朝向的问题，并保留 Down/Up/Tread/WetAttack 序列。原版图集继续留在本地素材目录，不入库。验证：`node tools/canvas-hd-preview/test-comparison-pairs.mjs`，可通过 `TEST_ORIGIN` 指定远程预览。
