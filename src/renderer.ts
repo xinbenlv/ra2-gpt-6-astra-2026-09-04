@@ -1,5 +1,5 @@
 import { t } from './i18n';
-import { spriteAnimation, unitIsMoving } from './sprite-animation';
+import { spriteAnimation, spriteFacing, unitIsMoving } from './sprite-animation';
 import { drawHDCombatEffect, drawHDGroundMotion } from './hd-effects';
 import type { GameEngine, Entity, Definition, GameMap, Point } from './game';
 import { getDefinition, PLAYER_COLORS } from './game';
@@ -332,9 +332,8 @@ export class BattlefieldRenderer {
         let frame = 0;
         const moving = sprite.hdMotion ? unitIsMoving(e,this.game.time) : e.path.length > 0;
         if (def.kind === 'unit' && sprite.frames > 1) {
-          const angle = ((e.angle / (Math.PI * 2)) % 1 + 1) % 1;
           if (sprite.sequences) { frame=spriteAnimation(sprite,e,this.game.time).frame; }
-          else frame = Math.round(angle * sprite.frames) % sprite.frames;
+          else frame = spriteFacing(sprite,e.angle);
         }
         if(presentation?.frame!=null)frame=presentation.frame;
         const density = Number.isFinite(sprite.pixelRatio) && sprite.pixelRatio! > 0 ? sprite.pixelRatio! : 1;
@@ -354,9 +353,9 @@ export class BattlefieldRenderer {
           }
           if(hitAge>=0&&hitAge<.16)ctx.filter='brightness(1.7) saturate(.6)';
         }
-        ctx.save();if(presentation?.lean){ctx.translate(p.x,p.y);ctx.rotate(presentation.lean);ctx.translate(-p.x,-p.y);}
+        if(presentation?.lean){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(presentation.lean);ctx.translate(-p.x,-p.y);}
         ctx.drawImage(image,(frame%sprite.columns)*sourceWidth,Math.floor(frame/sprite.columns)*sourceHeight,sourceWidth,sourceHeight,p.x-ax,p.y-ay-flying,fw,fh);
-        ctx.restore();
+        if(presentation?.lean)ctx.restore();
 
         if(hdMotion)ctx.restore();
         ctx.imageSmoothingEnabled = smoothing; rendered = true;

@@ -83,6 +83,7 @@ interface OriginalSprite {
 - Anchors are pixel coordinates of the ground/footprint center within each frame.
 - `-snow` suffixes select original snow theater structure graphics.
 - SHP palettes remain in their original colors. Palette indices 16–31 become the optional grayscale-alpha house-color mask. Shadow frames are composited below their original graphic.
+- Original SHP infantry facings use `facingConvention: "ra2-shp"`: N, NW, W, SW, S, SE, E, NE in screen space. World +X projects SE, so it selects SHP facing 5. `spriteFacing` converts and rounds to the nearest facing for all actions; legacy manifests are recognized by `.shp` provenance. VXL/HD atlases use `world-xy` and must not receive the SHP offset.
 - Infantry sequences preserve the original art.ini `[start, count, facingStride]` values. All gameplay frames, including walking, firing, crawling, and deployment where present, are included.
 - Buildings include original idle/active machinery and closed roof layers. Their footprints come directly from original art.ini.
 - VXL atlases contain 32 facings, starting with model +X pointing screen southeast, rotating counterclockwise in world XY as frame index increases. The converter preserves original voxel geometry, palette, and HVA transforms; lighting approximates the original engine using voxel surfaces.

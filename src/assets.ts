@@ -3,6 +3,9 @@ import { OriginalAssetsError } from './asset-setup';
 import { appUrl, resolveOriginalUrls } from './urls';
 
 export interface Sprite {
+  /** Original SHP facings start at screen north and run N,NW,W,SW,S,SE,E,NE. */
+  facingConvention?: 'world-xy' | 'ra2-shp';
+  originalFile?: string;
   /** Source pixels per logical game pixel; omitted legacy sprites retain density 1. */
   pixelRatio?: number;
   animationFps?: number;

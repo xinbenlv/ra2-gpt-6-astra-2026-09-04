@@ -65,7 +65,7 @@ def export(name,raw=None,parts=None):
    box=[int(sx),int(sy),int(sx)+1,int(sy)+1];d.rectangle(box,fill=(*rgb,255));dm.rectangle(box,fill=(255,255,255,max(rgb)) if 16<=c<=31 else (0,0,0,0))
   sheet.paste(im,((frame%cols)*W,(frame//cols)*H));maskSheet.paste(mask,((frame%cols)*W,(frame//cols)*H))
  out=e.OUT/'sprites';out.mkdir(exist_ok=True);sheet.save(out/(name+'.png'));maskSheet.save(out/(name+'-remap.png'))
- e.manifest['sprites'][name]={'src':'/assets/sprites/'+name+'.png','width':sheet.width,'height':sheet.height,'frameWidth':W,'frameHeight':H,'frames':32,'columns':cols,'anchorX':W/2,'anchorY':H/2,'originalFile':','.join(files),'format':'VXL','remapMaskSrc':'/assets/sprites/'+name+'-remap.png','facings':32};return True
+ e.manifest['sprites'][name]={'src':'/assets/sprites/'+name+'.png','width':sheet.width,'height':sheet.height,'frameWidth':W,'frameHeight':H,'frames':32,'columns':cols,'anchorX':W/2,'anchorY':H/2,'originalFile':','.join(files),'format':'VXL','remapMaskSrc':'/assets/sprites/'+name+'-remap.png','facings':32,'facingConvention':'world-xy'};return True
 def main():
  e.manifest=json.loads((e.OUT/'manifest.json').read_text())
  for name,raw in [('gtnk','gtnk'),('htnk','htnk'),('cmin','cmin'),('harv','harv'),('mcv','mcv'),('smcv','smcv'),('fv','fv'),('htk','htk'),('sref','sref'),('rtnk','rtnk'),('mtnk','mtnk'),('v3','v3'),('tnkd','tnkd'),('ttnk','ttnk'),('trucka','trucka'),('falc','falc'),('beag','beag'),('zep','zep'),('shad','shad'),('dest','dest'),('aegis','aegis'),('carrier','carrier'),('sub','sub'),('hyd','hyd'),('dred','dred'),('lcrf','lcrf'),('trs','trs')]:

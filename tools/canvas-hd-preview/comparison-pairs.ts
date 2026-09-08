@@ -3,7 +3,7 @@ import type {GameEngine} from '@game/game/engine';
 import type {Entity} from '@game/game/types';
 import {CATALOG} from '@game/game/data';
 import type {BattlefieldRenderer} from '@game/renderer';
-import {spriteAnimation} from '@game/sprite-animation';
+import {spriteAnimation,spriteFacing} from '@game/sprite-animation';
 
 /** Render-only mirrors keep movement, shots and HP comparable without adding combatants. */
 export function createComparisonPairs(game:GameEngine,renderer:BattlefieldRenderer,original:Record<string,Sprite>,groundHeight:(x:number,y:number)=>number,high:()=>boolean){
@@ -22,7 +22,7 @@ export function createComparisonPairs(game:GameEngine,renderer:BattlefieldRender
   if(action==='pronefire')action='fireprone';
   if(action){
    const sequence=sprite.sequences?.[action];
-   if(sequence){const direction=Math.floor(((source.angle/(Math.PI*2)%1+1)%1)*(sprite.facings||8));const age=action==='down'?phase:action==='up'?phase-6:game.time;
+   if(sequence){const direction=spriteFacing(sprite,source.angle);const age=action==='down'?phase:action==='up'?phase-6:game.time;
     const step=action==='up'||action==='down'?Math.min(sequence[1]-1,Math.floor(age*sequence[1])):Math.floor(age*12)%sequence[1];frame=sequence[0]+direction*sequence[2]+step;
     if(frame>=sprite.frames)throw Error('原版动作图集不完整：'+action);
    }

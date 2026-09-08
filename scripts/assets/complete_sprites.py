@@ -37,7 +37,7 @@ def main():
   b=e.M['conquer'].get(ident+'.shp')
   if not b:print('missing unit',ident);continue
   W,H=struct.unpack_from('<HH',b,2);entry=e.export(ident,b,up,maxframes=2048 if ident=='tany' else 512,anchor=(W/2,H/2));art=e.ART.get(ident,{})
-  entry['sequence']=art.get('sequence');entry['facings']=8
+  entry['sequence']=art.get('sequence');entry['facings']=8;entry['facingConvention']='ra2-shp'
   if art.get('sequence'):
    seq=e.ART.get(art['sequence'].lower(),{});entry['sequences']={k:[int(x) for x in v.split(',') if x.strip().lstrip('-').isdigit()] for k,v in seq.items() if k in ['ready','guard','walk','fireup','prone','crawl','fireprone','idle1','idle2','die1','die2','deploy','deployed','swim','down','up','tread','wetattack']}
   if art.get('cameo'):
