@@ -47,6 +47,9 @@ export class BattlefieldRenderer {
   private time = 0;
   edgeScroll = true;
   hdEffects = false;
+  // Optional authored preview presentation; absent in normal games.
+  entityPresentation?: (entity:Entity) => {sprite?:Sprite;frame?:number;action?:string;height?:number;swimming?:boolean;lean?:number}|undefined;
+  worldGround?: (ctx:CanvasRenderingContext2D) => void;
   constructor(public canvas: HTMLCanvasElement, public game: GameEngine, public map: RenderMap, public assets: Assets, private hooks: RendererHooks, public localId = 0) {
     this.terrainPainter = new TerrainPainter(assets);
     // Native maps may contain missing tile IDs; only editor documents need compilation.
@@ -184,7 +187,7 @@ export class BattlefieldRenderer {
     let nearest: Entity | undefined;
     for (let i = this.game.entities.length - 1; i >= 0; i--) {
       const e = this.game.entities[i]; if (e.hp <= 0 || e.transportedBy || !this.game.visible(this.localId, e.x, e.y)) continue;
-      const p = this.toScreen(e.x, e.y), def = getDefinition(e.type);
+      const p = this.toScreen(e.x, e.y), def = getDefinition(e.type);p.y-=(this.entityPresentation?.(e)?.height||0)*this.zoom;
       const box = this.displayedSprites.get(e.id);
       if (e.kind === 'building' && box && x > box.x + box.w * .15 && x < box.x + box.w * .85 && y > box.y + box.h * .3 && y < box.y + box.h * .92) return e;
       const r = (def.category === 'infantry' ? 11 : def.naval ? 28 : 20) * this.zoom;
@@ -250,6 +253,7 @@ export class BattlefieldRenderer {
         this.terrainPainter.drawResources(ctx,p.x,p.y,x,y,terrain==='gem');
       }
     }
+    this.worldGround?.(ctx);
     this.displayedSprites.clear();
     const objects: {sort:number;draw:()=>void}[]=[];
     for(const obj of [...this.map.terrainObjects || [],...this.map.structures || []]) {
@@ -308,10 +312,11 @@ export class BattlefieldRenderer {
   private spriteKey(def: Definition) { const snow = `${def.sprite}-snow`; return this.map.theater?.toLowerCase() === 'snow' && this.assets.sprite(snow) ? snow : def.sprite; }
   private drawEntity(ctx: CanvasRenderingContext2D, e: Entity) {
     const def = getDefinition(e.type), p = this.project(e.x-(e.kind==='building'?.5:0), e.y-(e.kind==='building'?.5:0)); p.y -= this.elevation(e.x, e.y) * 15;
+    const presentation=this.entityPresentation?.(e);p.y-=presentation?.height||0;
     const color = this.game.players.find(v => v.id === e.owner)?.color || PLAYER_COLORS[e.owner % PLAYER_COLORS.length] || '#898d86';
     const selected = this.selection.has(e.id), hovered = this.hoverEntity?.id === e.id;
     const flying = def.flying ? 45 + Math.sin(this.time * 3 + e.id) * 2 : 0;
-    const spriteKey = e.type==='ifv'&&e.turretIndex!=null?`fv-turret${e.turretIndex}`:this.spriteKey(def), sprite = this.assets.sprite(spriteKey) || this.assets.scenery[`${this.map.theater}:${def.sprite.toLowerCase()}`];
+    const spriteKey = e.type==='ifv'&&e.turretIndex!=null?`fv-turret${e.turretIndex}`:this.spriteKey(def), sprite = presentation?.sprite || this.assets.sprite(spriteKey) || this.assets.scenery[`${this.map.theater}:${def.sprite.toLowerCase()}`];
     const shadowW = def.kind === 'building' ? 0 : def.category === 'infantry' ? 5 : def.naval ? 30 : 15;
     if(shadowW){ctx.fillStyle='#00100a44';ctx.beginPath();ctx.ellipse(p.x+flying*.2,p.y+3,shadowW,shadowW*.4,0,0,Math.PI*2);ctx.fill();}
     if(selected){ctx.strokeStyle='#91ef75';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(p.x,p.y,def.kind==='building'?(def.size?.[0]||2)*23:shadowW+3,def.kind==='building'?(def.size?.[1]||2)*11:8,0,0,Math.PI*2);ctx.stroke();}
@@ -327,6 +332,7 @@ export class BattlefieldRenderer {
           if (sprite.sequences) { frame=spriteAnimation(sprite,e,this.game.time).frame; }
           else frame = Math.round(angle * sprite.frames) % sprite.frames;
         }
+        if(presentation?.frame!=null)frame=presentation.frame;
         const density = Number.isFinite(sprite.pixelRatio) && sprite.pixelRatio! > 0 ? sprite.pixelRatio! : 1;
         // Sample the full-resolution frame, but keep world size, anchors and hit bounds logical.
         const sourceWidth = fw, sourceHeight = fh;
@@ -344,10 +350,13 @@ export class BattlefieldRenderer {
           }
           if(hitAge>=0&&hitAge<.16)ctx.filter='brightness(1.7) saturate(.6)';
         }
+        ctx.save();if(presentation?.lean){ctx.translate(p.x,p.y);ctx.rotate(presentation.lean);ctx.translate(-p.x,-p.y);}
         ctx.drawImage(image,(frame%sprite.columns)*sourceWidth,Math.floor(frame/sprite.columns)*sourceHeight,sourceWidth,sourceHeight,p.x-ax,p.y-ay-flying,fw,fh);
+        ctx.restore();
+        if(presentation?.swimming){ctx.strokeStyle='#bde6eeaa';ctx.fillStyle='#589fac55';ctx.beginPath();ctx.ellipse(p.x,p.y-2,15,4,0,0,Math.PI*2);ctx.fill();ctx.stroke();for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(p.x-8-i*7,p.y-1-i*2,6+i*2,2+Math.sin(this.game.time*5+i)*.5,0,0,Math.PI);ctx.stroke();}}
         if(hdMotion)ctx.restore();
         ctx.imageSmoothingEnabled = smoothing; rendered = true;
-        const screen = this.toScreen(e.x,e.y); this.displayedSprites.set(e.id,{x:screen.x-ax*this.zoom,y:screen.y-(ay+flying)*this.zoom,w:fw*this.zoom,h:fh*this.zoom});
+        const screen = this.toScreen(e.x,e.y); this.displayedSprites.set(e.id,{x:screen.x-ax*this.zoom,y:screen.y-(ay+flying+(presentation?.height||0))*this.zoom,w:fw*this.zoom,h:fh*this.zoom});
       }
     }
     if(!rendered){this.drawFallbackUnit(ctx,p.x,p.y-flying,e,def,color);}

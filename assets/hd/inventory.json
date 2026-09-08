@@ -93,8 +93,8 @@
     },
     {
       "file": "sprites/manifest.json",
-      "bytes": 2372,
-      "sha256": "e5f21573fa8bbe6aa6b9aa034e04070a97db7bfa601c0ffd888a0f71adcf2b36"
+      "bytes": 3192,
+      "sha256": "00960ea4d5f147de8c12a2208e6e24cc74fb36506053717fcc109afb924a0b3f"
     },
     {
       "file": "sprites/mtnk-remap.png",
@@ -117,6 +117,16 @@
       "sha256": "c1c4b155f84faa518d91b4266b3ff52dd39c88c6a20ead33facff6e85799d05e"
     },
     {
+      "file": "sprites/tany-actions-remap.png",
+      "bytes": 268334,
+      "sha256": "295eadd345fcb61be8ef1aa2e3bfe6dbfcfa4f841b93e7b465a0692a2ab28123"
+    },
+    {
+      "file": "sprites/tany-actions.png",
+      "bytes": 1425974,
+      "sha256": "b9e4948cfe07864edf97a195fa2f1d1a44584bb40a7a593e3441a97034ec0a9d"
+    },
+    {
       "file": "sprites/tany-remap.png",
       "bytes": 222953,
       "sha256": "2488bd16f1ad334edf7a69f28a718c3084c0cca8632890ed4d5f30dd9766f199"
@@ -127,5 +137,5 @@
       "sha256": "a4f3e30b16d316084ba748d220b95322dd6c8a8d356374fdc655c6d46c91a601"
     }
   ],
-  "totalBytes": 18552150
+  "totalBytes": 20247278
 }

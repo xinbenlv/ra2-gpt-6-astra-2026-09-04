@@ -1,3 +1,4 @@
+import { createMapDemos, drawDemoTerrain } from './map-demos';
 import { Assets } from '@game/assets';
 import { GameEngine } from '@game/game/engine';
 import { spriteAnimation } from '@game/sprite-animation';
@@ -13,7 +14,7 @@ resolveImages(original);resolveImages(hd);
 const assets=new Assets();assets.manifest={sprites:hd.sprites};
 // Use actual extracted terrain artwork. Road/resource cells use the engine's existing fallback.
 if(original.terrain['temperate:0:0'])assets.terrain={'temperate:0:0':original.terrain['temperate:0:0']};
-const hasOriginal=Object.keys(hd.sprites).every(id=>original.sprites[id]);
+const hasOriginal=Object.keys(hd.sprites).filter(id=>id!=='tany-actions').every(id=>original.sprites[id]);
 if(!hasOriginal){($('toggle') as HTMLButtonElement).disabled=true;$('toggle').textContent='原版美术未安装';}
 const sceneryKeys=Object.keys(original.scenery).filter(k=>k.startsWith('temperate:')&&/tree0[1-6]$/.test(k));
 for(const key of sceneryKeys)assets.scenery[key]=original.scenery[key];
@@ -22,6 +23,9 @@ await Promise.all([...urls].map(src=>new Promise<void>((resolve,reject)=>{const 
 const width=48,height=48,cells:Terrain[]=Array(width*height).fill('land'),tiles:any[]=[],terrainObjects:any[]=[];
 for(let y=0;y<height;y++)for(let x=0;x<width;x++){if((x===28||x===29)||(y===26||y===27))cells[y*width+x]='road';else if(x>33&&x<39&&y>14&&y<20)cells[y*width+x]='ore';else tiles.push({x,y,tileId:0,subTile:0});}
 for(let i=0;i<16&&sceneryKeys.length;i++)terrainObjects.push({x:10+i%4*3,y:28+Math.floor(i/4)*2,type:sceneryKeys[i%sceneryKeys.length].split(':')[1]});
+// Real water cells use the existing Canvas terrain renderer.
+for(let y=10;y<=13;y++)for(let x=16;x<=21;x++)cells[y*width+x]='water';
+for(let i=tiles.length-1;i>=0;i--)if(cells[tiles[i].y*width+tiles[i].x]==='water')tiles.splice(i,1);
 const map={id:'hd-local-field',name:'高清精灵集结区',width,height,spawns:[{x:6,y:6},{x:40,y:40}],cells,theater:'temperate',tiles,terrainObjects};
 const placements:[string,number,number,number][]=[['construction_yard',15,18,0],['nuclear_reactor',23,14,0],['apocalypse',19,23,0],['apocalypse',22,23,Math.PI/4],['apocalypse',25,23,Math.PI/2],['tanya',18,19,0],['tanya',20,20,Math.PI/2],['tanya',22,19,Math.PI]];
 const targetPlacements:[string,number,number][]=[['apocalypse',29,20],['tanya',27,17],['construction_yard',31,12]];
@@ -44,16 +48,18 @@ let {game,actors,targets}=makeScenario();
 const renderer=new BattlefieldRenderer($('battle') as HTMLCanvasElement,game,map,assets,{onSelection(){updateSelection();},onCommand(kind){$('status').textContent=kind==='attack'?'攻击指令已下达 · 靶标默认不还击':'移动指令已下达';},onPlace(){return false;},onEntityClick(){return false;},onNotice(text){$('status').textContent=text;}});renderer.edgeScroll=false;renderer.hdEffects=true;
 let high=true,paused=false,speed=1,retaliating=false,automatic=true;
 let loopLeg=false,nextLoop=0;
-function home(){renderer.zoom=1.15;renderer.center(23,18);renderer.draw();}
+let demos:ReturnType<typeof createMapDemos>|undefined;
+renderer.worldGround=ctx=>drawDemoTerrain(ctx,renderer,game.time);
+function home(){renderer.zoom=1.1;renderer.center(22,20);renderer.draw();}
 function updateSelection(){
  const selected=[...renderer.selection].map(id=>game.getEntity(id)).filter(Boolean);
  $('selection').textContent=selected.length?selected.map(e=>`${CATALOG[e!.type].name} · ${Math.ceil(e!.hp)}/${e!.maxHp}`).join('、'):'点击单位或框选一组';
- const e=selected[0],sprite=e&&assets.sprite(CATALOG[e.type].sprite);
- const action=e&&sprite?spriteAnimation(sprite,e,game.time).action:'ready';
- const labels:Record<string,string>={ready:'待命',walk:'移动',fireup:'开火',hit:'受击',deployed:'部署'};
+ const e=selected[0],presentation=e&&renderer.entityPresentation?.(e),sprite=presentation?.sprite||(e&&assets.sprite(CATALOG[e.type].sprite));
+ const action=presentation?.action||(e&&sprite?spriteAnimation(sprite,e,game.time).action:'ready');
+ const labels:Record<string,string>={ready:'待命',walk:'移动',fireup:'开火',hit:'受击',deployed:'部署',prone:'卧倒／起身',pronefire:'卧倒射击',swim:'游泳'};
  $('action').textContent=e?(e.repairing?'维修中':labels[action]||action):'等待选择';
  const canvas=$('pose-preview') as HTMLCanvasElement,ctx=canvas.getContext('2d')!;ctx.clearRect(0,0,canvas.width,canvas.height);
- if(e&&sprite){const image=(renderer as any).coloredSprite(sprite,game.getPlayer(e.owner)?.color||'#aaaaaa');if(image){const frame=spriteAnimation(sprite,e,game.time).frame,w=sprite.frameWidth,h=sprite.frameHeight,scale=Math.min((canvas.width-24)/w,(canvas.height-16)/h);ctx.drawImage(image,frame%sprite.columns*w,Math.floor(frame/sprite.columns)*h,w,h,(canvas.width-w*scale)/2,(canvas.height-h*scale)/2,w*scale,h*scale);}}
+ if(e&&sprite){const image=(renderer as any).coloredSprite(sprite,game.getPlayer(e.owner)?.color||'#aaaaaa');if(image){const frame=presentation?.frame??spriteAnimation(sprite,e,game.time).frame,w=sprite.frameWidth,h=sprite.frameHeight,scale=Math.min((canvas.width-24)/w,(canvas.height-16)/h);ctx.drawImage(image,frame%sprite.columns*w,Math.floor(frame/sprite.columns)*h,w,h,(canvas.width-w*scale)/2,(canvas.height-h*scale)/2,w*scale,h*scale);}}
 
 }
 $('toggle').onclick=()=>{if(!hasOriginal)return;high=!high;assets.manifest.sprites=high?hd.sprites:original.sprites;renderer.hdEffects=high;$('toggle').textContent=high?'切换原版素材':'切换高清素材';$('mode').textContent=high?'高清动作 / 阵营换色':'原版精灵 / 原始尺寸';renderer.draw();};
@@ -79,6 +85,7 @@ function resetScenario(){
   game.commandAttack([targets[0].id],actors[4].id);
   renderer.setSelection([actors[5].id]);
  }
+ demos=automatic?createMapDemos(game,renderer,hd.sprites):undefined;if(!demos)renderer.entityPresentation=undefined;
  $('loop').textContent=automatic?'切换手动操作':'开启自动循环';
  $('loop-info').textContent=automatic?'自动循环中 · 往返移动／持续交火／建筑维修 · 受击者最低保留 2% 生命':'手动模式 · 伤害正常结算，单位可被摧毁';
  home();
@@ -96,16 +103,17 @@ function updateLoop(){
 function inspectLoops(){
  const samples=[actors[2],actors[5],actors[3],targets[0],targets[1],actors[0]];
  samples.forEach((e,i)=>{
+  const presentation=renderer.entityPresentation?.(e);
   const canvas=$('loop-pose-'+i) as HTMLCanvasElement,ctx=canvas.getContext('2d')!,sprite=assets.sprite(CATALOG[e.type].sprite);
   ctx.clearRect(0,0,canvas.width,canvas.height);if(!sprite)return;
   const image=(renderer as any).coloredSprite(sprite,game.getPlayer(e.owner)?.color||'#aaa');
-  if(image){const frame=spriteAnimation(sprite,e,game.time).frame,w=sprite.frameWidth,h=sprite.frameHeight,k=Math.min(176/w,130/h);ctx.drawImage(image,frame%sprite.columns*w,Math.floor(frame/sprite.columns)*h,w,h,(192-w*k)/2,(144-h*k)/2,w*k,h*k);}
+  if(image){const frame=presentation?.frame??spriteAnimation(sprite,e,game.time).frame,w=sprite.frameWidth,h=sprite.frameHeight,k=Math.min(176/w,130/h);ctx.drawImage(image,frame%sprite.columns*w,Math.floor(frame/sprite.columns)*h,w,h,(192-w*k)/2,(144-h*k)/2,w*k,h*k);}
   $('loop-hp-'+i).textContent=Math.ceil(e.hp)+' / '+e.maxHp;
  });
 }
 $('loop').onclick=()=>{automatic=!automatic;resetScenario();};
 $('reset').onclick=resetScenario;
 resetScenario();
-home();let last=performance.now(),ui=0;function frame(now:number){const dt=paused?0:Math.min((now-last)/1000,.05)*speed;last=now;if(dt>0)updateLoop();game.step(dt);renderer.update(dt);ui+=dt;if(ui>.1){ui=0;updateSelection();inspectLoops();}requestAnimationFrame(frame);}requestAnimationFrame(frame);
+home();let last=performance.now(),ui=0;function frame(now:number){const dt=paused?0:Math.min((now-last)/1000,.05)*speed;last=now;if(dt>0)updateLoop();game.step(dt);demos?.update(game.time);renderer.update(dt);ui+=dt;if(ui>.1){ui=0;updateSelection();inspectLoops();}requestAnimationFrame(frame);}requestAnimationFrame(frame);
 $('status').textContent='已就绪 · 自动循环演示 · 可暂停、慢放或切换手动操作';
-(window as any).__hd={get automatic(){return automatic;},get game(){return game;},renderer,assets,get actors(){return actors;},get targets(){return targets;},hd,original,ready:true,animation:(id:number)=>{const e=game.getEntity(id);return e?spriteAnimation(assets.sprite(CATALOG[e.type].sprite)!,e,game.time):undefined;}};
+(window as any).__hd={get demos(){return demos?.entities;},get automatic(){return automatic;},get game(){return game;},renderer,assets,get actors(){return actors;},get targets(){return targets;},hd,original,ready:true,animation:(id:number)=>{const e=game.getEntity(id);return e?spriteAnimation(assets.sprite(CATALOG[e.type].sprite)!,e,game.time):undefined;}};

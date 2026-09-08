@@ -55,3 +55,9 @@ comparison candidates. A fresh checkout needs no LFS download for these samples.
 `inventory.json` lists only distributed files and their checksums.
 Old GitHub LFS objects continue to count against remote storage until GitHub
 purges them; rewriting Git history alone does not release that quota.
+
+### 谭雅特殊情境预览
+
+`tany-actions.png` 和对应 remap 遮罩来自现有 30K 静态 GLB：8 朝向，卧倒过渡 4 帧、卧射 4 帧、游泳 8 帧，共 128 帧，4× 像素密度。运行 `node tools/canvas-hd-preview/bake.mjs tany-actions` 可重建。起身倒播卧倒帧；坡面演示复用行走帧，按示例坡面高度移动锚点并轻微倾身。
+
+三个示例直接位于同一 Canvas 2D 游戏地图：左侧卧倒射击、上方水域游泳、下方坡道往返。示例是真实可选中实体，统一使用游戏时钟，支持暂停、慢放、重置和阵营换色。卧射使用真实攻击指令与伤害、残血保护；游泳与坡道位置由预览脚本驱动，未扩展正式寻路规则。程序空间变形尚未绑定骨骼，手臂与武器有变形局限；游泳仍保留源模型武器。GLB 本身没有新增动画 clips，也没有改动正式游戏的游泳或坡地规则。额外图集独立于普通行走图集，以免扩大每个普通单位的换色缓存。

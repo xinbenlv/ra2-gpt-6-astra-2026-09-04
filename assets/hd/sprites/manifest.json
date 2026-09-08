@@ -91,6 +91,40 @@
       },
       "animationFps": 8,
       "animationSource": "procedural vertex poses; unrigged preview"
+    },
+    "tany-actions": {
+      "src": "/sprites/tany-actions.png",
+      "remapMaskSrc": "/sprites/tany-actions-remap.png",
+      "width": 1536,
+      "height": 3840,
+      "frameWidth": 192,
+      "frameHeight": 240,
+      "frames": 128,
+      "columns": 8,
+      "anchorX": 96,
+      "anchorY": 176,
+      "pixelRatio": 4,
+      "facings": 8,
+      "hdMotion": "infantry",
+      "sequences": {
+        "prone": [
+          0,
+          4,
+          4
+        ],
+        "pronefire": [
+          32,
+          4,
+          4
+        ],
+        "swim": [
+          64,
+          8,
+          8
+        ]
+      },
+      "animationFps": 8,
+      "animationSource": "procedural vertex poses; unrigged preview"
     }
   },
   "sources": [
@@ -111,6 +145,11 @@
     },
     {
       "id": "tany",
+      "triangles": 29994,
+      "pixelsPerUnit": 15.321266619896177
+    },
+    {
+      "id": "tany-actions",
       "triangles": 29994,
       "pixelsPerUnit": 15.321266619896177
     }
