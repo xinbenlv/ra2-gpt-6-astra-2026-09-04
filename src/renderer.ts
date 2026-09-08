@@ -3,7 +3,7 @@ import { spriteAnimation, spriteFacing, unitIsMoving } from './sprite-animation'
 import { drawHDCombatEffect, drawHDGroundMotion } from './hd-effects';
 import type { GameEngine, Entity, Definition, GameMap, Point } from './game';
 import { getDefinition, PLAYER_COLORS } from './game';
-import type { Assets, Sprite } from './assets';
+import { spriteFrame, type Assets, type Sprite } from './assets';
 import { projectTile, TerrainPainter, unprojectPoint } from './terrain-painter';
 import { compileCustomTerrain, type ResolvedTerrainCell } from './custom-terrain';
 import { nativeTerrainCatalog } from './maps';
@@ -336,6 +336,7 @@ export class BattlefieldRenderer {
           else frame = spriteFacing(sprite,e.angle);
         }
         if(presentation?.frame!=null)frame=presentation.frame;
+        const sample=spriteFrame(sprite,frame);fw=sample.width;fh=sample.height;ax=sample.anchorX;ay=sample.anchorY;
         const density = Number.isFinite(sprite.pixelRatio) && sprite.pixelRatio! > 0 ? sprite.pixelRatio! : 1;
         // Sample the full-resolution frame, but keep world size, anchors and hit bounds logical.
         const sourceWidth = fw, sourceHeight = fh;
@@ -354,7 +355,7 @@ export class BattlefieldRenderer {
           if(hitAge>=0&&hitAge<.16)ctx.filter='brightness(1.7) saturate(.6)';
         }
         if(presentation?.lean){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(presentation.lean);ctx.translate(-p.x,-p.y);}
-        ctx.drawImage(image,(frame%sprite.columns)*sourceWidth,Math.floor(frame/sprite.columns)*sourceHeight,sourceWidth,sourceHeight,p.x-ax,p.y-ay-flying,fw,fh);
+        ctx.drawImage(image,sample.x,sample.y,sourceWidth,sourceHeight,p.x-ax,p.y-ay-flying,fw,fh);
         if(presentation?.lean)ctx.restore();
 
         if(hdMotion)ctx.restore();

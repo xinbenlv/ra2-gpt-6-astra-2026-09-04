@@ -19,7 +19,7 @@ export function spriteFacing(sprite:Sprite,angle:number){
 export function spriteAnimation(sprite: Sprite, entity: Entity, time: number) {
   const direction=spriteFacing(sprite,entity.angle);
   if (!sprite.sequences) {const action=sprite.hdMotion?(time-(entity.lastHit??-Infinity)<.3?'hit':time-entity.lastShot<.3?'fireup':unitIsMoving(entity,time)?'walk':'ready'):'ready';return {action,frame:direction};}
-  if (!sprite.animationFps) {
+  if (!sprite.animationFps || sprite.animationClock==='source') {
     const action=entity.deployed?'deployed':time-entity.lastShot<.5?'fireup':entity.path.length?'walk':'ready';
     const sequence=sprite.sequences[action]??sprite.sequences.ready??[0,1,1];
     return {action,frame:sequence[0]+direction*sequence[2]+Math.floor(time*12)%sequence[1]};

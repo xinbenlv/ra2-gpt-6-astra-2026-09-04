@@ -1,9 +1,11 @@
+import {TANYA_SEQUENCES} from './tanya-sequences';
+import {createFrameInspector} from './frame-inspector';
 import { createComparisonPairs } from './comparison-pairs';
 import { configureMapData, importMap } from '@game/maps';
 import { compileCustomTerrain } from '@game/custom-terrain';
 import { applyNativeTerrain } from './native-terrain';
 import { createMapDemos, drawDemoTerrain } from './map-demos';
-import { Assets } from '@game/assets';
+import { Assets, spriteFrame } from '@game/assets';
 import { GameEngine } from '@game/game/engine';
 import { spriteAnimation } from '@game/sprite-animation';
 import { CATALOG } from '@game/game/data';
@@ -14,6 +16,7 @@ window.addEventListener('unhandledrejection',event=>{$('status').textContent='�
 const base=import.meta.env.BASE_URL;
 const original=await (await fetch(base+'original-manifest.json')).json();
 if(original.error){$('status').textContent=original.error;throw Error(original.error);}
+original.sprites.tany.sequences={...original.sprites.tany.sequences,...TANYA_SEQUENCES};
 configureMapData(original.mapMetadata);
 const hd=await (await fetch(base+'sprites/manifest.json')).json();
 function resolveImages(value:any){if(!value||typeof value!=='object')return;for(const [key,child]of Object.entries(value)){if((key==='src'||key==='remapMaskSrc')&&typeof child==='string'&&child.startsWith('/'))value[key]=base+child.slice(1);else resolveImages(child);}}
@@ -57,6 +60,7 @@ let high=true,paused=false,speed=1,retaliating=false,automatic=true;
 let loopLeg=false,nextLoop=0;
 let demos:ReturnType<typeof createMapDemos>|undefined;
 let comparisons:ReturnType<typeof createComparisonPairs>|undefined;
+const inspector=createFrameInspector(renderer,()=>actors[7],original.sprites.tany);
 renderer.worldGround=ctx=>drawDemoTerrain(ctx,renderer,game.time);
 function home(){renderer.zoom=1.1;renderer.center(22,20);renderer.draw();}
 function updateSelection(){
@@ -64,10 +68,10 @@ function updateSelection(){
  $('selection').textContent=selected.length?selected.map(e=>`${CATALOG[e!.type].name} · ${Math.ceil(e!.hp)}/${e!.maxHp}`).join('、'):'点击单位或框选一组';
  const e=selected[0],presentation=e&&renderer.entityPresentation?.(e),sprite=presentation?.sprite||(e&&assets.sprite(CATALOG[e.type].sprite));
  const action=presentation?.action||(e&&sprite?spriteAnimation(sprite,e,game.time).action:'ready');
- const labels:Record<string,string>={ready:'待命',walk:'移动',fireup:'开火',hit:'受击',deployed:'部署',prone:'卧倒／起身',pronefire:'卧倒射击',swim:'游泳'};
+ const labels:Record<string,string>={ready:'待命',walk:'移动',fireup:'开火',hit:'受击',deployed:'部署',prone:'卧倒／起身',pronefire:'卧倒射击',fireprone:'卧倒射击',down:'卧倒',up:'起身',swim:'游泳'};
  $('action').textContent=e?(e.repairing?'维修中':labels[action]||action):'等待选择';
  const canvas=$('pose-preview') as HTMLCanvasElement,ctx=canvas.getContext('2d')!;ctx.clearRect(0,0,canvas.width,canvas.height);
- if(e&&sprite){const image=(renderer as any).coloredSprite(sprite,game.getPlayer(e.owner)?.color||'#aaaaaa');if(image){const frame=presentation?.frame??spriteAnimation(sprite,e,game.time).frame,w=sprite.frameWidth,h=sprite.frameHeight,scale=Math.min((canvas.width-24)/w,(canvas.height-16)/h);ctx.drawImage(image,frame%sprite.columns*w,Math.floor(frame/sprite.columns)*h,w,h,(canvas.width-w*scale)/2,(canvas.height-h*scale)/2,w*scale,h*scale);}}
+ if(e&&sprite){const image=(renderer as any).coloredSprite(sprite,game.getPlayer(e.owner)?.color||'#aaaaaa');if(image){const frame=presentation?.frame??spriteAnimation(sprite,e,game.time).frame,sample=spriteFrame(sprite,frame),w=sample.width,h=sample.height,scale=Math.min((canvas.width-24)/w,(canvas.height-16)/h);ctx.drawImage(image,sample.x,sample.y,w,h,(canvas.width-w*scale)/2,(canvas.height-h*scale)/2,w*scale,h*scale);}}
 
 }
 $('toggle').onclick=()=>{if(!hasOriginal)return;high=!high;assets.manifest.sprites=high?hd.sprites:original.sprites;renderer.hdEffects=high;$('toggle').textContent=high?'切换原版素材':'切换高清素材';$('mode').textContent=high?'高清动作 / 阵营换色':'原版精灵 / 原始尺寸';renderer.draw();};
@@ -94,7 +98,7 @@ function resetScenario(){
   renderer.setSelection([actors[5].id]);
  }
  demos=automatic?createMapDemos(game,renderer,hd.sprites,native.groundHeight):undefined;if(!demos)renderer.entityPresentation=undefined;
- comparisons=createComparisonPairs(game,renderer,original.sprites,native.groundHeight,()=>high);comparisons.update();
+ comparisons=createComparisonPairs(game,renderer,original.sprites,native.groundHeight,()=>high);comparisons.update();inspector.install();
  $('loop').textContent=automatic?'切换手动操作':'开启自动循环';
  $('loop-info').textContent=automatic?'自动循环中 · 往返移动／持续交火／建筑维修 · 受击者最低保留 2% 生命':'手动模式 · 伤害正常结算，单位可被摧毁';
  home();
@@ -116,13 +120,13 @@ function inspectLoops(){
   const canvas=$('loop-pose-'+i) as HTMLCanvasElement,ctx=canvas.getContext('2d')!,sprite=assets.sprite(CATALOG[e.type].sprite);
   ctx.clearRect(0,0,canvas.width,canvas.height);if(!sprite)return;
   const image=(renderer as any).coloredSprite(sprite,game.getPlayer(e.owner)?.color||'#aaa');
-  if(image){const frame=presentation?.frame??spriteAnimation(sprite,e,game.time).frame,w=sprite.frameWidth,h=sprite.frameHeight,k=Math.min(176/w,130/h);ctx.drawImage(image,frame%sprite.columns*w,Math.floor(frame/sprite.columns)*h,w,h,(192-w*k)/2,(144-h*k)/2,w*k,h*k);}
+  if(image){const frame=presentation?.frame??spriteAnimation(sprite,e,game.time).frame,sample=spriteFrame(sprite,frame),w=sample.width,h=sample.height,k=Math.min(176/w,130/h);ctx.drawImage(image,sample.x,sample.y,w,h,(192-w*k)/2,(144-h*k)/2,w*k,h*k);}
   $('loop-hp-'+i).textContent=Math.ceil(e.hp)+' / '+e.maxHp;
  });
 }
 $('loop').onclick=()=>{automatic=!automatic;resetScenario();};
 $('reset').onclick=resetScenario;
 resetScenario();
-home();let last=performance.now(),ui=0;function frame(now:number){const dt=paused?0:Math.min((now-last)/1000,.05)*speed;last=now;if(dt>0)updateLoop();game.step(dt);demos?.update(game.time);comparisons?.update();renderer.update(dt);ui+=dt;if(ui>.1){ui=0;updateSelection();inspectLoops();}requestAnimationFrame(frame);}requestAnimationFrame(frame);
+home();let last=performance.now(),ui=0;function frame(now:number){const dt=paused?0:Math.min((now-last)/1000,.05)*speed;last=now;if(dt>0)updateLoop();game.step(dt);demos?.update(game.time);comparisons?.update();inspector.update(game.time);renderer.update(dt);ui+=dt;if(ui>.1){ui=0;updateSelection();inspectLoops();}requestAnimationFrame(frame);}requestAnimationFrame(frame);
 $('status').textContent='已就绪 · 自动循环演示 · 可暂停、慢放或切换手动操作';
-(window as any).__hd={get comparisons(){return comparisons?.pairs;},get demos(){return demos?.entities;},get automatic(){return automatic;},get game(){return game;},renderer,assets,get actors(){return actors;},get targets(){return targets;},hd,original,ready:true,animation:(id:number)=>{const e=game.getEntity(id);return e?spriteAnimation(assets.sprite(CATALOG[e.type].sprite)!,e,game.time):undefined;}};
+(window as any).__hd={inspector,get comparisons(){return comparisons?.pairs;},get demos(){return demos?.entities;},get automatic(){return automatic;},get game(){return game;},renderer,assets,get actors(){return actors;},get targets(){return targets;},hd,original,ready:true,animation:(id:number)=>{const e=game.getEntity(id);return e?spriteAnimation(assets.sprite(CATALOG[e.type].sprite)!,e,game.time):undefined;}};

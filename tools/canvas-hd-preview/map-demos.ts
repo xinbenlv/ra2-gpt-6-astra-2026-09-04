@@ -1,4 +1,5 @@
 import type {Sprite} from '@game/assets';
+import {spriteFacing} from '@game/sprite-animation';
 import type {GameEngine} from '@game/game/engine';
 import type {BattlefieldRenderer} from '@game/renderer';
 
@@ -9,15 +10,23 @@ export function createMapDemos(game:GameEngine,renderer:BattlefieldRenderer,spri
  renderer.entityPresentation=e=>{
   if(e===slope)return {height,lean:e.angle===0?-.08:.08};
   if(e!==prone&&e!==swim)return;
-  if(e===prone&&phase>=7)return;
-  const action=e===swim?'swim':phase<1||phase>=6?'prone':'pronefire',sprite=sprites['tany-actions'];if(!sprite)return;
+  if(e===prone&&phase>=6+(renderer.assets.sprite('tany')?.animationClock==='source'?2/12:1))return;
+  const action=e===swim?'swim':phase<2/12?'down':phase>=6?'up':'fireprone';
+  const sprite=renderer.assets.sprite('tany');if(!sprite)return;
+  // Keep the existing preview usable until a complete replacement atlas is installed.
+  if(sprite.animationClock!=='source'&&sprite.hdMotion){
+   const draft=sprites['tany-actions'],legacyAction=e===swim?'swim':phase<1||phase>=6?'prone':'pronefire';
+   const seq=draft?.sequences?.[legacyAction];if(!seq)return;
+   const f=e===swim?Math.floor(game.time*8)%8:phase<1?Math.min(3,Math.floor(phase*4)):phase>=6?3-Math.min(3,Math.floor((phase-6)*4)):Math.floor(game.time*8)%4;
+   return {sprite:draft,action:legacyAction,frame:seq[0]+spriteFacing(draft,e.angle)*seq[2]+f,swimming:e===swim};
+  }
   const sequence=sprite.sequences?.[action];if(!sequence)return;
-  const frame=e===swim?Math.floor(game.time*8)%8:phase<1?Math.min(3,Math.floor(phase*4)):phase>=6?3-Math.min(3,Math.floor((phase-6)*4)):Math.floor(game.time*8)%4;
-  const facing=e.angle===0?0:4;
-  return {sprite,action,frame:sequence[0]+facing*sequence[2]+frame,swimming:e===swim};
+  const elapsed=action==='down'?phase:action==='up'?phase-6:game.time;
+  const frame=action==='down'||action==='up'?Math.min(sequence[1]-1,Math.floor(elapsed*12)):Math.floor(elapsed*12)%sequence[1];
+  return {sprite,action,frame:sequence[0]+spriteFacing(sprite,e.angle)*sequence[2]+frame,swimming:e===swim};
  };
  return {entities,update(time:number){
-  phase=time%8;const shouldAttack=phase>=1&&phase<6;
+  phase=time%8;const shouldAttack=phase>=(renderer.assets.sprite('tany')?.animationClock==='source'?2/12:1)&&phase<6;
   if(shouldAttack!==attacking){attacking=shouldAttack;if(attacking)game.commandAttack([prone.id],target.id);else game.commandStop([prone.id]);}
   // These two routes are authored inspection paths, not new locomotion rules.
   const u=(time%12)/6,forward=u<1,t=forward?u:2-u;

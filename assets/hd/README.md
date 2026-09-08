@@ -73,3 +73,23 @@ purges them; rewriting Git history alone does not release that quota.
 每个天启和谭雅右侧显示原版素材的同步副本，标明“高清／原版”。副本使用相同阵营、朝向、移动状态、开火时间和血量，仅参加渲染排序，不加入 GameEngine 实体或伤害／碰撞结算。车辆来自 `mtnk.vxl,mtnktur.vxl,mtnkbarl.vxl` 的既有原版转换图集；谭雅来自 `tany.shp` 和 `TanyaSequence`，卧倒／起身／卧射／游泳均使用原版序列。
 
 原版转换器对谭雅保留完整的 619 个非阴影帧（原 SHP 共 1238 帧），修复旧 512 帧上限截断游泳朝向的问题，并保留 Down/Up/Tread/WetAttack 序列。原版图集继续留在本地素材目录，不入库。验证：`node tools/canvas-hd-preview/test-comparison-pairs.mjs`，可通过 `TEST_ORIGIN` 指定远程预览。
+
+### Tanya frame remaster — work in progress
+
+The original `tany.shp` has 619 visual frames and 619 corresponding shadow frames.
+`tools/canvas-hd-preview/tanya-sequences.ts` preserves its complete `art.ini` action
+layout, including water idle/death, cheering and parachute pose. The preview's
+frame inspector displays every source frame ID on the battlefield, with action
+loops, single-step controls, direction selection and a synchronized original pair.
+Until a complete HD replacement passes pose/temporal validation, inspection shows
+original references and labels them accordingly. Existing HD Tanya remains the
+procedural draft; generated candidate sheets have **not** replaced it.
+
+The renderer supports tightly packed rectangles with per-frame foot anchors, so
+a complete remaster need not repeat the original 130×110 blank frame area. A
+`source` animation clock can match the original comparison's 12 fps and six-frame
+walk/swim cycles. This is the existing preview clock, not a claim to reproduce
+every timing rule of the original executable. Static GLBs are unchanged.
+
+Run `node tools/canvas-hd-preview/test-frame-inspector.mjs` against a preview with
+original resources installed to verify all 619 frame IDs and the inspector.

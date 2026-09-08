@@ -23,7 +23,7 @@ export function createComparisonPairs(game:GameEngine,renderer:BattlefieldRender
   if(action){
    const sequence=sprite.sequences?.[action];
    if(sequence){const direction=spriteFacing(sprite,source.angle);const age=action==='down'?phase:action==='up'?phase-6:game.time;
-    const step=action==='up'||action==='down'?Math.min(sequence[1]-1,Math.floor(age*sequence[1])):Math.floor(age*12)%sequence[1];frame=sequence[0]+direction*sequence[2]+step;
+    const step=action==='up'||action==='down'?Math.min(sequence[1]-1,Math.floor(age*(view?.action==='prone'?sequence[1]:12))):Math.floor(age*12)%sequence[1];frame=sequence[0]+direction*sequence[2]+step;
     if(frame>=sprite.frames)throw Error('原版动作图集不完整：'+action);
    }
   }
