@@ -1,3 +1,6 @@
+import { configureMapData, importMap } from '@game/maps';
+import { compileCustomTerrain } from '@game/custom-terrain';
+import { applyNativeTerrain } from './native-terrain';
 import { createMapDemos, drawDemoTerrain } from './map-demos';
 import { Assets } from '@game/assets';
 import { GameEngine } from '@game/game/engine';
@@ -6,27 +9,30 @@ import { CATALOG } from '@game/game/data';
 import { BattlefieldRenderer } from '@game/renderer';
 import type { Entity, Terrain } from '@game/game/types';
 const $=(id:string)=>document.getElementById(id)!;
+window.addEventListener('unhandledrejection',event=>{$('status').textContent='预览未启动：'+String(event.reason?.message||event.reason);});
 const base=import.meta.env.BASE_URL;
 const original=await (await fetch(base+'original-manifest.json')).json();
+if(original.error){$('status').textContent=original.error;throw Error(original.error);}
+configureMapData(original.mapMetadata);
 const hd=await (await fetch(base+'sprites/manifest.json')).json();
 function resolveImages(value:any){if(!value||typeof value!=='object')return;for(const [key,child]of Object.entries(value)){if((key==='src'||key==='remapMaskSrc')&&typeof child==='string'&&child.startsWith('/'))value[key]=base+child.slice(1);else resolveImages(child);}}
 resolveImages(original);resolveImages(hd);
-const assets=new Assets();assets.manifest={sprites:hd.sprites};
-// Use actual extracted terrain artwork. Road/resource cells use the engine's existing fallback.
-if(original.terrain['temperate:0:0'])assets.terrain={'temperate:0:0':original.terrain['temperate:0:0']};
+const assets=new Assets();assets.manifest={sprites:hd.sprites,overlays:original.overlays};
+// All terrain and resource layers are original atlas frames; missing layers fail validation.
+assets.terrain=Object.fromEntries(Object.entries(original.terrain).filter(([key])=>key.startsWith('temperate:'))) as Assets['terrain'];
 const hasOriginal=Object.keys(hd.sprites).filter(id=>id!=='tany-actions').every(id=>original.sprites[id]);
 if(!hasOriginal){($('toggle') as HTMLButtonElement).disabled=true;$('toggle').textContent='原版美术未安装';}
 const sceneryKeys=Object.keys(original.scenery).filter(k=>k.startsWith('temperate:')&&/tree0[1-6]$/.test(k));
 for(const key of sceneryKeys)assets.scenery[key]=original.scenery[key];
-const urls=new Set<string>();for(const sprite of [...Object.values(hd.sprites),...Object.values(original.sprites),...Object.values(assets.terrain),...Object.values(assets.scenery)] as any[])for(const key of ['src','remapMaskSrc'])if(sprite[key])urls.add(sprite[key]);
+const urls=new Set<string>();for(const sprite of [...Object.values(hd.sprites),...Object.values(original.sprites),...Object.values(assets.terrain),...Object.values(assets.scenery),...Object.values(original.overlays)] as any[])for(const key of ['src','remapMaskSrc'])if(sprite[key])urls.add(sprite[key]);
 await Promise.all([...urls].map(src=>new Promise<void>((resolve,reject)=>{const img=new Image();img.onload=()=>{assets.images.set(src,img);resolve();};img.onerror=()=>reject(Error('Cannot load '+src));img.src=src;})));
-const width=48,height=48,cells:Terrain[]=Array(width*height).fill('land'),tiles:any[]=[],terrainObjects:any[]=[];
-for(let y=0;y<height;y++)for(let x=0;x<width;x++){if((x===28||x===29)||(y===26||y===27))cells[y*width+x]='road';else if(x>33&&x<39&&y>14&&y<20)cells[y*width+x]='ore';else tiles.push({x,y,tileId:0,subTile:0});}
+const width=48,height=48,cells:Terrain[]=Array(width*height).fill('land'),terrainObjects:any[]=[];
+for(let y=0;y<height;y++)for(let x=0;x<width;x++){if((x===28||x===29)||(y===26||y===27))cells[y*width+x]='road';else if(x>33&&x<39&&y>14&&y<20)cells[y*width+x]='ore';}
 for(let i=0;i<16&&sceneryKeys.length;i++)terrainObjects.push({x:10+i%4*3,y:28+Math.floor(i/4)*2,type:sceneryKeys[i%sceneryKeys.length].split(':')[1]});
 // Real water cells use the existing Canvas terrain renderer.
 for(let y=10;y<=13;y++)for(let x=16;x<=21;x++)cells[y*width+x]='water';
-for(let i=tiles.length-1;i>=0;i--)if(cells[tiles[i].y*width+tiles[i].x]==='water')tiles.splice(i,1);
-const map={id:'hd-local-field',name:'高清精灵集结区',width,height,spawns:[{x:6,y:6},{x:40,y:40}],cells,theater:'temperate',tiles,terrainObjects};
+const native=(()=>{try{return applyNativeTerrain({width,height,cells},compileCustomTerrain({width,height,cells,theater:'temperate'},original.mapMetadata.terrain),importMap(original.terrainMap,'valley.map'),assets);}catch(error){$('status').textContent='预览未启动：'+(error instanceof Error?error.message:String(error));throw error;}})();
+const map={...native,id:'hd-local-field',name:'高清精灵集结区',width,height,spawns:[{x:6,y:6},{x:40,y:40}],cells,theater:'temperate',tiles:native.tiles,terrainObjects};
 const placements:[string,number,number,number][]=[['construction_yard',15,18,0],['nuclear_reactor',23,14,0],['apocalypse',19,23,0],['apocalypse',22,23,Math.PI/4],['apocalypse',25,23,Math.PI/2],['tanya',18,19,0],['tanya',20,20,Math.PI/2],['tanya',22,19,Math.PI]];
 const targetPlacements:[string,number,number][]=[['apocalypse',29,20],['tanya',27,17],['construction_yard',31,12]];
 // Only this preview subclass keeps demo participants alive. Normal games retain lethal damage.
@@ -85,7 +91,7 @@ function resetScenario(){
   game.commandAttack([targets[0].id],actors[4].id);
   renderer.setSelection([actors[5].id]);
  }
- demos=automatic?createMapDemos(game,renderer,hd.sprites):undefined;if(!demos)renderer.entityPresentation=undefined;
+ demos=automatic?createMapDemos(game,renderer,hd.sprites,native.groundHeight):undefined;if(!demos)renderer.entityPresentation=undefined;
  $('loop').textContent=automatic?'切换手动操作':'开启自动循环';
  $('loop-info').textContent=automatic?'自动循环中 · 往返移动／持续交火／建筑维修 · 受击者最低保留 2% 生命':'手动模式 · 伤害正常结算，单位可被摧毁';
  home();

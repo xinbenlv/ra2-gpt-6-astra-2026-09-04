@@ -9,6 +9,8 @@ import { compileCustomTerrain, type ResolvedTerrainCell } from './custom-terrain
 import { nativeTerrainCatalog } from './maps';
 
 export type RenderMap = GameMap & {
+  resolvedTerrain?: readonly ResolvedTerrainCell[];
+  groundBase?: {tileId:number;subTile:number;theater:string};
   layout?: 'rectangular';
   tiles?: { x: number; y: number; tileId: number; subTile: number; theater?: string; elevation?: number; z?: number; overlay?: number; overlayFrame?: number }[];
   tileIds?: Int32Array | number[]; elevations?: Uint8Array | number[]; radarColors?: Uint32Array | number[];
@@ -53,9 +55,9 @@ export class BattlefieldRenderer {
   constructor(public canvas: HTMLCanvasElement, public game: GameEngine, public map: RenderMap, public assets: Assets, private hooks: RendererHooks, public localId = 0) {
     this.terrainPainter = new TerrainPainter(assets);
     // Native maps may contain missing tile IDs; only editor documents need compilation.
-    this.nativeTerrain = map.layout === 'rectangular'
+    this.nativeTerrain = map.resolvedTerrain ?? (map.layout === 'rectangular'
       ? compileCustomTerrain({ width: map.width, height: map.height, theater: map.theater ?? 'temperate', cells: map.cells }, nativeTerrainCatalog())
-      : [];
+      : []);
     this.ctx = canvas.getContext('2d', { alpha: false })!;
     for (const tile of map.tiles || []) this.tileLookup.set(tile.y * map.width + tile.x, tile);
     this.worldBounds = this.calculateBounds();
@@ -218,6 +220,7 @@ export class BattlefieldRenderer {
     const x1 = Math.max(0, Math.floor(Math.min(...corners.map(p => p.x)))), x2 = Math.min(this.map.width - 1, Math.ceil(Math.max(...corners.map(p => p.x))));
     const y1 = Math.max(0, Math.floor(Math.min(...corners.map(p => p.y)))), y2 = Math.min(this.map.height - 1, Math.ceil(Math.max(...corners.map(p => p.y))));
     ctx.save(); ctx.translate(this.width / 2, this.height / 2); ctx.scale(this.zoom, this.zoom); ctx.translate(-this.camera.x, -this.camera.y);
+    if(this.map.groundBase)for(let y=y1;y<=y2;y++)for(let x=x1;x<=x2;x++){if(this.map.cells[y*this.map.width+x]==='void'||!this.game.explored(this.localId,x,y))continue;const p=this.project(x,y);this.terrainPainter.drawNativeTile(ctx,this.map.groundBase,this.map.groundBase.theater,p.x,p.y);}
     for (let sum = x1 + y1; sum <= x2 + y2; sum++) for (let x = x1; x <= x2; x++) {
       const y = sum - x; if (y < y1 || y > y2) continue;
       const idx = y * this.map.width + x, terrain = this.map.cells[idx]; if (!terrain || terrain === 'void') continue;
@@ -353,7 +356,7 @@ export class BattlefieldRenderer {
         ctx.save();if(presentation?.lean){ctx.translate(p.x,p.y);ctx.rotate(presentation.lean);ctx.translate(-p.x,-p.y);}
         ctx.drawImage(image,(frame%sprite.columns)*sourceWidth,Math.floor(frame/sprite.columns)*sourceHeight,sourceWidth,sourceHeight,p.x-ax,p.y-ay-flying,fw,fh);
         ctx.restore();
-        if(presentation?.swimming){ctx.strokeStyle='#bde6eeaa';ctx.fillStyle='#589fac55';ctx.beginPath();ctx.ellipse(p.x,p.y-2,15,4,0,0,Math.PI*2);ctx.fill();ctx.stroke();for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(p.x-8-i*7,p.y-1-i*2,6+i*2,2+Math.sin(this.game.time*5+i)*.5,0,0,Math.PI);ctx.stroke();}}
+
         if(hdMotion)ctx.restore();
         ctx.imageSmoothingEnabled = smoothing; rendered = true;
         const screen = this.toScreen(e.x,e.y); this.displayedSprites.set(e.id,{x:screen.x-ax*this.zoom,y:screen.y-(ay+flying+(presentation?.height||0))*this.zoom,w:fw*this.zoom,h:fh*this.zoom});
