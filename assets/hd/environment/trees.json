@@ -1,0 +1,323 @@
+{
+  "description": "Generated tree provenance and actual runtime metrics.",
+  "assets": [
+    {
+      "id": "tree22",
+      "type": "tree",
+      "file": "tree22.glb",
+      "unit": "cell",
+      "cellSize": 1,
+      "up": "+Y",
+      "forward": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "footprintCells": [
+        1,
+        1
+      ],
+      "heightCells": 1.43,
+      "rootMethod": "Bottom of generated mesh, horizontal center of bounds; approximate root center requires visual validation",
+      "sourceImageAnchorWarning": "Original converted sprite anchors include empty lower space; Canvas placement calibration is separate from GLB root pivot",
+      "triangles": 29894,
+      "removedDegenerateTriangles": 0,
+      "repairedNormals": 3,
+      "bytes": 5727360,
+      "sha256": "2e4f4477c18fdcce51c6a7a051759d4825e133c3ca727952a1e524ec678cc031",
+      "master": ".cache/environment/tree22/master.glb",
+      "pipeline": "built-in ImageGen → Meshy image-to-3D → local meshoptimizer → MikkTSpace → 1K WebP",
+      "taskId": "01a0a9c0-3a5b-73bd-8416-8e1bfec2d5ef",
+      "request": {
+        "image_path": "/Users/zzn/.codex/worktrees/c490/ra2-gpt-6-astra-2026-09-04/.cache/environment/tree22-hd.png",
+        "image_sha256": "3a8a42c29432548f17adc9f8a103f840e591d1087dee637391377eb1d903024e",
+        "ai_model": "meshy-6",
+        "should_texture": true,
+        "enable_pbr": true,
+        "should_remesh": false,
+        "image_enhancement": false,
+        "target_formats": [
+          "glb"
+        ]
+      },
+      "optimization": {
+        "inputName": "master.glb",
+        "inputBytes": 50698856,
+        "inputSha256": "e269af87b7e8e1eae6199dee059bfff2f8c5f7bd6bfa22af77f512773cd48840",
+        "outputName": "foliage.glb",
+        "outputBytes": 5727172,
+        "outputSha256": "7e277e0326a44a66792532487a13bc6a73b923c08c48808185c84b440468a7a5",
+        "before": {
+          "triangles": 1213306,
+          "materials": 1,
+          "textures": [
+            {
+              "bytes": 4903921,
+              "size": [
+                2048,
+                2048
+              ],
+              "mime": "image/jpeg"
+            },
+            {
+              "bytes": 2429328,
+              "size": [
+                2048,
+                2048
+              ],
+              "mime": "image/jpeg"
+            },
+            {
+              "bytes": 3362207,
+              "size": [
+                2048,
+                2048
+              ],
+              "mime": "image/jpeg"
+            },
+            {
+              "bytes": 491997,
+              "size": [
+                2048,
+                2048
+              ],
+              "mime": "image/jpeg"
+            }
+          ],
+          "animations": 0,
+          "skins": 0
+        },
+        "after": {
+          "triangles": 29894,
+          "materials": 1,
+          "textures": [
+            {
+              "bytes": 348110,
+              "size": [
+                1024,
+                1024
+              ],
+              "mime": "image/webp"
+            },
+            {
+              "bytes": 877506,
+              "size": [
+                1024,
+                1024
+              ],
+              "mime": "image/webp"
+            },
+            {
+              "bytes": 1535582,
+              "size": [
+                1024,
+                1024
+              ],
+              "mime": "image/webp"
+            },
+            {
+              "bytes": 11920,
+              "size": [
+                1024,
+                1024
+              ],
+              "mime": "image/webp"
+            }
+          ],
+          "animations": 0,
+          "skins": 0
+        },
+        "recipe": {
+          "budget": 30000,
+          "ratio": 0.024725831735769872,
+          "error": 0.03,
+          "mode": "foliage",
+          "textureMaxSize": 1024,
+          "colorWebpQuality": 85,
+          "dataTextures": "lossless WebP",
+          "tangents": "MikkTSpace regenerated",
+          "geometryCompression": "none"
+        }
+      },
+      "normalization": {
+        "inputBounds": {
+          "min": [
+            -0.6660159826278687,
+            -0.9502530097961426,
+            -0.6888239979743958
+          ],
+          "max": [
+            0.6606590151786804,
+            0.9452869892120361,
+            0.6780449748039246
+          ]
+        },
+        "scale": 0.7544024398051385,
+        "spread": 1.65
+      },
+      "inference": "Backside, branch depths and root geometry generated from one source view; no wind rig",
+      "teamColor": false,
+      "lod": "30k base; instances share mesh and textures; lower LOD not yet delivered"
+    },
+    {
+      "id": "tree10",
+      "type": "tree",
+      "file": "tree10.glb",
+      "unit": "cell",
+      "cellSize": 1,
+      "up": "+Y",
+      "forward": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "footprintCells": [
+        1,
+        1
+      ],
+      "heightCells": 1.25,
+      "rootMethod": "Bottom of generated mesh, horizontal center of bounds; approximate root center requires visual validation",
+      "sourceImageAnchorWarning": "Original converted sprite anchors include empty lower space; Canvas placement calibration is separate from GLB root pivot",
+      "triangles": 29708,
+      "removedDegenerateTriangles": 0,
+      "repairedNormals": 0,
+      "bytes": 6418264,
+      "sha256": "9385fa264e702d053276c1881b0f8936fc731e3af7410d5fd2edc1db6598839d",
+      "master": ".cache/environment/tree10/master.glb",
+      "pipeline": "built-in ImageGen → Meshy image-to-3D → local meshoptimizer → MikkTSpace → 1K WebP",
+      "taskId": "01a0a9c0-797f-7007-891c-2ed142b74ddb",
+      "request": {
+        "image_path": "/Users/zzn/.codex/worktrees/c490/ra2-gpt-6-astra-2026-09-04/.cache/environment/tree10-hd.png",
+        "image_sha256": "59b3cd57aafcb7f880bba9cf6acc16c8bdcd323b0cbe77841a0d40ed50d3dd25",
+        "ai_model": "meshy-6",
+        "should_texture": true,
+        "enable_pbr": true,
+        "should_remesh": false,
+        "image_enhancement": false,
+        "target_formats": [
+          "glb"
+        ]
+      },
+      "optimization": {
+        "inputName": "master.glb",
+        "inputBytes": 74193152,
+        "inputSha256": "198f37f37c37d7b257c3a9845566bde500284d4fb82d2ddbfdbf964c2e2a2801",
+        "outputName": "foliage.glb",
+        "outputBytes": 6418076,
+        "outputSha256": "610925015e185e8327673c0dce857ab0b9fc9ea6f64947e1aa337388a796cbe0",
+        "before": {
+          "triangles": 1072682,
+          "materials": 1,
+          "textures": [
+            {
+              "bytes": 4727910,
+              "size": [
+                2048,
+                2048
+              ],
+              "mime": "image/jpeg"
+            },
+            {
+              "bytes": 2890879,
+              "size": [
+                2048,
+                2048
+              ],
+              "mime": "image/jpeg"
+            },
+            {
+              "bytes": 3245464,
+              "size": [
+                2048,
+                2048
+              ],
+              "mime": "image/jpeg"
+            },
+            {
+              "bytes": 709399,
+              "size": [
+                2048,
+                2048
+              ],
+              "mime": "image/jpeg"
+            }
+          ],
+          "animations": 0,
+          "skins": 0
+        },
+        "after": {
+          "triangles": 29708,
+          "materials": 1,
+          "textures": [
+            {
+              "bytes": 280436,
+              "size": [
+                1024,
+                1024
+              ],
+              "mime": "image/webp"
+            },
+            {
+              "bytes": 1015840,
+              "size": [
+                1024,
+                1024
+              ],
+              "mime": "image/webp"
+            },
+            {
+              "bytes": 1350588,
+              "size": [
+                1024,
+                1024
+              ],
+              "mime": "image/webp"
+            },
+            {
+              "bytes": 3258,
+              "size": [
+                1024,
+                1024
+              ],
+              "mime": "image/webp"
+            }
+          ],
+          "animations": 0,
+          "skins": 0
+        },
+        "recipe": {
+          "budget": 30000,
+          "ratio": 0.02796728200902038,
+          "error": 0.03,
+          "mode": "foliage",
+          "textureMaxSize": 1024,
+          "colorWebpQuality": 85,
+          "dataTextures": "lossless WebP",
+          "tangents": "MikkTSpace regenerated",
+          "geometryCompression": "none"
+        }
+      },
+      "normalization": {
+        "inputBounds": {
+          "min": [
+            -0.8652970194816589,
+            -0.9492359757423401,
+            -0.8088480234146118
+          ],
+          "max": [
+            0.7544400095939636,
+            0.9320300221443176,
+            0.8195649981498718
+          ]
+        },
+        "scale": 0.6644461768852475,
+        "spread": 1.25
+      },
+      "inference": "Backside, branch depths and root geometry generated from one source view; no wind rig",
+      "teamColor": false,
+      "lod": "30k base; instances share mesh and textures; lower LOD not yet delivered"
+    }
+  ]
+}

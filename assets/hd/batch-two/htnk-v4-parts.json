@@ -1,0 +1,51 @@
+{
+  "recipe": "tools/batch-two/mechanical.mjs",
+  "parts": [
+    {
+      "name": "Hull",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "triangles": 23287
+    },
+    {
+      "name": "Turret",
+      "pivot": [
+        0.18,
+        0.06,
+        0
+      ],
+      "parent": 0,
+      "triangles": 6084
+    },
+    {
+      "name": "Barrel",
+      "pivot": [
+        -0.29,
+        0.151,
+        0
+      ],
+      "parent": 1,
+      "triangles": 611
+    }
+  ],
+  "forwardAxis": [
+    -1,
+    0,
+    0
+  ],
+  "barrelAxis": [
+    -1,
+    0,
+    0
+  ],
+  "source": "assets/hd/batch-two/htnk-v4-team.glb",
+  "muzzleLocal": [
+    -0.662,
+    0,
+    0
+  ],
+  "note": "Rigid surface partitions fitted to approved v4; original shape and embedded player-color mask retained."
+}

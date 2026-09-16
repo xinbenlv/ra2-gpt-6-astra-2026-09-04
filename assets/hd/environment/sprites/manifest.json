@@ -1,0 +1,95 @@
+{
+  "description": "Offline GLB renders; four pixels per logical pixel; fixed original camera.",
+  "sprites": {
+    "grass": {
+      "id": "grass",
+      "frameWidth": 384,
+      "frameHeight": 384,
+      "anchorX": 192,
+      "anchorY": 192,
+      "pixelRatio": 4,
+      "frames": 1,
+      "columns": 1,
+      "src": "/environment/sprites/grass.png",
+      "foundation": [
+        1,
+        1
+      ]
+    },
+    "ocean": {
+      "id": "ocean",
+      "frameWidth": 384,
+      "frameHeight": 384,
+      "anchorX": 192,
+      "anchorY": 192,
+      "pixelRatio": 4,
+      "frames": 1,
+      "columns": 1,
+      "src": "/environment/sprites/ocean.png",
+      "foundation": [
+        1,
+        1
+      ]
+    },
+    "plateau": {
+      "id": "plateau",
+      "frameWidth": 384,
+      "frameHeight": 384,
+      "anchorX": 192,
+      "anchorY": 192,
+      "pixelRatio": 4,
+      "frames": 1,
+      "columns": 1,
+      "src": "/environment/sprites/plateau.png",
+      "foundation": [
+        1,
+        1
+      ]
+    },
+    "ramp": {
+      "id": "ramp",
+      "frameWidth": 384,
+      "frameHeight": 384,
+      "anchorX": 192,
+      "anchorY": 192,
+      "pixelRatio": 4,
+      "frames": 1,
+      "columns": 1,
+      "src": "/environment/sprites/ramp.png",
+      "foundation": [
+        1,
+        1
+      ]
+    },
+    "tree22": {
+      "id": "tree22",
+      "frameWidth": 576,
+      "frameHeight": 640,
+      "anchorX": 288,
+      "anchorY": 320,
+      "pixelRatio": 4,
+      "frames": 1,
+      "columns": 1,
+      "src": "/environment/sprites/tree22.png",
+      "foundation": [
+        1,
+        1
+      ]
+    },
+    "tree10": {
+      "id": "tree10",
+      "frameWidth": 576,
+      "frameHeight": 640,
+      "anchorX": 288,
+      "anchorY": 320,
+      "pixelRatio": 4,
+      "frames": 1,
+      "columns": 1,
+      "src": "/environment/sprites/tree10.png",
+      "foundation": [
+        1,
+        1
+      ]
+    }
+  }
+}

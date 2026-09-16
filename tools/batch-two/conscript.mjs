@@ -1,0 +1,14 @@
+// Embed a fitted editable skeleton and source-indexed clips into the shared 30K mesh.
+import fs from'node:fs/promises';import{Matrix4}from'three';import crypto from'node:crypto';
+import{readGLB,editor}from'../four-assets/glb.mjs';import{joints,weights,pose}from'./conscript-rig.mjs';
+const input=await readGLB('.cache/batch-two/cons/30k.glb'),{g}=input,e=editor(input),base=g.nodes.length,src=JSON.parse(await fs.readFile('assets/hd/batch-two/source-record.json','utf8')).cons.sequences;
+g.nodes.push(...joints.map(j=>({name:j.name,translation:j.parent<0?j.p:j.p.map((v,c)=>v-joints[j.parent].p[c]),children:[]})));joints.forEach((j,i)=>{if(j.parent>=0)g.nodes[base+j.parent].children.push(base+i);});g.scenes[0].nodes.push(base);
+g.skins=[{name:'Conscript fitted rig',skeleton:base,joints:joints.map((_,i)=>base+i),inverseBindMatrices:e.add(joints.flatMap(j=>new Matrix4().makeTranslation(...j.p.map(v=>-v)).toArray()),16)}];
+for(const n of g.nodes)if(n.mesh!==undefined){n.skin=0;for(const p of g.meshes[n.mesh].primitives){const pos=e.values(p.attributes.POSITION),ji=[],wt=[];for(let i=0;i<pos.length;i+=3){const w=weights(pos.slice(i,i+3));ji.push(...w.map(x=>x[0]),...Array(4-w.length).fill(0));wt.push(...w.map(x=>x[1]),...Array(4-w.length).fill(0));}p.attributes.JOINTS_0=e.add(ji,4,5123);p.attributes.WEIGHTS_0=e.add(wt,4);}}
+g.animations=[];
+for(const[action,source]of Object.entries({...src,prone:[86,1,6]})){const duration=action==='walk'?.72:action==='crawl'?1.2:source[1]===1?2:source[1]/12,steps=Math.ceil(duration*60),times=Array.from({length:steps+1},(_,i)=>i/steps*duration),frames=times.map(t=>pose(action,t/duration)),clip={name:action,channels:[],samplers:[],extras:{source,previewFps:12,loop:!['down','up','die1','die2','cheer'].includes(action)}};const time=e.add(times,1);
+ for(let i=0;i<joints.length;i++)for(const prop of['translation','rotation'])clip.channels.push({sampler:clip.samplers.push({input:time,output:e.add(frames.flatMap(f=>f[i][prop]),prop==='rotation'?4:3),interpolation:'LINEAR'})-1,target:{node:base+i,path:prop}});
+ g.animations.push(clip);
+}
+g.asset.extras={recipe:'tools/batch-two/conscript-rig.mjs',up:'+Y',forward:[0,0,1],restRifleAxis:[.65,0,.76],source:'CONS / ConSequence',limitations:['Hidden depth and intermediate poses inferred','No finger joints; hand/stock contact needs visual review','12 Hz source sampling is a preview convention','Die3/4/5 original placeholders are excluded']};
+const bytes=e.finish();await fs.writeFile('assets/hd/batch-two/cons.glb',bytes);await fs.writeFile('assets/hd/batch-two/cons-motion.json',JSON.stringify({...g.asset.extras,joints:joints.length,clips:g.animations.map(a=>({name:a.name,...a.extras})),triangles:30000,bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')},null,2)+'\n');console.log('Conscript',joints.length,'joints',g.animations.length,'clips',bytes.length,'bytes');

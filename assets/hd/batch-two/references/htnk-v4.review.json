@@ -1,0 +1,8 @@
+{
+  "asset": "htnk-v4",
+  "status": "accepted",
+  "referenceSha256": "664eeaa135897a7416ee205ca5cbf49c7527a63bb0d871dfee44918fc4078222",
+  "basis": "User selected this visible direction-corrected reference and explicitly requested model generation.",
+  "limitations": "Matching original-facing downsample fidelity review is pending; this is user selection, not a completed original-art fidelity pass.",
+  "reference": "assets/hd/batch-two/references/htnk-v4.png"
+}

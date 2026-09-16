@@ -1,6 +1,6 @@
 ---
 name: ra2-hd-blender
-description: 为 RA2 兵种、载具、船只和建筑制作约 3 万三角面的高清游戏 GLB；按原版 SHP/VXL/HVA 参考适配骨骼或机械动作，烘焙到现有 Canvas 2D，验证同地图对比与阵营换色。
+description: 为 RA2 兵种、载具、船只和建筑制作约 3 万三角面的高清游戏 GLB；按原版 SHP/VXL/HVA 参考适配骨骼或机械动作，烘焙到现有 Canvas 2D，验证方向行为、同地图对比与阵营换色。
 ---
 
 # RA2 高清模型与动作
@@ -39,11 +39,11 @@ description: 为 RA2 兵种、载具、船只和建筑制作约 3 万三角面�
 
 复用已有 rig、clips 与部件，先按原帧核对左右肢体、支撑和持物状态，再摆关键姿势、做插值。分清可见证据、深度推断与未知项；帧号吻合或动作流畅都不证明忠于原版。按用户选定的小范围动作完成对照，再据结果推广。静态变形／特效不算骨骼动画，资产升级不改变游戏规则。
 
-## 4. 现有 Canvas 验收
+## 4. 按交付入口验收
 
-主游戏是 `src/renderer.ts` 的 Canvas 2D `BattlefieldRenderer`。Three.js／Blender 用于离线模型检查与烘焙；将透明 PNG 和阵营色 mask 交给现有 `Assets`、`GameEngine` 和渲染器。
+主游戏仍用 Canvas 2D `BattlefieldRenderer`，接收 PNG 与阵营 mask。涉及单位移动、朝向烘焙或用户要求的 3D 预览，必读 [方向映射与行为验收](references/direction-mapping.md)，逐模型校准并验证实际位移；独立 3D 预览不等于主引擎迁移。
 
-按原投影、方向、逻辑尺寸、锚点和源帧槽映射，不放大地格迁就高清图。地图、水面、坡道和其它未升级部分沿用原版素材；缺少原素材时说明地图验收未完成。原版／HD 在同地图并排同步，提供适用状态循环、暂停、慢放、逐帧和方向检查。
+Canvas 2D 按原投影、方向、尺寸、锚点和源帧槽映射，不放大地格迁就高清图。地图、水面、坡道和其它未升级部分沿用原版素材；缺少原素材时说明地图验收未完成。原版／HD 在同地图并排同步，提供适用状态循环、暂停、慢放、逐帧和方向检查。
 
 `npm run viewer:glb` 是通用模型查看入口；`npm run viewer:motion` 是当前谭雅骨骼／SHP 对照及 `/canvas/` 入口。旧 `tools/canvas-hd-preview/bake.mjs` 可能覆盖新谭雅图集，使用实例中对应版本的烘焙流程。
 
@@ -51,4 +51,4 @@ description: 为 RA2 兵种、载具、船只和建筑制作约 3 万三角面�
 
 报告实际面数、字节数、纹理／压缩、骨骼／clips、帧覆盖、配方、hash 及验证／缺失项。多个 clips 共享几何和贴图，不逐动作复制母版。原版 SHP/VXL/TMP、转换图集、地图、截图和缓存不入库；提交不代表推送授权。
 
-用户要求打开 Blender 时导入指定 GLB、打包贴图并另存审阅文件；手工重建才读 [历史 Blender 流程](references/blender-reconstruction.md) 和 [电厂实例](references/powerplant-example.md)。执行约束见历史流程的“执行方式与版本”。
+要求 Blender 审阅时导入 GLB、打包贴图并另存；手工重建读 [历史流程](references/blender-reconstruction.md) 与 [电厂实例](references/powerplant-example.md)。

@@ -1,0 +1,478 @@
+{
+  "cons": {
+    "rulesId": "E2",
+    "sprite": {
+      "src": "/assets/sprites/cons.png",
+      "width": 1216,
+      "height": 1824,
+      "frameWidth": 76,
+      "frameHeight": 96,
+      "frames": 301,
+      "columns": 16,
+      "anchorX": 38.0,
+      "anchorY": 48.0,
+      "originalFrames": 602,
+      "originalFile": "cons.shp",
+      "remapMaskSrc": "/assets/sprites/cons-remap.png",
+      "sequence": "ConSequence",
+      "facings": 8,
+      "sequences": {
+        "ready": [
+          0,
+          1,
+          1
+        ],
+        "guard": [
+          0,
+          1,
+          1
+        ],
+        "prone": [
+          86,
+          1,
+          6
+        ],
+        "walk": [
+          8,
+          6,
+          6
+        ],
+        "fireup": [
+          164,
+          6,
+          6
+        ],
+        "crawl": [
+          86,
+          6,
+          6
+        ],
+        "fireprone": [
+          212,
+          6,
+          6
+        ],
+        "idle1": [
+          56,
+          15,
+          0
+        ],
+        "idle2": [
+          71,
+          14,
+          0
+        ],
+        "die1": [
+          134,
+          15,
+          0
+        ],
+        "die2": [
+          149,
+          15,
+          0
+        ]
+      }
+    },
+    "atlasSha256": "7b40199d58e52d78806f4d6130affedc89b7021988c1dffaa8b0648fa9380e47",
+    "referenceFrame": 4,
+    "sequences": {
+      "ready": [
+        0,
+        1,
+        1
+      ],
+      "walk": [
+        8,
+        6,
+        6
+      ],
+      "fireup": [
+        164,
+        6,
+        6
+      ],
+      "crawl": [
+        86,
+        6,
+        6
+      ],
+      "fireprone": [
+        212,
+        6,
+        6
+      ],
+      "down": [
+        260,
+        2,
+        2
+      ],
+      "up": [
+        276,
+        2,
+        2
+      ],
+      "idle1": [
+        56,
+        15,
+        0
+      ],
+      "idle2": [
+        71,
+        14,
+        0
+      ],
+      "die1": [
+        134,
+        15,
+        0
+      ],
+      "die2": [
+        149,
+        15,
+        0
+      ],
+      "cheer": [
+        293,
+        8,
+        0
+      ],
+      "paradrop": [
+        292,
+        1,
+        0
+      ]
+    }
+  },
+  "htnk": {
+    "rulesId": "HTNK",
+    "sprite": {
+      "src": "/assets/sprites/htnk.png",
+      "width": 1024,
+      "height": 512,
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "frames": 32,
+      "columns": 8,
+      "anchorX": 64.0,
+      "anchorY": 64.0,
+      "originalFile": "htnk.vxl,htnktur.vxl,htnkbarl.vxl",
+      "format": "VXL",
+      "remapMaskSrc": "/assets/sprites/htnk-remap.png",
+      "facings": 32
+    },
+    "atlasSha256": "e1b0bbf53531b1974592795acdd553a757b9b5cf11f51dd523e283423b636363",
+    "referenceFrame": 24
+  },
+  "dest": {
+    "rulesId": "DEST",
+    "sprite": {
+      "src": "/assets/sprites/dest.png",
+      "width": 1024,
+      "height": 512,
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "frames": 32,
+      "columns": 8,
+      "anchorX": 64.0,
+      "anchorY": 64.0,
+      "originalFile": "dest.vxl",
+      "format": "VXL",
+      "remapMaskSrc": "/assets/sprites/dest-remap.png",
+      "facings": 32
+    },
+    "atlasSha256": "6bb1aa490cab310b69419b1559e734832da206c068d4250a1c879b6a09f01941",
+    "referenceFrame": 24
+  },
+  "gapile": {
+    "rulesId": "GAPILE",
+    "sprite": {
+      "src": "/assets/sprites/gapile.png",
+      "width": 250,
+      "height": 148,
+      "frameWidth": 250,
+      "frameHeight": 148,
+      "frames": 1,
+      "columns": 1,
+      "anchorX": 125.0,
+      "anchorY": 110.5,
+      "originalFrames": 6,
+      "originalFile": "ggpile.shp",
+      "remapMaskSrc": "/assets/sprites/gapile-remap.png",
+      "foundation": [
+        3,
+        2
+      ],
+      "theater": "temperate",
+      "originalLayers": [
+        "ggpile_a.shp"
+      ]
+    },
+    "atlasSha256": "ae4054c80f10a09c559dcbe81fd1f437e34ce8bce2e62eb7fd112264ea3443e8",
+    "referenceFrame": 0
+  },
+  "tree26": {
+    "sprite": {
+      "src": "/assets/scenery/temperate-tree26.png",
+      "width": 107,
+      "height": 107,
+      "frameWidth": 107,
+      "frameHeight": 107,
+      "frames": 1,
+      "columns": 1,
+      "anchorX": 53.5,
+      "anchorY": 92,
+      "originalFrames": 2,
+      "originalFile": "tree26.tem",
+      "theater": "temperate",
+      "nativeType": "tree26",
+      "kind": "terrain",
+      "foundation": [
+        1,
+        1
+      ]
+    },
+    "atlasSha256": "e6133975ebc635cb20c051c5a9f62a1450d787dac393c2c1e72a9d461d8e7c5a",
+    "shape": "tiered conical evergreen; botanical species unknown",
+    "temperateCatalogPlacements": 175
+  },
+  "dirt-road": {
+    "tileId": 211,
+    "metadata": {
+      "file": "droads01.tem",
+      "set": 18,
+      "name": "DirtRoads Straight",
+      "subtiles": [
+        null,
+        null,
+        [
+          12,
+          0,
+          0,
+          [
+            165,
+            164,
+            84
+          ],
+          [
+            166,
+            167,
+            87
+          ]
+        ],
+        [
+          12,
+          0,
+          0,
+          [
+            177,
+            142,
+            67
+          ],
+          [
+            178,
+            136,
+            61
+          ]
+        ],
+        null,
+        [
+          12,
+          0,
+          0,
+          [
+            162,
+            155,
+            72
+          ],
+          [
+            161,
+            154,
+            70
+          ]
+        ],
+        [
+          12,
+          0,
+          0,
+          [
+            173,
+            152,
+            73
+          ],
+          [
+            183,
+            156,
+            76
+          ]
+        ],
+        [
+          12,
+          0,
+          0,
+          [
+            167,
+            161,
+            75
+          ],
+          [
+            175,
+            156,
+            75
+          ]
+        ],
+        [
+          12,
+          0,
+          0,
+          [
+            162,
+            159,
+            77
+          ],
+          [
+            162,
+            157,
+            73
+          ]
+        ],
+        [
+          12,
+          0,
+          0,
+          [
+            176,
+            146,
+            67
+          ],
+          [
+            174,
+            148,
+            68
+          ]
+        ],
+        [
+          12,
+          0,
+          0,
+          [
+            155,
+            160,
+            83
+          ],
+          [
+            154,
+            162,
+            80
+          ]
+        ],
+        null,
+        null,
+        [
+          12,
+          0,
+          0,
+          [
+            172,
+            156,
+            75
+          ],
+          [
+            161,
+            161,
+            80
+          ]
+        ],
+        null,
+        null
+      ]
+    },
+    "subtiles": {
+      "temperate:211:2": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1282,
+        "y": 1225,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "temperate:211:3": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1343,
+        "y": 1225,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "temperate:211:5": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1404,
+        "y": 1225,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "temperate:211:6": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1465,
+        "y": 1225,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "temperate:211:7": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1526,
+        "y": 1225,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "temperate:211:8": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1587,
+        "y": 1225,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "temperate:211:9": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1648,
+        "y": 1225,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "temperate:211:10": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1709,
+        "y": 1225,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "temperate:211:13": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1770,
+        "y": 1225,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      }
+    },
+    "adaptation": "Single-cell straight module with two grass shoulders; source palette, authored grid topology"
+  },
+  "sourceRoot": "/Users/zzn/ws/xinbenlv/ra2-gpt-6-astra-2026-09-04/.cache/ra2-assets-rebuild-result",
+  "rulesSha256": "fd1e95cea0306ea78049dc81c8cd816e18c28c496872a1ff02edd50bd082062f",
+  "artSha256": "b477f861063a9509e87b7836b78190204c73bea5ea5595a842c456f5920ea223"
+}

@@ -1,0 +1,11 @@
+// Render un-oriented imported GLBs from independently named fixed camera axes.
+import {chromium}from'@playwright/test';import fs from'node:fs/promises';
+const ids=process.argv.slice(2);await fs.mkdir('.cache/batch-two/inspection',{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{const page=await browser.newPage({viewport:{width:1000,height:850}});await page.goto('http://127.0.0.1:4192/canvas3d/');await page.waitForFunction(()=>window.canvas3d?.ready);
+for(const id of ids){
+await page.evaluate(async id=>{const a=window.canvas3d;a.pause(true);const world=a.world;world.scene.children.forEach(o=>{if(!o.isLight)o.visible=false;});const {loader}=await import('/canvas3d/world.js');const model=(await loader.loadAsync((id.startsWith('original-')?'/@fs/Users/zzn/.codex/worktrees/94a1/ra2-gpt-6-astra-2026-09-04/.cache/batch-two/source/':'/hd/batch-two/')+id+'.glb')).scene;world.scene.add(model);model.updateMatrixWorld(true);window.inspectionModel=model;},id);
+const result=await page.evaluate(async()=>{const {Box3,Vector3}=window.canvas3d.T;const model=window.inspectionModel,b=new Box3().setFromObject(model),center=b.getCenter(new Vector3()),size=b.getSize(new Vector3());window.inspectionBounds={center,size};return{min:b.min.toArray(),max:b.max.toArray(),nodes:model.children.map(o=>({name:o.name,position:o.position.toArray(),rotation:o.rotation.toArray(),scale:o.scale.toArray()}))};});
+for(const [name,dir]of Object.entries({front:[0,.15,1],back:[0,.15,-1],right:[1,.15,0],left:[-1,.15,0],top:[0,1,.001],threequarter:[1,.65,1]})){await page.evaluate(({dir})=>{const a=window.canvas3d,{center,size}=window.inspectionBounds;const d=Math.max(size.x,size.y,size.z)*2.3;a.world.controls.target.copy(center);a.world.camera.position.copy(center).add(size.clone().set(...dir).normalize().multiplyScalar(d));a.world.controls.update();a.world.renderer.render(a.world.scene,a.world.camera);},{dir});await page.locator('#stage').screenshot({path:`.cache/batch-two/inspection/${id}-${name}.png`});}
+await fs.writeFile(`.cache/batch-two/inspection/${id}.json`,JSON.stringify(result,null,2));await page.evaluate(()=>window.inspectionModel.removeFromParent());}
+}finally{await browser.close();}

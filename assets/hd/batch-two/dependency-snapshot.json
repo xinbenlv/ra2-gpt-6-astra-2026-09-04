@@ -1,0 +1,696 @@
+{
+  "source": "/Users/zzn/.codex/worktrees/c490/ra2-gpt-6-astra-2026-09-04",
+  "reason": "Preserve explicitly required actor, environment and recipe dependencies before generation",
+  "files": [
+    {
+      "path": "assets/hd/models/README.md",
+      "bytes": 661,
+      "sha256": "139b24ac77f8c7b85f8bfa2236274b94fb2bd291f7992735f848ef3f76b162f2"
+    },
+    {
+      "path": "assets/hd/models/allied-construction-yard/30k.glb",
+      "bytes": 3906464,
+      "sha256": "0144b14d87a3b8b585e95d0136ad2e19c80cac226e9de51fef99c1d1672c0026"
+    },
+    {
+      "path": "assets/hd/models/allied-construction-yard/30k.json",
+      "bytes": 1601,
+      "sha256": "edef31f739009f9ac1fd72729cbab1066779f4dfefea2edf15c765b800deee10"
+    },
+    {
+      "path": "assets/hd/models/allied-construction-yard/master-record.json",
+      "bytes": 2105,
+      "sha256": "85c4c49a7f9aeaa26ff377a921e00c6f5bbd973fb8ead7d318ca4b42119da9cf"
+    },
+    {
+      "path": "assets/hd/models/allied-construction-yard/prompt.txt",
+      "bytes": 1474,
+      "sha256": "d8db94117566ebc95c372e231c1fc304ac442d3eccaafa7ca06f04aa39d5bfc4"
+    },
+    {
+      "path": "assets/hd/models/apocalypse-tank/30k.glb",
+      "bytes": 3643592,
+      "sha256": "7f7478085a719fce892c858e17aa3a1051af2dc5ba0d79c124d2e640778f16e3"
+    },
+    {
+      "path": "assets/hd/models/apocalypse-tank/30k.json",
+      "bytes": 1557,
+      "sha256": "29603f96eb6df37bf911208cae5ed8d1a2501a772c7c8c298363fd951eb56d77"
+    },
+    {
+      "path": "assets/hd/models/apocalypse-tank/master-record.json",
+      "bytes": 2030,
+      "sha256": "96d1e98c196c82e7321be2a7bcdf679bd3b61b7ad4706a81243befa911724019"
+    },
+    {
+      "path": "assets/hd/models/apocalypse-tank/prompt.txt",
+      "bytes": 1386,
+      "sha256": "39088d2d703031bf7efd01ad1755ad133b666d017fd1bfff1946a3c65b55573d"
+    },
+    {
+      "path": "assets/hd/models/giant-squid/README.md",
+      "bytes": 355,
+      "sha256": "6bd7f27d1abd93515a247406016fe7fdcbfe1fb7222ede4834c621cf9dcd88ec"
+    },
+    {
+      "path": "assets/hd/models/giant-squid/actions.glb",
+      "bytes": 4475920,
+      "sha256": "59e345579445a838fa39e28b36ea88ec2f89c3ff1af934780f2096fc630da068"
+    },
+    {
+      "path": "assets/hd/models/giant-squid/motion-manifest.json",
+      "bytes": 1127,
+      "sha256": "2132d2308f036d13eb38368b0f625729720284b4ce59531808b1452d15ebb94e"
+    },
+    {
+      "path": "assets/hd/models/giant-squid/optimization.json",
+      "bytes": 1862,
+      "sha256": "7048bad48119473d7e3c1c1fef1eb2d55a17b867d2440e0e52f43bc218c3a39b"
+    },
+    {
+      "path": "assets/hd/models/giant-squid/recovery.json",
+      "bytes": 274,
+      "sha256": "7546d09f67fc6ff7c5471a687c29ecb8e2e6c9ae4038013ec63437c45de7750f"
+    },
+    {
+      "path": "assets/hd/models/recovery-inventory.json",
+      "bytes": 828,
+      "sha256": "c52691a11d53c2314785f97d9da4b2054293412ebef0e0e581d225dd99d37fa5"
+    },
+    {
+      "path": "assets/hd/models/rocketeer/README.md",
+      "bytes": 357,
+      "sha256": "caaef4ba919ed5b72a1f568304f5b0eae3ab51eab5af26ffd81b8d64da7f12a2"
+    },
+    {
+      "path": "assets/hd/models/rocketeer/actions.glb",
+      "bytes": 4276132,
+      "sha256": "d73ee4f0644580f8d85643952692813d39d9aef2846f787fbe150151f707b881"
+    },
+    {
+      "path": "assets/hd/models/rocketeer/motion-manifest.json",
+      "bytes": 2109,
+      "sha256": "1a649ee3cd0a3274620d5030f44dc9b5df71f92e2d5565fbb52866fe55b0df2c"
+    },
+    {
+      "path": "assets/hd/models/rocketeer/optimization.json",
+      "bytes": 1733,
+      "sha256": "a3a8c3d3aafde4e21a92eefdbea3181612eb77b612b7ec06e893049f50c0fc78"
+    },
+    {
+      "path": "assets/hd/models/rocketeer/recovery.json",
+      "bytes": 274,
+      "sha256": "a023d08fd74e24b4ff150712d643a99e5e5948a3ae2116cf5b89c6f79d631e78"
+    },
+    {
+      "path": "assets/hd/models/soviet-nuclear-power-plant/30k.glb",
+      "bytes": 3976264,
+      "sha256": "e27fb0157111f1c0cb02a5f3b81c6ebc545567f0b559047c34b617d56a976647"
+    },
+    {
+      "path": "assets/hd/models/soviet-nuclear-power-plant/30k.json",
+      "bytes": 1602,
+      "sha256": "d6459085c77657985ca15ab8b55e1f63303d6398a2cccd7037173e47e0d9a415"
+    },
+    {
+      "path": "assets/hd/models/soviet-nuclear-power-plant/master-record.json",
+      "bytes": 2109,
+      "sha256": "5d7a6b48d16753a78e9536cebb8b9a7cd181352cf9e7ac8a6ee656ecf40afe46"
+    },
+    {
+      "path": "assets/hd/models/soviet-nuclear-power-plant/prompt.txt",
+      "bytes": 1714,
+      "sha256": "2f5dcbd9170a56b8d8fd3e2252d79eeda5779fb3644d6607a48ced26d7922072"
+    },
+    {
+      "path": "assets/hd/models/soviet-ore-refinery/30k.glb",
+      "bytes": 4507964,
+      "sha256": "120575f19cf1a0d97a3395d6fc4a118e2a9cbb32e302351822bb2453b33c06a0"
+    },
+    {
+      "path": "assets/hd/models/soviet-ore-refinery/README.md",
+      "bytes": 324,
+      "sha256": "9fade59fd1aea42afff6d303c6f2218c1f8699761769145669885ec371d976f5"
+    },
+    {
+      "path": "assets/hd/models/soviet-ore-refinery/optimization.json",
+      "bytes": 1734,
+      "sha256": "f01e942a167696504f3decc69bab28b6b3f5ddae52b35f9a826d445f9969764c"
+    },
+    {
+      "path": "assets/hd/models/soviet-ore-refinery/recovery.json",
+      "bytes": 274,
+      "sha256": "89a93ee5480c90672061401767ac5317c2ce09afdaaaa0075535e084519f4b84"
+    },
+    {
+      "path": "assets/hd/models/tanya/30k.glb",
+      "bytes": 3221484,
+      "sha256": "7434e03ac0d3074aba0b6c42a6a926f3ae91517e79e6b3fb74e3c92bc5d2b70c"
+    },
+    {
+      "path": "assets/hd/models/tanya/30k.json",
+      "bytes": 1581,
+      "sha256": "a93cc1337b3ead102842b8c0bf8d0c5d4309507920429851a2e9652aae203558"
+    },
+    {
+      "path": "assets/hd/models/tanya/README.md",
+      "bytes": 798,
+      "sha256": "ab425d591834b6f5160795885875752cbca87da3415070bb5ab3594c60586fd2"
+    },
+    {
+      "path": "assets/hd/models/tanya/master-record.json",
+      "bytes": 2604,
+      "sha256": "cc2a27a89fdc7cbe7f3c82be7c713ae0cee662d845fb3624d3d3ba01a18d6885"
+    },
+    {
+      "path": "assets/hd/models/tanya/motion-manifest.json",
+      "bytes": 4751,
+      "sha256": "1e9d301421de4adc42223383e702193b10dec86ce3e9f673899c6fd18a39cc05"
+    },
+    {
+      "path": "assets/hd/models/tanya/prompt.txt",
+      "bytes": 3142,
+      "sha256": "9c9d7a1dff6a54c8ec4ffd5dfe0f3a1711fd7eb5b2432153325bbdffa7fd0a7a"
+    },
+    {
+      "path": "assets/hd/models/tanya/tanya-actions.glb",
+      "bytes": 4490408,
+      "sha256": "ec5145fe326f2e6b7fddb412fc010af26409f1b1d41e8d56bd13262c1b2ca404"
+    },
+    {
+      "path": "assets/hd/models/war-miner/30k.glb",
+      "bytes": 3994940,
+      "sha256": "9a595efd3ed1270d508e1a5c0b29bdef9caed5d69548fab041938d0c09b5e63b"
+    },
+    {
+      "path": "assets/hd/models/war-miner/README.md",
+      "bytes": 311,
+      "sha256": "78e1f37760f9cdb9279ad63e4189e391695788aa7e70bbbb9bd534671fd3365c"
+    },
+    {
+      "path": "assets/hd/models/war-miner/optimization.json",
+      "bytes": 1863,
+      "sha256": "8c8a3d42e7d7b0f9b26a4c166e5dc69a8b1a0d8ff996fe5f3e7db28854f98bf9"
+    },
+    {
+      "path": "assets/hd/models/war-miner/recovery.json",
+      "bytes": 274,
+      "sha256": "97722f5d1cd0943e3ebc8cb9208bf6ae1c9a1f8164d0050646df03c3b431d0f5"
+    },
+    {
+      "path": "assets/hd/environment/README.md",
+      "bytes": 3611,
+      "sha256": "f841d24c4731e5b0c3b4b18e4d9cc4d9c60e885eedff67af5d69ded67103d93e"
+    },
+    {
+      "path": "assets/hd/environment/acceptance.md",
+      "bytes": 3669,
+      "sha256": "96ea7d30956a8d07c2e3a969e6a3b01a5fdd7f1087e83dbd19b3b7f42561c2e1"
+    },
+    {
+      "path": "assets/hd/environment/grass.glb",
+      "bytes": 489432,
+      "sha256": "01eb7c2993e36aabfe70d0b2271be3406dd63a8a7b56d551e41c234f489e2fbe"
+    },
+    {
+      "path": "assets/hd/environment/inventory.json",
+      "bytes": 6842,
+      "sha256": "ca5a3cab491a145205d1a7469a7f88f290be476cd77830fb54d5c042f8df3bd7"
+    },
+    {
+      "path": "assets/hd/environment/modules.json",
+      "bytes": 6467,
+      "sha256": "23fb6c5d007a12ce99726466c0e0102efbe4c86316cbe6375fa5ed06d8efa5c1"
+    },
+    {
+      "path": "assets/hd/environment/ocean.glb",
+      "bytes": 53328,
+      "sha256": "48b50c17ef2c920ab7ff0d14c9493cb360fb5242d49da5c762b1b4991d0dfa25"
+    },
+    {
+      "path": "assets/hd/environment/plateau.glb",
+      "bytes": 1010276,
+      "sha256": "234503bb792309b939da12cca63eb5e237289aff18b314e7b06449b6cbf26e34"
+    },
+    {
+      "path": "assets/hd/environment/ramp.glb",
+      "bytes": 1009196,
+      "sha256": "8e83966d03868e897fc8eb731da1833b7dcf7af473daab5be98eabb3ac82d516"
+    },
+    {
+      "path": "assets/hd/environment/references/grass-albedo.png",
+      "bytes": 3724728,
+      "sha256": "0ce2dd6b6de4bb41bf4bdce8e5b7d9eabeb4e4f4a62577f111695215574ea4ce"
+    },
+    {
+      "path": "assets/hd/environment/references/prompts.json",
+      "bytes": 3651,
+      "sha256": "edee65f89ad2fdb5ddd8957a14c4fab0267445adc76f143507e99f9ff727cc4f"
+    },
+    {
+      "path": "assets/hd/environment/references/rock-albedo.png",
+      "bytes": 3572967,
+      "sha256": "34d67f90254efefdae69bc97428d855ab85b08e52ba5a14ec58dc7a4ed95b5be"
+    },
+    {
+      "path": "assets/hd/environment/references/tree10.png",
+      "bytes": 1765416,
+      "sha256": "59b3cd57aafcb7f880bba9cf6acc16c8bdcd323b0cbe77841a0d40ed50d3dd25"
+    },
+    {
+      "path": "assets/hd/environment/references/tree22.png",
+      "bytes": 1640659,
+      "sha256": "3a8a42c29432548f17adc9f8a103f840e591d1087dee637391377eb1d903024e"
+    },
+    {
+      "path": "assets/hd/environment/source-record.json",
+      "bytes": 13865,
+      "sha256": "b4ea0dd4e4ae825eac4a16d408d9638447b317f7560dd897c028715cc1e59a2e"
+    },
+    {
+      "path": "assets/hd/environment/sprites/README.md",
+      "bytes": 395,
+      "sha256": "6ff74bfba0c4b47169c34af9fe53f617f8868828651185cc67bef0ad9d56bb95"
+    },
+    {
+      "path": "assets/hd/environment/sprites/grass.png",
+      "bytes": 44521,
+      "sha256": "522a97f49895d6631af2ac13a03278833cc00c5d7a43b51b8ff2c320fbea3a37"
+    },
+    {
+      "path": "assets/hd/environment/sprites/manifest.json",
+      "bytes": 1914,
+      "sha256": "c727540ff557e18702aea48e1a20cf7b3deb67414805a004bca02cd7454d00cc"
+    },
+    {
+      "path": "assets/hd/environment/sprites/ocean.png",
+      "bytes": 13207,
+      "sha256": "1c21d34ecfcb003d0cd94db286c254c9a92a576d5591bce1c4ef019375c1aed3"
+    },
+    {
+      "path": "assets/hd/environment/sprites/plateau.png",
+      "bytes": 83689,
+      "sha256": "7a2dd471ec01a8fbc87aae64e2b61376560146dbd36bb9752f86471e5ca0d8cb"
+    },
+    {
+      "path": "assets/hd/environment/sprites/ramp.png",
+      "bytes": 55261,
+      "sha256": "148db43d6cbb9e2f32f5b0c266e51fd82a8ecdd1684bab21d78c4d5f489d0eb0"
+    },
+    {
+      "path": "assets/hd/environment/sprites/tree10.png",
+      "bytes": 84036,
+      "sha256": "1c2b9304a1014e9420fea4c4793a8f116cb8f79a8f750b253d2344abb4195908"
+    },
+    {
+      "path": "assets/hd/environment/sprites/tree22.png",
+      "bytes": 101919,
+      "sha256": "abc73cb5794184c98c1e66ad8a2f167c056955efa0757338788364b112dc3c6f"
+    },
+    {
+      "path": "assets/hd/environment/tree10.glb",
+      "bytes": 6418264,
+      "sha256": "9385fa264e702d053276c1881b0f8936fc731e3af7410d5fd2edc1db6598839d"
+    },
+    {
+      "path": "assets/hd/environment/tree22.glb",
+      "bytes": 5727360,
+      "sha256": "2e4f4477c18fdcce51c6a7a051759d4825e133c3ca727952a1e524ec678cc031"
+    },
+    {
+      "path": "assets/hd/environment/trees.json",
+      "bytes": 9220,
+      "sha256": "200711b23e4369d5193ecc1700718c33072ad8fe9df6dd10ae5c07dd8cb0b186"
+    },
+    {
+      "path": "tools/environment/README.md",
+      "bytes": 2926,
+      "sha256": "63ef57007086d4b53c65127f356dcaeb62145d63938882df6269d6b4af2e333f"
+    },
+    {
+      "path": "tools/environment/bake.html",
+      "bytes": 137,
+      "sha256": "6149aa0f9b25ab3de200d24a9c0bc3cacfba4a08159778689b02729d3dcdea24"
+    },
+    {
+      "path": "tools/environment/bake.js",
+      "bytes": 1281,
+      "sha256": "bed910067d87cb573f8f51222b43d6702e0d86a8ec2b0f26e6d7647068c586d8"
+    },
+    {
+      "path": "tools/environment/bake.mjs",
+      "bytes": 929,
+      "sha256": "57bf3200cbdcdedb935824e0cdc7b5f1510bda5ed76dcd1b3e017be07005b956"
+    },
+    {
+      "path": "tools/environment/build.mjs",
+      "bytes": 6404,
+      "sha256": "31926c6085d268cfc48d0e7e4a4cded8cc207b53bcec14dd6e06f287ad48d854"
+    },
+    {
+      "path": "tools/environment/canvas.html",
+      "bytes": 752,
+      "sha256": "cb766b9b980e3a7e08d8915abb9354f73540d1c0c17b7fcf86b15a5f7ae94ecd"
+    },
+    {
+      "path": "tools/environment/canvas.ts",
+      "bytes": 4577,
+      "sha256": "49438448b33ce369d423e7b0b26dedb1b85694b77b6dddb41ca2f7ca0f4d1b22"
+    },
+    {
+      "path": "tools/environment/canvas3d/README.md",
+      "bytes": 2894,
+      "sha256": "93833ab0b21f17c8f7714af7aed3687e4705f68a5aeea2edef7930978e3aa165"
+    },
+    {
+      "path": "tools/environment/canvas3d/catalog.js",
+      "bytes": 2373,
+      "sha256": "d326af834ff3c061b674c5403fcc62b9a194ccf06d73442266be77fcffc036a9"
+    },
+    {
+      "path": "tools/environment/canvas3d/index.html",
+      "bytes": 2210,
+      "sha256": "11099c0c5aa51bf1c961724419ef11005d5bac1efd8c34253aa9e0205c7b0c7b"
+    },
+    {
+      "path": "tools/environment/canvas3d/main.ts",
+      "bytes": 11066,
+      "sha256": "af6bdc3575b6f22f0c34e176c5d8ee8324695c358484edef70a2d080f92c554e"
+    },
+    {
+      "path": "tools/environment/canvas3d/style.css",
+      "bytes": 1762,
+      "sha256": "ea423a36fe544754d4b9d44068f63ed62e898d48d2b5d4c61cc26ae0989a557c"
+    },
+    {
+      "path": "tools/environment/canvas3d/verify-heading.mjs",
+      "bytes": 3125,
+      "sha256": "cff271da4d52192f1aaeba3c9f6a3fb48774b585c2bebddf41549b73c5854183"
+    },
+    {
+      "path": "tools/environment/canvas3d/verify.mjs",
+      "bytes": 6090,
+      "sha256": "5a57057e1310bd8777d3d6dea8070b47d282ee78928f33673d0fa5ed85dfab8a"
+    },
+    {
+      "path": "tools/environment/canvas3d/world.js",
+      "bytes": 4586,
+      "sha256": "4cf2b5d208616ca0c5614e3e29ea39020b3cc0d8b6c97e04d9ede21b4043ecd4"
+    },
+    {
+      "path": "tools/environment/compare.mjs",
+      "bytes": 1012,
+      "sha256": "5402688e6e7ab5d48817112f8fc457ec1b98c5f450469e99d865f4347a6dc3bf"
+    },
+    {
+      "path": "tools/environment/geometry.test.mjs",
+      "bytes": 1835,
+      "sha256": "96ad6a31724f26df9c35cb9292a522bb27750de0c72ad37006672c124cdb2063"
+    },
+    {
+      "path": "tools/environment/index.html",
+      "bytes": 1323,
+      "sha256": "b09c22734ec08168614ddcbeee4634fe17582dabcd454ebfa93838ed12ba2c73"
+    },
+    {
+      "path": "tools/environment/inspect-one.mjs",
+      "bytes": 549,
+      "sha256": "16b930c60b8eafd2f56026dfbad6753c3128f357833a7bdaab8f691e75302337"
+    },
+    {
+      "path": "tools/environment/inventory.py",
+      "bytes": 1738,
+      "sha256": "80dcc29979ac91226f0875d9c940b804c57590f639c7cde6f369b6da63caf4eb"
+    },
+    {
+      "path": "tools/environment/meshy.py",
+      "bytes": 2607,
+      "sha256": "8715c793848a2d8be714c03830704f2eddad11e3cb43c0c0b05efc48d6180128"
+    },
+    {
+      "path": "tools/environment/normalize.mjs",
+      "bytes": 4145,
+      "sha256": "3d2fdd65c98f43c03e90529b36f88938a70176633429816fac1831258db88969"
+    },
+    {
+      "path": "tools/environment/server.mjs",
+      "bytes": 2563,
+      "sha256": "80fcd6064e860577b1cd8a97b20ba33179aed664b581b325beeec5d86c1d707b"
+    },
+    {
+      "path": "tools/environment/source-bytes.py",
+      "bytes": 994,
+      "sha256": "ea4c5d95ce8896a8904f0aed9c1fb85b5e9951bfff0778eb71d5a96eb1dd4b78"
+    },
+    {
+      "path": "tools/environment/source.py",
+      "bytes": 2182,
+      "sha256": "7bba37576bc3a1e3331dd9ea00eba82bc85e8b319396be1a49a07eb19d55ac4b"
+    },
+    {
+      "path": "tools/environment/texture-check.mjs",
+      "bytes": 1394,
+      "sha256": "29185226d3e61b80f6215cad566084632b869b9058e913a5b56fe33c46e78184"
+    },
+    {
+      "path": "tools/environment/verify.mjs",
+      "bytes": 2569,
+      "sha256": "e042c0c983983f57e311927bb45bf12a771436d0fff29575c3ea7c759a253d54"
+    },
+    {
+      "path": "tools/environment/viewer.js",
+      "bytes": 3953,
+      "sha256": "5e4dac1e5abc9d80d0857563e57fff8e15798b7dfdd28ea574434b8bb59da35e"
+    },
+    {
+      "path": "tools/model-opt/README.md",
+      "bytes": 835,
+      "sha256": "3ea9890249c480f64be5ba9cd3c9099878cc40d2f1e6dae4d9ff5dbaa7bd9047"
+    },
+    {
+      "path": "tools/model-opt/optimize.mjs",
+      "bytes": 3467,
+      "sha256": "7675f7a20e4d4a5ea46e776f92e7077cb961c5f34228dc8eff1e4cf6f6f9ebac"
+    },
+    {
+      "path": "tools/model-opt/package-lock.json",
+      "bytes": 26117,
+      "sha256": "60c74986f2460437ce0a80272e33c242cbc493196f32d31c1b7ca43cc42dcc42"
+    },
+    {
+      "path": "tools/model-opt/package.json",
+      "bytes": 235,
+      "sha256": "5b106a9b4c2de1eb6fefbb63602bbed47245a7b3bc38b5b16729824631ea9b6a"
+    },
+    {
+      "path": "tools/four-assets/README.md",
+      "bytes": 1595,
+      "sha256": "e0ea6eb407e6c61f6cf5b200ba52ec061852a52f40202ff4553752db8346740a"
+    },
+    {
+      "path": "tools/four-assets/glb.mjs",
+      "bytes": 2130,
+      "sha256": "1eea42958e107696d494aa119f19e39855e9cd5699d310f9e916614ea67316b5"
+    },
+    {
+      "path": "tools/four-assets/motion-build.mjs",
+      "bytes": 3798,
+      "sha256": "04f704d79e272480aa9a96e0f62bd710a3e21fab2347da4c7600285491b7d1bb"
+    },
+    {
+      "path": "tools/four-assets/motion-catalog.mjs",
+      "bytes": 1202,
+      "sha256": "18044354e003d7f72c7e2850818908ad0c609dbe78c0607d9d8571a24cfaa067"
+    },
+    {
+      "path": "tools/four-assets/recover.py",
+      "bytes": 1990,
+      "sha256": "e651d58434b91fb28f1da5a846625ff6d21eb8b05025dfd06a9fcdb09b7f029e"
+    },
+    {
+      "path": "tools/four-assets/rigs.mjs",
+      "bytes": 4577,
+      "sha256": "30b91168197641cd2007acae49e535ae4d65f192ff29cc6c8cb6cf8c4a4e4a69"
+    },
+    {
+      "path": "tools/four-assets/squid-rig.mjs",
+      "bytes": 1919,
+      "sha256": "4c36c651241cf3c1a33b00a5ac3c81dfd9a913b748cb51c6670d43ccb014caf9"
+    },
+    {
+      "path": "tools/tanya-motion/README.md",
+      "bytes": 3931,
+      "sha256": "c14ecd0ba70ccfb33c0b9372d4255251ba694a106a379ebf6c2fb074a01e5031"
+    },
+    {
+      "path": "tools/tanya-motion/action-keys.mjs",
+      "bytes": 6701,
+      "sha256": "76b0fc1a311a87390892a1fb7e07808d015beff498f689b4fe64099681e28c03"
+    },
+    {
+      "path": "tools/tanya-motion/action-reference.md",
+      "bytes": 4981,
+      "sha256": "2d41d49ce7c5ad4de1c7b1ae1e87d2d229c39c961ac2ce7ef15bfc083d22e1e9"
+    },
+    {
+      "path": "tools/tanya-motion/action-reference.test.mjs",
+      "bytes": 4417,
+      "sha256": "3147013961c4320429086a6f46f6d1e8b479ee86fab0c8f5bcb0373054850b97"
+    },
+    {
+      "path": "tools/tanya-motion/bake-atlas.mjs",
+      "bytes": 5791,
+      "sha256": "0934c13a8711cbcfbd80a2528e939e25a1e5fc39c0d7963c131bbf292c352098"
+    },
+    {
+      "path": "tools/tanya-motion/build.mjs",
+      "bytes": 9077,
+      "sha256": "aafc36eeb07992c1b0c98161753a6ad133cee668c2e6ef046672fd93a638232b"
+    },
+    {
+      "path": "tools/tanya-motion/catalog.mjs",
+      "bytes": 1706,
+      "sha256": "8e2a0f30c72664bf47d346c64ba2d68006c4779edc694ac1a6c43bc1ce0dbcfc"
+    },
+    {
+      "path": "tools/tanya-motion/crawl-keys.mjs",
+      "bytes": 1301,
+      "sha256": "e16d88aea47d7e8d76c024ce2bf3e7270d61902ce8bc353d11d6a3817c5e59bf"
+    },
+    {
+      "path": "tools/tanya-motion/crawl-reference.md",
+      "bytes": 2861,
+      "sha256": "389a7a4881d4dd5ed21eeedb2b5624d13760d10762f23d678b90c01d6cba1c95"
+    },
+    {
+      "path": "tools/tanya-motion/crawl-reference.test.mjs",
+      "bytes": 2926,
+      "sha256": "b58a24f1e7e9656213207b4a10818928698c2f20b78997e617c820d9f37b636b"
+    },
+    {
+      "path": "tools/tanya-motion/index.html",
+      "bytes": 2014,
+      "sha256": "324b2d8c4a309b27993416ed259ff7b2ba445b4ca63112fbbff829a7add28b31"
+    },
+    {
+      "path": "tools/tanya-motion/inspect-actions.mjs",
+      "bytes": 2395,
+      "sha256": "fb979f1ee966a51a5ea940d45c8ddd0578b96a8cb4805498be64b8b12cf82d63"
+    },
+    {
+      "path": "tools/tanya-motion/locomotion.mjs",
+      "bytes": 889,
+      "sha256": "aff6eae327cfb2da037076bfca3f3874e6d4c429975640fd91dc83bc7c76acd8"
+    },
+    {
+      "path": "tools/tanya-motion/mesh-regions.py",
+      "bytes": 2040,
+      "sha256": "55b1369d936734b74b6860b739775853acc45fc996c88c7bc7c3d20723905377"
+    },
+    {
+      "path": "tools/tanya-motion/motion.css",
+      "bytes": 1262,
+      "sha256": "7c31f19a99464744ed9168d0374ee7e854912b7fef5a49e12b5673bc6fb0925d"
+    },
+    {
+      "path": "tools/tanya-motion/motion.test.mjs",
+      "bytes": 4422,
+      "sha256": "5d00ba150b499f0cc299863fcef7b51e4728f2132072bce0518f1ab26bd7bb4f"
+    },
+    {
+      "path": "tools/tanya-motion/natural-motion.test.mjs",
+      "bytes": 3347,
+      "sha256": "98a3b1f0b94d1c92e68c6d8aad8a8acb783e600a7ee7bc0e3c127ad058e91bea"
+    },
+    {
+      "path": "tools/tanya-motion/poses.mjs",
+      "bytes": 10002,
+      "sha256": "e3d443e7d8fdbcfb9dd3384129787cffc4e72c096c57c4e9fed2ab8231e59d9a"
+    },
+    {
+      "path": "tools/tanya-motion/props.mjs",
+      "bytes": 2327,
+      "sha256": "f388d7935237b507aae5711300bf553fc1a216259a1eedd6d4203d697884bc4f"
+    },
+    {
+      "path": "tools/tanya-motion/server.mjs",
+      "bytes": 3556,
+      "sha256": "cba7efc914ec6e690395ad2ce4136e24741d359a7c9e81e8fcbc828c4a868189"
+    },
+    {
+      "path": "tools/tanya-motion/team-material.mjs",
+      "bytes": 2325,
+      "sha256": "be41a7193bd1419186ed7803f2f2c3e0933a6cbff8133f93d665aae70f4f8165"
+    },
+    {
+      "path": "tools/tanya-motion/verify-actions.mjs",
+      "bytes": 4542,
+      "sha256": "f300a84bf4457f4e2d6a7e71b16fe84228e7ae03bd71c27a7df58d6becbcdc81"
+    },
+    {
+      "path": "tools/tanya-motion/verify-crawl.mjs",
+      "bytes": 3899,
+      "sha256": "33830d69d5dcd134d9384ef3f2e6a4574c16ff7a3e13bd045e0d2126ceb37d5c"
+    },
+    {
+      "path": "tools/tanya-motion/verify-natural.mjs",
+      "bytes": 4112,
+      "sha256": "425d9f962b3c4a5c4237907638b9585317516c9e60d97e30265e5c6b88b07fcf"
+    },
+    {
+      "path": "tools/tanya-motion/viewer.mjs",
+      "bytes": 6288,
+      "sha256": "a35e865138582df6df44d9c08f18429c42ef8b1950bf947834fc7f41c800e777"
+    },
+    {
+      "path": ".cache/environment/ocean/master.glb",
+      "bytes": 57176,
+      "sha256": "c438eb01a262b8653440d99830a068b189b6ee1f9b296c31bec0707ad5cf0290"
+    },
+    {
+      "path": ".cache/environment/plateau/master.glb",
+      "bytes": 6152716,
+      "sha256": "36f9166f7cd52aac50b352a77f906f090222228a116265eedd2fe6c396bc831c"
+    },
+    {
+      "path": ".cache/environment/tree10/master.glb",
+      "bytes": 74193152,
+      "sha256": "198f37f37c37d7b257c3a9845566bde500284d4fb82d2ddbfdbf964c2e2a2801"
+    },
+    {
+      "path": ".cache/environment/grass/master.glb",
+      "bytes": 2981404,
+      "sha256": "1474f1894b11700e22dc870650ebf103dde7c31a0268df15ce38f567882fb238"
+    },
+    {
+      "path": ".cache/environment/tree22/master.glb",
+      "bytes": 50698856,
+      "sha256": "e269af87b7e8e1eae6199dee059bfff2f8c5f7bd6bfa22af77f512773cd48840"
+    },
+    {
+      "path": ".cache/environment/ramp/master.glb",
+      "bytes": 6151640,
+      "sha256": "d1746b4058621af0190abf4b5f56a2c60658d60385ef0dae211e1fbd3d002af3"
+    },
+    {
+      "path": ".cache/four-assets/squid/master.glb",
+      "bytes": 12869936,
+      "sha256": "26d1ed3c70fbb528acbe0e5a3c0f1e08166c870c74a798d71687f648a2b32f28"
+    },
+    {
+      "path": ".cache/four-assets/rocketeer/master.glb",
+      "bytes": 16132096,
+      "sha256": "fb998e587f03d9731feb1d72579282fec253cab53aae21ac6d9d4a2f6e3ac352"
+    },
+    {
+      "path": ".cache/four-assets/refinery/master.glb",
+      "bytes": 46866776,
+      "sha256": "27d3a5dabbb3ae157922ca7e0021fca92c3b4bc6a5e9243f103fab0a0aa65e2b"
+    },
+    {
+      "path": ".cache/four-assets/miner/master.glb",
+      "bytes": 21151412,
+      "sha256": "9231d14fe3df3d9ca32a028bec1df2523debfccd85e25300141d9ad96c4c513a"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "inputSha256": "19e814bc13ab9ad4a662f62cb25354ec24444fd73539ac59290f3247ae78e3af",
+  "sha256": "59e345579445a838fa39e28b36ea88ec2f89c3ff1af934780f2096fc630da068",
+  "bytes": 4475920,
+  "triangles": 30000,
+  "vertices": 22345,
+  "joints": 81,
+  "clips": [
+    "swim",
+    "ready",
+    "attack"
+  ],
+  "sequences": {
+    "swim": {
+      "source": [
+        0,
+        20,
+        20
+      ],
+      "label": "游动",
+      "loop": true
+    },
+    "ready": {
+      "source": [
+        160,
+        1,
+        1
+      ],
+      "label": "静止",
+      "loop": true
+    },
+    "attack": {
+      "source": [
+        168,
+        16,
+        16
+      ],
+      "label": "抓握攻击",
+      "loop": false
+    }
+  },
+  "fps": 12,
+  "materialsPreserved": true,
+  "limitations": [
+    "Authored approximation: SHP does not recover depth or original skeleton",
+    "Rocketeer ground-only source sequences are source fallback; BalloonHover unit uses air actions",
+    "12 fps preview convention, not verified original executable timing",
+    "Squid occluded arm depth and contact with ships inferred; no finger rig on Rocketeer"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "asset": "htnk-v4",
+  "tool": "built-in ImageGen",
+  "prompt": "Precise-object-edit of this tank reference. Fix the turret orientation: the current cannon points backwards to the upper right while the hull's FRONT is the broad sloped glacis with TWO HEADLIGHTS in the LOWER LEFT. Rotate the turret and cannon together 180 degrees about the vertical turret-ring axis, so the cannon extends toward the LOWER LEFT over the midpoint BETWEEN those two headlights. Cannon must align with the hull's FORE-AFT centerline, parallel to both track runs, ZERO sideways turret yaw. Remove the old upper-right cannon entirely; exactly ONE barrel. Correct foreshortening for this fixed camera. Keep the same moderate barrel diameter and physical length, clean cylindrical dark steel tube and simple open muzzle. Keep chassis, track geometry, existing hull orientation, camera, olive-gray and red paint, natural continuous sloping armor surfaces, lighting and charcoal background unchanged. The turret's mantlet must move to the lower-left face and the rear turret bustle to upper right. Full tank and entire barrel visible with adequate margin. This is a direction correction only; no new weapons, no voxel blocks, no extra decorations, no text.",
+  "input": "assets/hd/batch-two/references/htnk-v3.png",
+  "output": "assets/hd/batch-two/references/htnk-v4.png",
+  "status": "direction-corrected candidate; original-view fidelity review pending",
+  "review": "Barrel now extends over front glacis between headlights toward lower left, consistent with track longitudinal direction. Continuous sloping armor retained. Runtime GLB unchanged."
+}

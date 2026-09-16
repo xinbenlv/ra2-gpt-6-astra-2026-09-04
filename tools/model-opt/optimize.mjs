@@ -10,7 +10,7 @@ import path from 'node:path';
 
 // Usage: node optimize.mjs INPUT.glb OUTPUT.glb [triangle-budget]
 // Plain geometry + EXT_texture_webp: decodes in both viewer and sprite baker.
-const [input, output, budgetArg='30000'] = process.argv.slice(2);
+const [input, output, budgetArg='30000',mode='default'] = process.argv.slice(2);
 if (!input || !output || path.resolve(input) === path.resolve(output)) throw Error('Provide distinct input and output paths.');
 const budget = Number(budgetArg);
 if (!Number.isInteger(budget) || budget < 100) throw Error('Invalid triangle budget.');
@@ -25,9 +25,11 @@ function metrics(d) {
  }});
  return {triangles,materials:root.listMaterials().length,textures:root.listTextures().map(t=>({bytes:t.getImage().byteLength,size:t.getSize(),mime:t.getMimeType()})),animations:root.listAnimations().length,skins:root.listSkins().length};
 }
+const errorLimit=mode==='foliage'?.03:.01;
+const simplifier=mode==='foliage'?{...MeshoptSimplifier,simplify:(indices,positions,stride,count,error,flags)=>MeshoptSimplifier.simplify(indices,positions,stride,count,error,[...flags,'Prune','Permissive'])}:MeshoptSimplifier;
 const before=metrics(doc), ratio=Math.min(1,budget/before.triangles);
 if(before.animations || before.skins) throw Error('This static-sample recipe needs a separate animation/skin review.');
-await doc.transform(weld(), ...(ratio<1?[simplify({simplifier:MeshoptSimplifier,ratio,error:0.01})]:[]), unweld(), tangents({generateTangents,overwrite:true}), weld(), prune());
+await doc.transform(weld(), ...(ratio<1?[simplify({simplifier,ratio,error:errorLimit})]:[]), unweld(), tangents({generateTangents,overwrite:true}), weld(), prune());
 await mkdir(path.dirname(output),{recursive:true});
 // Keep a local geometry-only candidate for independent texture assessment.
 await io.write(output.replace(/\.glb$/,'.geometry.glb'),doc);
@@ -40,6 +42,6 @@ await io.write(output,doc);
 const after=metrics(await io.read(output));
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const src=await readFile(input),dst=await readFile(output);
-const report={inputName:path.basename(input),inputBytes:src.length,inputSha256:sha(src),outputName:path.basename(output),outputBytes:dst.length,outputSha256:sha(dst),before,after,recipe:{budget,ratio,error:0.01,textureMaxSize:1024,colorWebpQuality:85,dataTextures:'lossless WebP',tangents:'MikkTSpace regenerated',geometryCompression:'none'}};
+const report={inputName:path.basename(input),inputBytes:src.length,inputSha256:sha(src),outputName:path.basename(output),outputBytes:dst.length,outputSha256:sha(dst),before,after,recipe:{budget,ratio,error:errorLimit,mode,textureMaxSize:1024,colorWebpQuality:85,dataTextures:'lossless WebP',tangents:'MikkTSpace regenerated',geometryCompression:'none'}};
 await writeFile(output.replace(/\.glb$/,'.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report));

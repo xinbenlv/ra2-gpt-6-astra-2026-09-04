@@ -1,0 +1,29 @@
+{
+  "sourceTask": "01a0a965-90a2-7c83-b65d-3d3f2f7103f4",
+  "files": [
+    {
+      "id": "soviet-ore-refinery",
+      "file": "soviet-ore-refinery/30k.glb",
+      "bytes": 4507964,
+      "sha256": "120575f19cf1a0d97a3395d6fc4a118e2a9cbb32e302351822bb2453b33c06a0"
+    },
+    {
+      "id": "war-miner",
+      "file": "war-miner/30k.glb",
+      "bytes": 3994940,
+      "sha256": "9a595efd3ed1270d508e1a5c0b29bdef9caed5d69548fab041938d0c09b5e63b"
+    },
+    {
+      "id": "rocketeer",
+      "file": "rocketeer/actions.glb",
+      "bytes": 4276132,
+      "sha256": "d73ee4f0644580f8d85643952692813d39d9aef2846f787fbe150151f707b881"
+    },
+    {
+      "id": "giant-squid",
+      "file": "giant-squid/actions.glb",
+      "bytes": 4475920,
+      "sha256": "59e345579445a838fa39e28b36ea88ec2f89c3ff1af934780f2096fc630da068"
+    }
+  ]
+}

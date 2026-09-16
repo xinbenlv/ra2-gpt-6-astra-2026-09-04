@@ -1,0 +1,514 @@
+{
+  "description": "Original reference identity. Converted images remain local. Map count includes catalog variants.",
+  "sources": {
+    "tree22": {
+      "source": {
+        "src": "/assets/scenery/temperate-tree22.png",
+        "width": 105,
+        "height": 97,
+        "frameWidth": 105,
+        "frameHeight": 97,
+        "frames": 1,
+        "columns": 1,
+        "anchorX": 52.5,
+        "anchorY": 82,
+        "originalFrames": 2,
+        "originalFile": "tree22.tem",
+        "theater": "temperate",
+        "nativeType": "tree22",
+        "kind": "terrain",
+        "foundation": [
+          1,
+          1
+        ]
+      },
+      "sourcePngSha256": "6faf40e818762793fda57a11706b26a251d208e30a76e2f0690167d9faf30493",
+      "mapPlacements": 1523,
+      "alphaBounds": [
+        17,
+        0,
+        105,
+        63
+      ],
+      "inference": "Hidden crown, back branches and exact depth are generated, not original geometry.",
+      "rawEntry": {
+        "file": "tree22.tem",
+        "archive": "/Users/zzn/ws/xinbenlv/ra2-gpt-6-astra-2026-09-04/.cache/ra2-assets-rebuild-test/mixes/temperat.mix",
+        "sha256": "a4f75bf292cdd7644fb1fa76caa4a2afa0aaef8fa6a7d14bda9b52189e3dd995",
+        "bytes": 3120
+      }
+    },
+    "tree10": {
+      "source": {
+        "src": "/assets/scenery/temperate-tree10.png",
+        "width": 123,
+        "height": 101,
+        "frameWidth": 123,
+        "frameHeight": 101,
+        "frames": 1,
+        "columns": 1,
+        "anchorX": 61.5,
+        "anchorY": 86,
+        "originalFrames": 2,
+        "originalFile": "tree10.tem",
+        "theater": "temperate",
+        "nativeType": "tree10",
+        "kind": "terrain",
+        "foundation": [
+          1,
+          1
+        ]
+      },
+      "sourcePngSha256": "ae9b2afafdcdfee84d1b647a173ce00bcc48a20f4da9e28ea22a572c8545df65",
+      "mapPlacements": 1121,
+      "alphaBounds": [
+        35,
+        0,
+        123,
+        50
+      ],
+      "inference": "Hidden crown, back branches and exact depth are generated, not original geometry.",
+      "rawEntry": {
+        "file": "tree10.tem",
+        "archive": "/Users/zzn/ws/xinbenlv/ra2-gpt-6-astra-2026-09-04/.cache/ra2-assets-rebuild-test/mixes/temperat.mix",
+        "sha256": "94134d4f91e2685d47c9e4880c4a61a1d4b48f4d7076d9c6a845a37599d25157",
+        "bytes": 2608
+      }
+    },
+    "grass": {
+      "tileId": 0,
+      "subTile": 0,
+      "metadata": {
+        "file": "clear01.tem",
+        "set": 0,
+        "name": "Lat Grass",
+        "subtiles": [
+          [
+            13,
+            0,
+            0,
+            [
+              162,
+              168,
+              80
+            ],
+            [
+              163,
+              167,
+              80
+            ]
+          ]
+        ]
+      },
+      "atlas": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 428,
+        "y": 790,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "atlasSha256": "686fd2d2c9cf688f58735dd235460d7ea084aec7fc45cba4c16b6fdb4ed9df53",
+      "referenceSha256": "7155b03bb308a1b2525a2808e5c49e834fa86bcd78c634ea744000deb7fcd096",
+      "inference": "Parametric module topology derived for compatible edges; not recovered original mesh.",
+      "rawEntry": {
+        "file": "clear01.tem",
+        "archive": "/Users/zzn/ws/xinbenlv/ra2-gpt-6-astra-2026-09-04/.cache/ra2-assets-rebuild-test/mixes/isotemp.mix",
+        "sha256": "d90df76d78fd9a3e23834c5a728cef666dbdf65b212dd3a66c29b456cbd51ed2",
+        "bytes": 1872
+      }
+    },
+    "ocean": {
+      "tileId": 314,
+      "subTile": 0,
+      "metadata": {
+        "file": "water01.tem",
+        "set": 21,
+        "name": "Water",
+        "subtiles": [
+          [
+            9,
+            0,
+            0,
+            [
+              65,
+              67,
+              88
+            ],
+            [
+              65,
+              67,
+              88
+            ]
+          ],
+          [
+            9,
+            0,
+            0,
+            [
+              66,
+              69,
+              89
+            ],
+            [
+              66,
+              69,
+              89
+            ]
+          ],
+          [
+            9,
+            0,
+            0,
+            [
+              65,
+              67,
+              89
+            ],
+            [
+              66,
+              68,
+              89
+            ]
+          ],
+          [
+            9,
+            0,
+            0,
+            [
+              65,
+              68,
+              89
+            ],
+            [
+              66,
+              69,
+              89
+            ]
+          ]
+        ]
+      },
+      "atlas": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1648,
+        "y": 1938,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "atlasSha256": "686fd2d2c9cf688f58735dd235460d7ea084aec7fc45cba4c16b6fdb4ed9df53",
+      "referenceSha256": "2ce30126c5ebd0e44aaaef412bdab10d5ef15ababf5993a0b3642ba7c79653df",
+      "inference": "Parametric module topology derived for compatible edges; not recovered original mesh.",
+      "rawEntry": {
+        "file": "water01.tem",
+        "archive": "/Users/zzn/ws/xinbenlv/ra2-gpt-6-astra-2026-09-04/.cache/ra2-assets-rebuild-test/mixes/isotemp.mix",
+        "sha256": "7995ceb43404d81096220e2d7b3474a527a3717df8e8db4e7068e5e39b04e083",
+        "bytes": 7440
+      }
+    },
+    "ramp": {
+      "tileId": 29,
+      "subTile": 0,
+      "metadata": {
+        "file": "slope01.tem",
+        "set": 9,
+        "name": "Ramps",
+        "subtiles": [
+          [
+            13,
+            0,
+            1,
+            [
+              189,
+              185,
+              84
+            ],
+            [
+              185,
+              182,
+              89
+            ]
+          ]
+        ]
+      },
+      "atlas": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 1648,
+        "y": 722,
+        "width": 60,
+        "height": 31,
+        "anchorX": 30,
+        "anchorY": 16
+      },
+      "atlasSha256": "686fd2d2c9cf688f58735dd235460d7ea084aec7fc45cba4c16b6fdb4ed9df53",
+      "referenceSha256": "0c7f5da8c5d266354dd586cca38421ef565e7ed1cef98eb521d2081251104b90",
+      "inference": "Parametric module topology derived for compatible edges; not recovered original mesh.",
+      "rawEntry": {
+        "file": "slope01.tem",
+        "archive": "/Users/zzn/ws/xinbenlv/ra2-gpt-6-astra-2026-09-04/.cache/ra2-assets-rebuild-test/mixes/isotemp.mix",
+        "sha256": "9ef7381215649ca65d315e47f8ae4fb611ab7397f779527d8e026fafaf6e3a8d",
+        "bytes": 2352
+      }
+    },
+    "plateau": {
+      "tileId": 49,
+      "subTile": 0,
+      "metadata": {
+        "file": "cliff01.tem",
+        "set": 10,
+        "name": "Cliff Set",
+        "subtiles": [
+          [
+            15,
+            4,
+            0,
+            [
+              113,
+              82,
+              46
+            ],
+            [
+              119,
+              100,
+              52
+            ]
+          ],
+          null,
+          [
+            15,
+            0,
+            0,
+            [
+              164,
+              128,
+              69
+            ],
+            [
+              190,
+              127,
+              68
+            ]
+          ],
+          [
+            15,
+            4,
+            0,
+            [
+              124,
+              90,
+              51
+            ],
+            [
+              127,
+              93,
+              50
+            ]
+          ],
+          null,
+          [
+            15,
+            0,
+            0,
+            [
+              167,
+              158,
+              82
+            ],
+            [
+              179,
+              133,
+              64
+            ]
+          ]
+        ]
+      },
+      "atlas": {
+        "src": "/assets/terrain/temperate-0.png",
+        "x": 611,
+        "y": 790,
+        "width": 60,
+        "height": 30,
+        "anchorX": 30,
+        "anchorY": 15
+      },
+      "atlasSha256": "686fd2d2c9cf688f58735dd235460d7ea084aec7fc45cba4c16b6fdb4ed9df53",
+      "referenceSha256": "df50c26785f25da3a89c23be24909d29bdc5afe766c52c12538a075a3fdfab0c",
+      "inference": "Parametric module topology derived for compatible edges; not recovered original mesh.",
+      "rawEntry": {
+        "file": "cliff01.tem",
+        "archive": "/Users/zzn/ws/xinbenlv/ra2-gpt-6-astra-2026-09-04/.cache/ra2-assets-rebuild-test/mixes/isotemp.mix",
+        "sha256": "035d8580b5118c631055143ce722d1995b50d3b1df495beef8449e01425d21b1",
+        "bytes": 14456
+      }
+    }
+  },
+  "temperateMaps": [
+    {
+      "file": "deadman.map",
+      "sha256": "9b87a321903681451784720661c06e3268165c4b414847aced1137bbe0277a62"
+    },
+    {
+      "file": "dustbowl.map",
+      "sha256": "3146e0a1ec1f7cb65b8cde29f6ec8871856815ee293ce16f180bafcf7d675d23"
+    },
+    {
+      "file": "mp14t2.map",
+      "sha256": "419d7990175599152546d2baacc24667bcbf06ad9cc0943eef5d7c89ba49f926"
+    },
+    {
+      "file": "mp24t2.map",
+      "sha256": "1a593ed5bcf78405b180f91989b3872d624722fef4ab4db0b39e645193a9aa6b"
+    },
+    {
+      "file": "mp02t2.map",
+      "sha256": "9ffad3f52a777452a4803b58011d5bc13f6468069092cb4889139a3b1fd85c9f"
+    },
+    {
+      "file": "mp08t2.map",
+      "sha256": "7a93f7909ed5c8e4e91c665841335ecbfd504425d66ee084e0e991c7aecdc14c"
+    },
+    {
+      "file": "grinder.map",
+      "sha256": "0857085b6874f54b0af7891794f50a1d5713454cdc6bccc921142e19051d9bba"
+    },
+    {
+      "file": "newhghts.map",
+      "sha256": "2d8642934cfa2e4bf327d90db80f9cc3f78b10becf3e5937ab283f4c3923be28"
+    },
+    {
+      "file": "tn01t2.map",
+      "sha256": "95a836a2b42728d2c7d5c606902619b98afe428cb54eaf8b489e2d83819213e3"
+    },
+    {
+      "file": "tn04t2.map",
+      "sha256": "bd6804a6336c415eca0c31a7a203df1c7bf2dc19353385c66f41a2381c248c33"
+    },
+    {
+      "file": "mp11t2.map",
+      "sha256": "b84570fd81afddc88ecfd19b9a93b46c0b7007c56b94aebd2ad434db6dd19476"
+    },
+    {
+      "file": "mp06t2.map",
+      "sha256": "bc4ca3e7f2c16080f9826d97df212b12813d96558630a01bf7d5a197bb09142d"
+    },
+    {
+      "file": "mp09t3.map",
+      "sha256": "9cf2da0c7c6a0f34c36ba03b500b8f4b55f0bd047d619d7449f12282611eb6e5"
+    },
+    {
+      "file": "killer.map",
+      "sha256": "00aedca824a59b738c4e9f80d5ad6644b45cf62b1dd402e10a8cc3bb42b016d8"
+    },
+    {
+      "file": "yuriplot.map",
+      "sha256": "330caf903d0eb8666e32da0784df69c1bf533217312f4018e40448981edd3a53"
+    },
+    {
+      "file": "mp03t4.map",
+      "sha256": "eab7d48cdb16a5317c17323e7b9c19c5e79146dfcf7a1df5a96b359b9fb45315"
+    },
+    {
+      "file": "eb4.map",
+      "sha256": "f5fe5dc32295dfcb6097b2a104288d4288fbb31b748144e08b5d242d25a0b070"
+    },
+    {
+      "file": "mp04t8.map",
+      "sha256": "beaac8d3ffd247d358ec5d8190dcf0a82f5f62d968dc65670d936f2710747c29"
+    },
+    {
+      "file": "mp19t4.map",
+      "sha256": "3fca9fe52aa3e12531d623834fa0a128bc1b867f918d6204a2f210d8568ddcee"
+    },
+    {
+      "file": "mp23t4.map",
+      "sha256": "3750bcd8ee5ce7a91d80fcc24fdfef2008a6cebfe1f0036a514081acbe149704"
+    },
+    {
+      "file": "mp07t4.map",
+      "sha256": "eb2d9d3497b94bac05f6cbed0ce3e0d6f2da17cc3a7bb277d81bbc600d3264cd"
+    },
+    {
+      "file": "hills.map",
+      "sha256": "780d5d6e6d3c81ac0d510a5df326848dd426b3d840ac290114f44faf8eab9e9e"
+    },
+    {
+      "file": "mp05t4.map",
+      "sha256": "1195eff3733eb09ba11fac70f2d78430c15e8cfb70e6da2c5740972eaf8da784"
+    },
+    {
+      "file": "lostlake.map",
+      "sha256": "4dc1a34301d2d877d9d856bf62692ec5bfef92d8050f8f7274a8dcab81bb501b"
+    },
+    {
+      "file": "eb5.map",
+      "sha256": "ff3f4938e50bac7d91086189c989c9bf8fd5501642021cd101d7834894a40855"
+    },
+    {
+      "file": "pacific.map",
+      "sha256": "d0098ce710244210f0d9da41972c3fe4351dbccb266869e3c115ce19dc0eb37e"
+    },
+    {
+      "file": "seaofiso.map",
+      "sha256": "e57554181d7f6f1b786cd9cbecf4dd9e7ddcba24fabca05eb56c9e90d3108644"
+    },
+    {
+      "file": "eb2.map",
+      "sha256": "69962e7efc29cb5ba18075ff28c4c1d835a58d742c02f0d34fb5850591fb45c0"
+    },
+    {
+      "file": "mp01t4.map",
+      "sha256": "c43e94057d6abaec0a39899b44175259f150649e2cd39be66504bb2957f2ec67"
+    },
+    {
+      "file": "amazon01.map",
+      "sha256": "b91babfd0553683ec648be159cb7de0c6df264319f269f728ae522d7f44fb7a8"
+    },
+    {
+      "file": "tanyas.map",
+      "sha256": "99ea5dae5d87d1d06f935796c2edcdefd89dc038e542bb33138ae2e3676922d3"
+    },
+    {
+      "file": "tsunami.map",
+      "sha256": "ae08357b983be46154368d488fb9290724190dd45c21b87d39f5350c54a1cda9"
+    },
+    {
+      "file": "valley.map",
+      "sha256": "6c400db9edf2593a0331b315306d8987072264f10b9b8a5d76ce472fd2d008cc"
+    },
+    {
+      "file": "mp25t6.map",
+      "sha256": "2a031cb9b0d78fb12a84de28d3c6e68eeebd327c22261bc7e3b240930c659ecc"
+    },
+    {
+      "file": "mp17t6.map",
+      "sha256": "f5d3661f86084e4894f40706cebbdbbd7aab9604f3e135a423ed686ad8a5c230"
+    },
+    {
+      "file": "mp20t6.map",
+      "sha256": "f769fd5a02796148f230f8687efc4abdc514edee5620a58b7dfb1ddd684e653e"
+    },
+    {
+      "file": "mp20mw.map",
+      "sha256": "c253f905f9e2d8144ee39fed7452f7f72b963d3b819915a2f701cc2c362edee0"
+    },
+    {
+      "file": "mp27t8.map",
+      "sha256": "64674a3d16a321207b1edb6e223ca87690d50ee0e293aea0c56de5b1f9b98aa4"
+    },
+    {
+      "file": "death.map",
+      "sha256": "ea535189b962f6b974958e21e2795bc438bd2fbde85274d5db0aedda01c08669"
+    },
+    {
+      "file": "tn03mw.map",
+      "sha256": "349159b9f726dff97fd139a5c4671b4392f108f848810cc2991d880d29347f7e"
+    },
+    {
+      "file": "tn03t8.map",
+      "sha256": "6924161f899a1e73f1a0a66844861ff331d4ee711aa7372909215c9c7abd9026"
+    }
+  ],
+  "sourceRoot": "/Users/zzn/ws/xinbenlv/ra2-gpt-6-astra-2026-09-04/.cache/ra2-assets-rebuild-result"
+}

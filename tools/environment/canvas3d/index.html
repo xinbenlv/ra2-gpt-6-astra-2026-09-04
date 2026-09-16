@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Canvas 3D · 高清训练场</title><link rel="stylesheet" href="./style.css">
+<body><main id="stage" data-testid="battlefield-3d" aria-label="可旋转的高清三维训练场"></main>
+<header><a href="/">环境资产</a><b>Canvas 3D · 高清训练场</b><a href="/canvas/">环境 Canvas 2D</a></header>
+<aside data-testid="controls"><label>模型<select id="actor" data-testid="actor"></select></label><label>动作<select id="action" data-testid="action"></select></label><p id="motion-note"></p>
+<div class="row"><button id="pause" data-testid="pause">暂停</button><button id="step" data-testid="step">下一帧</button><select id="speed" data-testid="speed" aria-label="播放速度"><option value=".25">¼ 速</option><option value=".5">½ 速</option><option value="1" selected>正常</option><option value="2">2 倍</option></select></div>
+<input id="seek" data-testid="seek" type="range" min="0" max="1000" value="0" aria-label="动作进度"><output id="frame"></output>
+<div class="row"><button id="tour" data-testid="tour">轮播动作</button><button id="demo" data-testid="demo">停止移动演示</button></div>
+<div class="row"><button id="focus" data-testid="focus">定位模型</button><button id="home" data-testid="home">全景</button><button id="turn" data-testid="turn">转向 45°</button></div>
+<div class="row"><button data-view="0" data-testid="north">北</button><button data-view="90" data-testid="east">东</button><button data-view="180" data-testid="south">南</button><button data-view="270" data-testid="west">西</button><button id="pitch" data-testid="pitch">俯视</button></div>
+<button id="attack-target" data-testid="attack-target">攻击训练靶</button>
+<label title="当前已适配犀牛坦克">玩家颜色 · 犀牛坦克<input id="team-color" data-testid="team-color" type="color" value="#ff0000"></label>
+<label class="check"><input id="bones" data-testid="bones" type="checkbox">显示骨骼</label>
+<p class="hint">左键选中模型；右键地面移动。拖动旋转，滚轮缩放。骨骼动作与场景反馈分别标注。</p></aside>
+<div id="status" data-testid="status" role="status">加载高清模型…</div><footer>独立 3D 训练场 · 1 单位 = 1 原版地格 · 本地候选</footer>
+<script type="module" src="./main.ts"></script></body></html>

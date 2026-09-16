@@ -1,0 +1,112 @@
+{
+  "inputSha256": "76634c67c8c0888922dd1f58fc89e1d4d98ddf23ae3f31262f3a73b2bbe682ee",
+  "sha256": "d73ee4f0644580f8d85643952692813d39d9aef2846f787fbe150151f707b881",
+  "bytes": 4276132,
+  "triangles": 30000,
+  "vertices": 22827,
+  "joints": 16,
+  "clips": [
+    "fly",
+    "hover",
+    "firefly",
+    "tumble",
+    "airdeathstart",
+    "airdeathfalling",
+    "airdeathfinish",
+    "paradrop",
+    "cheer"
+  ],
+  "sequences": {
+    "fly": {
+      "source": [
+        292,
+        6,
+        6
+      ],
+      "label": "飞行",
+      "loop": true
+    },
+    "hover": {
+      "source": [
+        292,
+        6,
+        6
+      ],
+      "label": "悬停",
+      "loop": true,
+      "alias": "fly"
+    },
+    "firefly": {
+      "source": [
+        370,
+        6,
+        6
+      ],
+      "label": "空中射击",
+      "loop": true
+    },
+    "tumble": {
+      "source": [
+        340,
+        15,
+        0
+      ],
+      "label": "空中翻落",
+      "loop": false
+    },
+    "airdeathstart": {
+      "source": [
+        340,
+        8,
+        0
+      ],
+      "label": "空中死亡起始",
+      "loop": false
+    },
+    "airdeathfalling": {
+      "source": [
+        348,
+        1,
+        0
+      ],
+      "label": "坠落姿势",
+      "loop": false
+    },
+    "airdeathfinish": {
+      "source": [
+        349,
+        6,
+        0
+      ],
+      "label": "落地",
+      "loop": false
+    },
+    "paradrop": {
+      "source": [
+        418,
+        1,
+        0
+      ],
+      "label": "伞降姿势",
+      "loop": false
+    },
+    "cheer": {
+      "source": [
+        419,
+        8,
+        0
+      ],
+      "label": "欢呼",
+      "loop": false,
+      "fixedFacing": 6
+    }
+  },
+  "fps": 12,
+  "materialsPreserved": true,
+  "limitations": [
+    "Authored approximation: SHP does not recover depth or original skeleton",
+    "Rocketeer ground-only source sequences are source fallback; BalloonHover unit uses air actions",
+    "12 fps preview convention, not verified original executable timing",
+    "Squid occluded arm depth and contact with ships inferred; no finger rig on Rocketeer"
+  ]
+}

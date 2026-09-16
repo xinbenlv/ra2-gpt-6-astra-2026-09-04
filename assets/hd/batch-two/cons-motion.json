@@ -1,0 +1,167 @@
+{
+  "recipe": "tools/batch-two/conscript-rig.mjs",
+  "up": "+Y",
+  "forward": [
+    0,
+    0,
+    1
+  ],
+  "restRifleAxis": [
+    0.65,
+    0,
+    0.76
+  ],
+  "source": "CONS / ConSequence",
+  "limitations": [
+    "Hidden depth and intermediate poses inferred",
+    "No finger joints; hand/stock contact needs visual review",
+    "12 Hz source sampling is a preview convention",
+    "Die3/4/5 original placeholders are excluded"
+  ],
+  "joints": 17,
+  "clips": [
+    {
+      "name": "ready",
+      "source": [
+        0,
+        1,
+        1
+      ],
+      "previewFps": 12,
+      "loop": true
+    },
+    {
+      "name": "walk",
+      "source": [
+        8,
+        6,
+        6
+      ],
+      "previewFps": 12,
+      "loop": true
+    },
+    {
+      "name": "fireup",
+      "source": [
+        164,
+        6,
+        6
+      ],
+      "previewFps": 12,
+      "loop": true
+    },
+    {
+      "name": "crawl",
+      "source": [
+        86,
+        6,
+        6
+      ],
+      "previewFps": 12,
+      "loop": true
+    },
+    {
+      "name": "fireprone",
+      "source": [
+        212,
+        6,
+        6
+      ],
+      "previewFps": 12,
+      "loop": true
+    },
+    {
+      "name": "down",
+      "source": [
+        260,
+        2,
+        2
+      ],
+      "previewFps": 12,
+      "loop": false
+    },
+    {
+      "name": "up",
+      "source": [
+        276,
+        2,
+        2
+      ],
+      "previewFps": 12,
+      "loop": false
+    },
+    {
+      "name": "idle1",
+      "source": [
+        56,
+        15,
+        0
+      ],
+      "previewFps": 12,
+      "loop": true
+    },
+    {
+      "name": "idle2",
+      "source": [
+        71,
+        14,
+        0
+      ],
+      "previewFps": 12,
+      "loop": true
+    },
+    {
+      "name": "die1",
+      "source": [
+        134,
+        15,
+        0
+      ],
+      "previewFps": 12,
+      "loop": false
+    },
+    {
+      "name": "die2",
+      "source": [
+        149,
+        15,
+        0
+      ],
+      "previewFps": 12,
+      "loop": false
+    },
+    {
+      "name": "cheer",
+      "source": [
+        293,
+        8,
+        0
+      ],
+      "previewFps": 12,
+      "loop": false
+    },
+    {
+      "name": "paradrop",
+      "source": [
+        292,
+        1,
+        0
+      ],
+      "previewFps": 12,
+      "loop": true
+    },
+    {
+      "name": "prone",
+      "source": [
+        86,
+        1,
+        6
+      ],
+      "previewFps": 12,
+      "loop": true
+    }
+  ],
+  "triangles": 30000,
+  "bytes": 4346148,
+  "sha256": "de63fb2fad35822b5d242f15660cdfdd40eaac04f6441559655ace5b81fbe6e4"
+}

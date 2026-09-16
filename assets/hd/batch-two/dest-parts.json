@@ -1,0 +1,55 @@
+{
+  "recipe": "tools/batch-two/mechanical.mjs",
+  "parts": [
+    {
+      "name": "Hull",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "triangles": 27714
+    },
+    {
+      "name": "Barrel",
+      "pivot": [
+        -0.65,
+        -0.08,
+        0
+      ],
+      "parent": 0,
+      "triangles": 105
+    },
+    {
+      "name": "Helicopter",
+      "pivot": [
+        0.72,
+        -0.13,
+        0
+      ],
+      "parent": 0,
+      "triangles": 1657
+    },
+    {
+      "name": "Rotor",
+      "pivot": [
+        0.73,
+        -0.018,
+        0
+      ],
+      "parent": 2,
+      "triangles": 520
+    }
+  ],
+  "forwardAxis": [
+    -1,
+    0,
+    0
+  ],
+  "barrelAxis": [
+    -1,
+    0,
+    0
+  ],
+  "source": "assets/hd/batch-two/source-parts.json"
+}

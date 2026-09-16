@@ -1,0 +1,41 @@
+{
+  "tool": "built-in image_gen",
+  "requests": [
+    {
+      "prompt": "Use case: style-transfer. Create a faithful high-definition modeling reference of original Red Alert 2 Soviet Rhino Heavy Tank HTNK from the attached actual voxel render. Preserve precisely its silhouette, proportions, orientation, component count and placement: low olive drab angular tank hull, two broad tracked side pods with red team-color fenders, single compact angular turret, single long dark cannon barrel pointing upper-right in the source. One intact tank only, three-quarter elevated view matching source. Physically credible painted steel, restrained wear, readable track links. Do not add extra barrels, weapons, antennas or a base. Full tank with modest margins on neutral charcoal background, soft even studio light, sharp silhouette. No text or scenery. Hidden back surfaces conservatively inferred. This image will drive textured 3D mesh generation; show real solid parts and clear gaps, not glow or shadow geometry.",
+      "referenced_image_paths": [
+        "/Users/zzn/.codex/worktrees/94a1/ra2-gpt-6-astra-2026-09-04/.cache/batch-two/source/htnk.png"
+      ]
+    },
+    {
+      "prompt": "Use case: style-transfer. Faithful high-definition 3D modeling reference of original Red Alert 2 TREE26, using the attached actual sprite as evidence. A single complete tall conical evergreen tree, dark olive green fine needle foliage, tiered asymmetric outward branches, narrow pointed top, broad low skirt, subtle visible brown central trunk at ground. Preserve source silhouette, proportions, palette and branch distribution; species is not known, do not invent a botanical label. Three-quarter slightly elevated original view. Full volumetric tree with individually readable branch sprays and deep gaps, realistic restrained PBR foliage. No terrain, base, shadow as geometry, text, additional tree, pot or scenery. Neutral charcoal studio background, soft even illumination, entire tree with modest margin. Back branch depth is a conservative inference.",
+      "referenced_image_paths": [
+        "/Users/zzn/.codex/worktrees/94a1/ra2-gpt-6-astra-2026-09-04/.cache/batch-two/source/tree26.png"
+      ]
+    },
+    {
+      "prompt": "Use case: style-transfer. Make faithful high-definition modeling reference of original Red Alert 2 Allied Barracks GAPILE using the attached actual sprite. Preserve exact original isometric orientation, entire 3x2 concrete footprint, two parallel arched Quonset-style silver corrugated metal barracks, black rounded end arches with yellow rim details, red narrow team-color roof trims and side panels, original relative lengths and offset placement, rear-left slender cylindrical tower with dark round platform and thin flagpole with small flag. Preserve the broad pale concrete apron with yellow entrance markings and small green side windows. Crisp grounded proportions from source, no redesign or additional buildings. Realistic painted metal and concrete, slight localized wear. Full building modest margins on neutral charcoal background, soft even studio light, no text or scenery. Hidden sides conservatively inferred. Clearly separated flag and tower parts for later mechanical motion.",
+      "referenced_image_paths": [
+        "/Users/zzn/.codex/worktrees/94a1/ra2-gpt-6-astra-2026-09-04/.cache/batch-two/source/gapile.png"
+      ]
+    },
+    {
+      "prompt": "Use case: style-transfer. Faithful high-definition modeling reference of original Red Alert 2 Soviet Conscript, E2 Image CONS. Attached actual tiny original SHP frame is design evidence. One full-body adult male infantryman with rounded dull gray steel helmet, tan brown military tunic and trousers, vivid red shoulder/yoke team-color panels, dark belt, black boots, holding a single dark long rifle with both hands at chest height. Preserve squat readable game proportions without caricature, original palette, equipment count and pose, face forward toward camera with slightly turned three-quarter view. Clearly separate limbs with visible gaps suitable for rigging, preserve held rifle across front, hands on grip and fore-end. Realistic restrained cloth, steel and leather. No new armor, backpack, insignia text, extra weapons, ground base or scenery. Full figure from helmet to soles with generous framing on neutral charcoal background, soft studio lighting. Hidden clothing details conservative.",
+      "referenced_image_paths": [
+        "/Users/zzn/.codex/worktrees/94a1/ra2-gpt-6-astra-2026-09-04/.cache/batch-two/source/cons.png"
+      ]
+    },
+    {
+      "prompt": "Use case: style-transfer. Faithful HD 3D-modeling reference of original Red Alert 2 Allied Destroyer DEST from attached actual voxel view. Preserve long narrow blue-gray hull with pointed bow toward upper-right, chunky central dark gray stepped bridge superstructure with red team-color side plates, one dark fixed foredeck gun near bow, red rail/structure around aft helicopter deck, small yellow ASW helicopter resting on stern toward lower-left. Keep ship proportions and source component positions, no modern redesign or extra missiles/radar. Helicopter is a separate visibly resting vehicle with rotor and tail, not fused to hull. Model full ship down to a shallow dark waterline hull, no ocean or water effects. Full ship in original three-quarter elevated view, modest margin on neutral charcoal background. PBR painted navy steel, restrained weathering, clear parts and negative spaces. No text, base or scenery. Hidden surfaces conservative.",
+      "referenced_image_paths": [
+        "/Users/zzn/.codex/worktrees/94a1/ra2-gpt-6-astra-2026-09-04/.cache/batch-two/source/dest.png"
+      ]
+    },
+    {
+      "prompt": "Use case: style-transfer. Asset type: seamless top-down PBR base-color ground texture for one Red Alert 2 dirt-road grid module. Attached original dirt-road tile strip is palette/material evidence only, not the output layout. Generate ONE square orthographic top-down albedo texture filling the entire image: ochre/tan compacted dirt road running straight vertically through central 65 percent width, two subtle parallel wheel-worn tracks, ragged natural transition to short olive/yellow-green grass shoulders at both left and right edges. Match source warm dirt and subdued grass colors. Road continues seamlessly at top and bottom with identical width and no endpoint. Soft flat ambient light, no cast shadows, no perspective, no diamond tile shape, no frame, no words, no vehicles, no stones bigger than small gravel, no plants taller than grass. Fine believable material detail readable at game scale, no dramatic ruts.",
+      "referenced_image_paths": [
+        "/Users/zzn/.codex/worktrees/94a1/ra2-gpt-6-astra-2026-09-04/.cache/batch-two/source/dirt-road.png"
+      ]
+    }
+  ]
+}

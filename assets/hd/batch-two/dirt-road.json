@@ -1,0 +1,48 @@
+{
+  "file": "dirt-road.glb",
+  "triangles": 2,
+  "bytes": 3081296,
+  "sha256": "e9154aefca27db618942bf0780867a74ca10f4b659500ac00943d907ad428ac0",
+  "up": "+Y",
+  "forward": "+Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "footprintCells": [
+    1,
+    1
+  ],
+  "edges": {
+    "north": [
+      0,
+      0
+    ],
+    "south": [
+      0,
+      0
+    ],
+    "east": [
+      0,
+      0
+    ],
+    "west": [
+      0,
+      0
+    ]
+  },
+  "textureSize": [
+    1024,
+    1024
+  ],
+  "texture": "embedded PNG",
+  "maxEndDifference": 0,
+  "source": "temperate:211 droads01.tem",
+  "master": ".cache/batch-two/dirt-road/master.glb",
+  "limitations": [
+    "Straight road only; rotate by quarter turns",
+    "No junction or curved module",
+    "Road edge conditioning does not reconstruct original TMP geometry"
+  ]
+}

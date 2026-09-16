@@ -1,0 +1,257 @@
+{
+  "description": "Y-up cell-space modules; flat projected diamond 60 by 30 px. Height step = 15 px.",
+  "heightStepCells": 0.4082482904638631,
+  "assets": [
+    {
+      "id": "grass",
+      "type": "surface",
+      "file": "grass.glb",
+      "pipeline": "parametric-grid + ImageGen source-guided albedo; no Meshy",
+      "unit": "cell",
+      "cellSize": 1,
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "up": "+Y",
+      "forward": "+Z",
+      "footprintCells": [
+        1,
+        1
+      ],
+      "baseHeightCells": 0,
+      "maxHeightCells": 0,
+      "edges": {
+        "north": [
+          0,
+          0
+        ],
+        "east": [
+          0,
+          0
+        ],
+        "south": [
+          0,
+          0
+        ],
+        "west": [
+          0,
+          0
+        ]
+      },
+      "uvTexelsPerCell": 1024,
+      "triangles": 2,
+      "bytes": 489432,
+      "sha256": "01eb7c2993e36aabfe70d0b2271be3406dd63a8a7b56d551e41c234f489e2fbe",
+      "masterBytes": 2981404,
+      "masterSha256": "1474f1894b11700e22dc870650ebf103dde7c31a0268df15ce38f567882fb238",
+      "textureFormat": "embedded WebP albedo quality 85 + PNG normal",
+      "textureCompression": "Color-only; original PNG master retained",
+      "textureDimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "normal": [
+          512,
+          512
+        ]
+      },
+      "master": ".cache/environment/grass/master.glb",
+      "lod": "Shared mesh instances; 2 triangles for flat surfaces; height modules can be reduced without changing linear profile"
+    },
+    {
+      "id": "ocean",
+      "type": "water",
+      "file": "ocean.glb",
+      "pipeline": "parametric-grid + periodic analytic water PBR; no Meshy",
+      "unit": "cell",
+      "cellSize": 1,
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "up": "+Y",
+      "forward": "+Z",
+      "footprintCells": [
+        1,
+        1
+      ],
+      "baseHeightCells": 0,
+      "maxHeightCells": 0,
+      "edges": {
+        "north": [
+          0,
+          0
+        ],
+        "east": [
+          0,
+          0
+        ],
+        "south": [
+          0,
+          0
+        ],
+        "west": [
+          0,
+          0
+        ]
+      },
+      "uvTexelsPerCell": 512,
+      "triangles": 2,
+      "bytes": 53328,
+      "sha256": "48b50c17ef2c920ab7ff0d14c9493cb360fb5242d49da5c762b1b4991d0dfa25",
+      "masterBytes": 57176,
+      "masterSha256": "c438eb01a262b8653440d99830a068b189b6ee1f9b296c31bec0707ad5cf0290",
+      "textureFormat": "embedded WebP albedo quality 85 + PNG normal",
+      "textureCompression": "Color-only; original PNG master retained",
+      "textureDimensions": {
+        "albedo": [
+          512,
+          512
+        ],
+        "normal": [
+          512,
+          512
+        ]
+      },
+      "master": ".cache/environment/ocean/master.glb",
+      "lod": "Shared mesh instances; 2 triangles for flat surfaces; height modules can be reduced without changing linear profile",
+      "water": {
+        "opacity": 0.86,
+        "roughness": 0.27,
+        "flowUvPerSecond": [
+          0.012,
+          0.008
+        ],
+        "depthColorSrgb": [
+          65,
+          68,
+          89
+        ],
+        "shoreline": "Open water only; no arbitrary coast solver",
+        "geometryDisplacement": false
+      }
+    },
+    {
+      "id": "plateau",
+      "type": "height-module",
+      "file": "plateau.glb",
+      "pipeline": "parametric-grid + ImageGen source-guided albedo; no Meshy",
+      "unit": "cell",
+      "cellSize": 1,
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "up": "+Y",
+      "forward": "+Z",
+      "footprintCells": [
+        1,
+        1
+      ],
+      "baseHeightCells": 0,
+      "maxHeightCells": 0.4082482904638631,
+      "edges": {
+        "north": [
+          0.4082482904638631,
+          0.4082482904638631
+        ],
+        "east": [
+          0.4082482904638631,
+          0.4082482904638631
+        ],
+        "south": [
+          0.4082482904638631,
+          0.4082482904638631
+        ],
+        "west": [
+          0.4082482904638631,
+          0.4082482904638631
+        ]
+      },
+      "uvTexelsPerCell": 1024,
+      "triangles": 2056,
+      "bytes": 1010276,
+      "sha256": "234503bb792309b939da12cca63eb5e237289aff18b314e7b06449b6cbf26e34",
+      "masterBytes": 6152716,
+      "masterSha256": "36f9166f7cd52aac50b352a77f906f090222228a116265eedd2fe6c396bc831c",
+      "textureFormat": "embedded WebP albedo quality 85 + PNG normal",
+      "textureCompression": "Color-only; original PNG master retained",
+      "textureDimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "normal": [
+          512,
+          512
+        ]
+      },
+      "master": ".cache/environment/plateau/master.glb",
+      "lod": "Shared mesh instances; 2 triangles for flat surfaces; height modules can be reduced without changing linear profile"
+    },
+    {
+      "id": "ramp",
+      "type": "height-module",
+      "file": "ramp.glb",
+      "pipeline": "parametric-grid + ImageGen source-guided albedo; no Meshy",
+      "unit": "cell",
+      "cellSize": 1,
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "up": "+Y",
+      "forward": "+Z",
+      "footprintCells": [
+        1,
+        1
+      ],
+      "baseHeightCells": 0,
+      "maxHeightCells": 0.4082482904638631,
+      "edges": {
+        "north": [
+          0,
+          0
+        ],
+        "east": [
+          0,
+          0.4082482904638631
+        ],
+        "south": [
+          0.4082482904638631,
+          0.4082482904638631
+        ],
+        "west": [
+          0,
+          0.4082482904638631
+        ]
+      },
+      "uvTexelsPerCell": 1024,
+      "triangles": 2052,
+      "bytes": 1009196,
+      "sha256": "8e83966d03868e897fc8eb731da1833b7dcf7af473daab5be98eabb3ac82d516",
+      "masterBytes": 6151640,
+      "masterSha256": "d1746b4058621af0190abf4b5f56a2c60658d60385ef0dae211e1fbd3d002af3",
+      "textureFormat": "embedded WebP albedo quality 85 + PNG normal",
+      "textureCompression": "Color-only; original PNG master retained",
+      "textureDimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "normal": [
+          512,
+          512
+        ]
+      },
+      "master": ".cache/environment/ramp/master.glb",
+      "lod": "Shared mesh instances; 2 triangles for flat surfaces; height modules can be reduced without changing linear profile"
+    }
+  ]
+}

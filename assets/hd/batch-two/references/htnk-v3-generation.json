@@ -1,0 +1,11 @@
+{
+  "asset": "htnk-v3",
+  "tool": "built-in ImageGen",
+  "prompt": "Use case: style-transfer. Reconstruct a natural, professionally art-directed HD Red Alert 2 Rhino tank reference from these inputs. Input 1 is a REJECTED draft: use it ONLY for camera, broad proportions and color-region placement. Its blocky stepped armor, LEGO-like red stacks, black checker strips and stacked flat turret are mistakes that MUST be substantially redesigned into plausible continuous manufactured surfaces. Input 2 is the tiny original game sprite: use its silhouette and visual identity, never its pixel grid as literal geometry. Retain broad squat hull, low elongated angular turret, small circular hatch, one straight cylindrical dark blue-gray cannon aimed upper right, olive-gray armor and separate red team-color regions above the tracks and around turret base. Sculpt a cohesive low turret with sloping cheeks and smoothly chamfered edges, a continuous top plate and a flush round hatch. Convert stair-step hull corners into broad sloped armor and smoothly radiused joins. Red markings are PAINTED ON existing armor panels, not piles of red bricks. Remove checkerboard bands and repetitive tiny square tiles. Barrel is a clean steel tube with a modest open muzzle, no exaggerated sleeve. Correct mechanical proportions, restrained weld lines, fine seams, realistic tracks and road wheels. Smooth continuous metal planes, subtle paint variation and minimal edge wear. Natural AAA strategy-game remake art, grounded and believable but retaining the original compact tank identity. Do not replace with a generic modern tank, do not add antennas, machine guns, extra turrets, flags or scenery. Preserve overall width, height, turret footprint, barrel length, camera projection and facing; smooth away voxel artifacts at the surface and local silhouette level. Same full-object isometric view as input 1, solid uniform #303030 background, no pedestal or ground shadow, no text. The result must look like a coherent armored vehicle, not assembled rectangular building blocks.",
+  "inputs": [
+    "assets/hd/batch-two/references/htnk-v2.png",
+    ".cache/batch-two/source/htnk.png"
+  ],
+  "status": "candidate",
+  "notes": "Removes voxel-derived steps and stacked blocks; continuous sloped armor and painted team-color regions. Runtime GLB not updated."
+}

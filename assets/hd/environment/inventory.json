@@ -1,0 +1,232 @@
+{
+  "description": "Measured local deliverables. Source art and high-resolution masters are excluded from Git.",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3611,
+      "sha256": "f841d24c4731e5b0c3b4b18e4d9cc4d9c60e885eedff67af5d69ded67103d93e"
+    },
+    {
+      "path": "acceptance.md",
+      "bytes": 3669,
+      "sha256": "96ea7d30956a8d07c2e3a969e6a3b01a5fdd7f1087e83dbd19b3b7f42561c2e1"
+    },
+    {
+      "path": "grass.glb",
+      "bytes": 489432,
+      "sha256": "01eb7c2993e36aabfe70d0b2271be3406dd63a8a7b56d551e41c234f489e2fbe"
+    },
+    {
+      "path": "modules.json",
+      "bytes": 6467,
+      "sha256": "23fb6c5d007a12ce99726466c0e0102efbe4c86316cbe6375fa5ed06d8efa5c1"
+    },
+    {
+      "path": "ocean.glb",
+      "bytes": 53328,
+      "sha256": "48b50c17ef2c920ab7ff0d14c9493cb360fb5242d49da5c762b1b4991d0dfa25"
+    },
+    {
+      "path": "plateau.glb",
+      "bytes": 1010276,
+      "sha256": "234503bb792309b939da12cca63eb5e237289aff18b314e7b06449b6cbf26e34"
+    },
+    {
+      "path": "ramp.glb",
+      "bytes": 1009196,
+      "sha256": "8e83966d03868e897fc8eb731da1833b7dcf7af473daab5be98eabb3ac82d516"
+    },
+    {
+      "path": "references/grass-albedo.png",
+      "bytes": 3724728,
+      "sha256": "0ce2dd6b6de4bb41bf4bdce8e5b7d9eabeb4e4f4a62577f111695215574ea4ce",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "references/prompts.json",
+      "bytes": 3651,
+      "sha256": "edee65f89ad2fdb5ddd8957a14c4fab0267445adc76f143507e99f9ff727cc4f"
+    },
+    {
+      "path": "references/rock-albedo.png",
+      "bytes": 3572967,
+      "sha256": "34d67f90254efefdae69bc97428d855ab85b08e52ba5a14ec58dc7a4ed95b5be",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "references/tree10.png",
+      "bytes": 1765416,
+      "sha256": "59b3cd57aafcb7f880bba9cf6acc16c8bdcd323b0cbe77841a0d40ed50d3dd25",
+      "size": [
+        1384,
+        1136
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "references/tree22.png",
+      "bytes": 1640659,
+      "sha256": "3a8a42c29432548f17adc9f8a103f840e591d1087dee637391377eb1d903024e",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "source-record.json",
+      "bytes": 13865,
+      "sha256": "b4ea0dd4e4ae825eac4a16d408d9638447b317f7560dd897c028715cc1e59a2e"
+    },
+    {
+      "path": "sprites/README.md",
+      "bytes": 395,
+      "sha256": "6ff74bfba0c4b47169c34af9fe53f617f8868828651185cc67bef0ad9d56bb95"
+    },
+    {
+      "path": "sprites/grass.png",
+      "bytes": 44521,
+      "sha256": "522a97f49895d6631af2ac13a03278833cc00c5d7a43b51b8ff2c320fbea3a37",
+      "size": [
+        384,
+        384
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "sprites/manifest.json",
+      "bytes": 1914,
+      "sha256": "c727540ff557e18702aea48e1a20cf7b3deb67414805a004bca02cd7454d00cc"
+    },
+    {
+      "path": "sprites/ocean.png",
+      "bytes": 13207,
+      "sha256": "1c21d34ecfcb003d0cd94db286c254c9a92a576d5591bce1c4ef019375c1aed3",
+      "size": [
+        384,
+        384
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "sprites/plateau.png",
+      "bytes": 83689,
+      "sha256": "7a2dd471ec01a8fbc87aae64e2b61376560146dbd36bb9752f86471e5ca0d8cb",
+      "size": [
+        384,
+        384
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "sprites/ramp.png",
+      "bytes": 55261,
+      "sha256": "148db43d6cbb9e2f32f5b0c266e51fd82a8ecdd1684bab21d78c4d5f489d0eb0",
+      "size": [
+        384,
+        384
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "sprites/tree10.png",
+      "bytes": 84036,
+      "sha256": "1c2b9304a1014e9420fea4c4793a8f116cb8f79a8f750b253d2344abb4195908",
+      "size": [
+        576,
+        640
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "sprites/tree22.png",
+      "bytes": 101919,
+      "sha256": "abc73cb5794184c98c1e66ad8a2f167c056955efa0757338788364b112dc3c6f",
+      "size": [
+        576,
+        640
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "path": "tree10.glb",
+      "bytes": 6418264,
+      "sha256": "9385fa264e702d053276c1881b0f8936fc731e3af7410d5fd2edc1db6598839d"
+    },
+    {
+      "path": "tree22.glb",
+      "bytes": 5727360,
+      "sha256": "2e4f4477c18fdcce51c6a7a051759d4825e133c3ca727952a1e524ec678cc031"
+    },
+    {
+      "path": "trees.json",
+      "bytes": 9220,
+      "sha256": "200711b23e4369d5193ecc1700718c33072ad8fe9df6dd10ae5c07dd8cb0b186"
+    }
+  ],
+  "masters": [
+    {
+      "id": "grass",
+      "path": "/Users/zzn/.codex/worktrees/c490/ra2-gpt-6-astra-2026-09-04/.cache/environment/grass/master.glb",
+      "bytes": 2981404,
+      "sha256": "1474f1894b11700e22dc870650ebf103dde7c31a0268df15ce38f567882fb238"
+    },
+    {
+      "id": "ocean",
+      "path": "/Users/zzn/.codex/worktrees/c490/ra2-gpt-6-astra-2026-09-04/.cache/environment/ocean/master.glb",
+      "bytes": 57176,
+      "sha256": "c438eb01a262b8653440d99830a068b189b6ee1f9b296c31bec0707ad5cf0290"
+    },
+    {
+      "id": "plateau",
+      "path": "/Users/zzn/.codex/worktrees/c490/ra2-gpt-6-astra-2026-09-04/.cache/environment/plateau/master.glb",
+      "bytes": 6152716,
+      "sha256": "36f9166f7cd52aac50b352a77f906f090222228a116265eedd2fe6c396bc831c"
+    },
+    {
+      "id": "ramp",
+      "path": "/Users/zzn/.codex/worktrees/c490/ra2-gpt-6-astra-2026-09-04/.cache/environment/ramp/master.glb",
+      "bytes": 6151640,
+      "sha256": "d1746b4058621af0190abf4b5f56a2c60658d60385ef0dae211e1fbd3d002af3"
+    },
+    {
+      "id": "tree22",
+      "path": "/Users/zzn/.codex/worktrees/c490/ra2-gpt-6-astra-2026-09-04/.cache/environment/tree22/master.glb",
+      "bytes": 50698856,
+      "sha256": "e269af87b7e8e1eae6199dee059bfff2f8c5f7bd6bfa22af77f512773cd48840"
+    },
+    {
+      "id": "tree10",
+      "path": "/Users/zzn/.codex/worktrees/c490/ra2-gpt-6-astra-2026-09-04/.cache/environment/tree10/master.glb",
+      "bytes": 74193152,
+      "sha256": "198f37f37c37d7b257c3a9845566bde500284d4fb82d2ddbfdbf964c2e2a2801"
+    }
+  ],
+  "sourceWorktree": "/Users/zzn/.codex/worktrees/9e22/ra2-gpt-6-astra-2026-09-04",
+  "sourceBaseline": "0ca560d643ddeb0c543dd0cf17aa428552977466",
+  "skillConflictResolution": "Read both halves of source SKILL.md; follow latter 52470b1 action/Canvas requirements and newer team-color-calibration. No blanket merge.",
+  "toolProvenance": "model-opt scripts compared/copied explicitly from source worktree; foliage mode added locally. Meshy wrapper copied then relocated to this cache. No four-assets viewer copied.",
+  "verification": "../../../../.cache/environment/verification",
+  "legacyServices": {
+    "4179": {
+      "pid": 32886,
+      "http": 200
+    },
+    "4183": {
+      "pid": 39585,
+      "http": 200
+    },
+    "4184": {
+      "pid": 57337,
+      "http": 200
+    }
+  }
+}

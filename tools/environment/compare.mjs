@@ -1,0 +1,5 @@
+// Fixed-camera master/runtime screenshots; uses the same scale, projection and lights.
+import {chromium} from '@playwright/test';import {writeFile} from 'node:fs/promises';
+const browser=await chromium.launch({channel:'chrome',headless:true});const reports={};
+for(const kind of ['runtime','masters']){const page=await browser.newPage({viewport:{width:1440,height:1000}});await page.goto('http://127.0.0.1:4186/'+(kind==='masters'?'?masters=1':''));await page.waitForFunction(()=>window.environment?.ready,null,{timeout:180000});await page.evaluate(()=>{const e=window.environment;e.camera.position.set(-5,5,7);e.camera.lookAt(-2,1,0);});await page.screenshot({path:'.cache/environment/verification/'+kind+'-comparison.png'});reports[kind]=await page.evaluate(()=>window.environment.metrics);await page.close();}
+await writeFile('.cache/environment/verification/master-comparison.json',JSON.stringify(reports,null,2));await browser.close();console.log('Master and runtime loaded under the same camera/lights');

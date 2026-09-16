@@ -1,0 +1,26 @@
+<!doctype html>
+<!-- Local inspection of the user-selected Rhino revision, separate from animated field assets. -->
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>犀牛坦克 · 新版模型</title>
+<link rel="icon" href="data:,">
+<style>body{margin:0;background:#303030;color:#eee;font:14px system-ui}aside{position:fixed;top:16px;left:16px;z-index:2;background:#222d;padding:14px;border-radius:8px}button,a{color:inherit;margin-right:10px}button{background:#444;border:1px solid #777;padding:6px 12px;border-radius:4px}small{display:block;margin-top:8px;color:#ccc}canvas{display:block}</style>
+<aside><strong>犀牛坦克 · 新版模型</strong><p id="status" data-testid="status">加载中…</p><p><label>玩家颜色 <input type="color" id="team-color" data-testid="team-color" value="#ff0000"></label> <select id="team-preset" aria-label="玩家颜色预设" data-testid="team-preset"><option value="#ff0000">红色</option><option value="#2166ff">蓝色</option><option value="#ffd52a">黄色</option><option value="#28c46a">绿色</option><option value="#a653ef">紫色</option><option value="custom" disabled>自定义</option></select> <label><input type="checkbox" id="mask" data-testid="team-mask">显示换色区域</label></p><button id="rotate" data-testid="rotate">自动旋转</button><button id="reset" data-testid="reset">复位视角</button><a href="/hd/batch-two/htnk-v4-team.glb" download>下载 GLB</a><small>拖动旋转 · 滚轮缩放</small></aside>
+<script type="module">
+import * as T from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {applyTeamColor} from './team-color.js';
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.setClearColor('#303030');renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;document.body.append(renderer.domElement);
+const scene=new T.Scene(),camera=new T.PerspectiveCamera(35,innerWidth/innerHeight,.01,100),controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;
+scene.add(new T.HemisphereLight(0xe2ebff,0x77705c,2));const sun=new T.DirectionalLight(0xfff4de,3);sun.position.set(-4,8,5);scene.add(sun);
+try{
+ const gltf=await new GLTFLoader().loadAsync('/hd/batch-two/htnk-v4-team.glb'),team=await applyTeamColor(gltf),model=gltf.scene;scene.add(model);const box=new T.Box3().setFromObject(model),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3()),distance=Math.max(...size.toArray())*2.25;controls.target.copy(center);
+ const reset=()=>{camera.position.copy(center).add(new T.Vector3(-1,.75,1).normalize().multiplyScalar(distance));controls.update();};reset();
+ let triangles=0;model.traverse(o=>{if(o.isMesh)triangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;});document.querySelector('#status').textContent=triangles.toLocaleString()+' 三角面 · 静态模型';
+ document.querySelector('#reset').onclick=reset;document.querySelector('#rotate').onclick=()=>controls.autoRotate=!controls.autoRotate;
+ const picker=document.querySelector('#team-color'),preset=document.querySelector('#team-preset');
+ picker.oninput=()=>{team.setColor(picker.value);preset.value=[...preset.options].some(o=>o.value===picker.value)?picker.value:"custom";};preset.onchange=()=>{picker.value=preset.value;team.setColor(preset.value);};document.querySelector('#mask').onchange=e=>team.showMask(e.target.checked);
+ window.rhino={ready:true,model,scene,camera,controls,renderer,triangles,team};
+}catch(error){document.querySelector('#status').textContent='模型加载失败';console.error(error);}
+renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera);});addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+</script></html>

@@ -1,0 +1,27 @@
+{
+  "input": "assets/hd/batch-two/htnk-v4.glb",
+  "output": "assets/hd/batch-two/htnk-v4-team.glb",
+  "bytes": 4211484,
+  "sha256": "a846300ceb139a8c7afe33f7f32b0ad531225ba8bb9e35352248585986ac0c8e",
+  "mask": {
+    "width": 1024,
+    "height": 1024,
+    "selectedTexels": 86969,
+    "totalTexels": 1048576,
+    "embeddedImage": 3
+  },
+  "semantics": {
+    "version": 1,
+    "maskImage": 3,
+    "texCoord": 0,
+    "channel": "r",
+    "colorSpace": "linear",
+    "sourceColor": [
+      1,
+      0,
+      0
+    ],
+    "method": "red-chroma replacement preserving neutral wear and original PBR"
+  },
+  "note": "Custom RA2 metadata; generic GLB viewers display original red. Geometry, UVs and PBR maps are unchanged."
+}

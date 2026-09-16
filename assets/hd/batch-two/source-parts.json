@@ -1,0 +1,74 @@
+{
+  "htnk.vxl": {
+    "bytes": 34550,
+    "sha256": "0ca8517c29f8bed26c3a3f0138bb36bae01fbb751fc9eaa30bfa1fba352923a2"
+  },
+  "htnk.hva": {
+    "bytes": 88,
+    "sha256": "16f3cd28642a66b1a0dc3f6cb4b063889c9f4721e46f12054fd60ed88cdc32ca"
+  },
+  "htnktur.vxl": {
+    "bytes": 11694,
+    "sha256": "4fc6ca0efb803621ae4dc99357f81eb4bc524cc70a90e386831fa0e63a416451"
+  },
+  "htnktur.hva": {
+    "bytes": 88,
+    "sha256": "16f3cd28642a66b1a0dc3f6cb4b063889c9f4721e46f12054fd60ed88cdc32ca"
+  },
+  "htnkbarl.vxl": {
+    "bytes": 1907,
+    "sha256": "42a3a41fdc52a5491b172bddcd8aac5b9baedec1d7703f95a68a9b96f8531398"
+  },
+  "htnkbarl.hva": {
+    "bytes": 88,
+    "sha256": "16f3cd28642a66b1a0dc3f6cb4b063889c9f4721e46f12054fd60ed88cdc32ca"
+  },
+  "dest.vxl": {
+    "bytes": 93336,
+    "sha256": "e8067578fd5ec47cca18389a29df7de03d338f06df688eee83db0ff8b642b10b"
+  },
+  "dest.hva": {
+    "bytes": 88,
+    "sha256": "f6329725bcb3643e79f3a78411950806b548ec85be90e367b856c47652b4bdd8"
+  },
+  "destwo.vxl": {
+    "bytes": 69095,
+    "sha256": "725d93344939c23ef4152659b4a75861b78a2f4ae2d3ea34863762c6690a5c7d"
+  },
+  "destwo.hva": {
+    "bytes": 88,
+    "sha256": "f6329725bcb3643e79f3a78411950806b548ec85be90e367b856c47652b4bdd8"
+  },
+  "asw.vxl": {
+    "bytes": 23453,
+    "sha256": "9778e48e1ee9e5167619ad0c0f6252a0b7da0463474988e459508dad064a765d"
+  },
+  "asw.hva": {
+    "bytes": 88,
+    "sha256": "f6329725bcb3643e79f3a78411950806b548ec85be90e367b856c47652b4bdd8"
+  },
+  "ggpile.shp": {
+    "bytes": 25712,
+    "sha256": "0568894bba630cb6a143a7dbb801f821dc16638544e229e0b2aa3a2fa741734a",
+    "framesIncludingShadow": 6
+  },
+  "ggpile_a.shp": {
+    "bytes": 23584,
+    "sha256": "37bd29c741fbe235411c8416e78abd41a59c57f935f60a4fbf091e501462c23e",
+    "framesIncludingShadow": 64
+  },
+  "ggpile_ad.shp": {
+    "found": false
+  },
+  "ggpilemk.shp": {
+    "found": false
+  },
+  "cons.shp": {
+    "bytes": 160896,
+    "sha256": "b60c5527b82a6e317e4958344443c4bbd9b2139e693f4641c470ff3f15f1f9f1"
+  },
+  "tree26.tem": {
+    "bytes": 2376,
+    "sha256": "f866ae9bca29aad1e03c8bd3c9d2453228538e2c2c84158279994b3f8fb3c8d5"
+  }
+}

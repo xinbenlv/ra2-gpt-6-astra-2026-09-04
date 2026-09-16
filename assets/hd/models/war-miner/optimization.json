@@ -1,0 +1,99 @@
+{
+  "inputName": "master.glb",
+  "inputBytes": 21151412,
+  "inputSha256": "9231d14fe3df3d9ca32a028bec1df2523debfccd85e25300141d9ad96c4c513a",
+  "outputName": "30k.glb",
+  "outputBytes": 3994940,
+  "outputSha256": "9a595efd3ed1270d508e1a5c0b29bdef9caed5d69548fab041938d0c09b5e63b",
+  "before": {
+    "triangles": 416232,
+    "materials": 1,
+    "textures": [
+      {
+        "bytes": 3729059,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      },
+      {
+        "bytes": 2540678,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      },
+      {
+        "bytes": 2606995,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      },
+      {
+        "bytes": 78725,
+        "size": [
+          2048,
+          2048
+        ],
+        "mime": "image/jpeg"
+      }
+    ],
+    "animations": 0,
+    "skins": 0
+  },
+  "after": {
+    "triangles": 30000,
+    "materials": 1,
+    "textures": [
+      {
+        "bytes": 199578,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      },
+      {
+        "bytes": 1147790,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      },
+      {
+        "bytes": 1209702,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      },
+      {
+        "bytes": 1950,
+        "size": [
+          1024,
+          1024
+        ],
+        "mime": "image/webp"
+      }
+    ],
+    "animations": 0,
+    "skins": 0
+  },
+  "recipe": {
+    "budget": 30000,
+    "ratio": 0.07207518883699475,
+    "error": 0.01,
+    "mode": "default",
+    "textureMaxSize": 1024,
+    "colorWebpQuality": 85,
+    "dataTextures": "lossless WebP",
+    "tangents": "MikkTSpace regenerated",
+    "geometryCompression": "none"
+  }
+}

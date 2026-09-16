@@ -1,0 +1,7 @@
+{
+  "taskId": "01a0a96d-bc6e-74d6-82a0-ebc767e3b514",
+  "masterSha256": "27d3a5dabbb3ae157922ca7e0021fca92c3b4bc6a5e9243f103fab0a0aa65e2b",
+  "bytes": 46866776,
+  "recoveredFrom": "existing Meshy image-to-3d task",
+  "originalTask": "01a0a965-90a2-7c83-b65d-3d3f2f7103f4"
+}

@@ -1,0 +1,24 @@
+{
+  "asset": "htnk-v2",
+  "status": "rejected",
+  "referenceSha256": "22755052db9059f927277c3878a8452456a25b38f2affb2730b74ac04d0e87aa",
+  "review": "Visual review of uniform downsample against original: low angular turret, separate red plates, red turret band, straight dark barrel retained. Width 51 vs source 52 pixels at 36-pixel height. Accept for modeling; generated geometry still requires independent multiview and motion review.",
+  "comparison": ".cache/batch-two/reference-check/htnk-v2-comparison.png",
+  "referenceCropNormalized": [
+    0.061,
+    0.229,
+    0.936,
+    0.847
+  ],
+  "originalSize": [
+    52,
+    36
+  ],
+  "downsampleSize": [
+    51,
+    36
+  ],
+  "limitations": "Approximate object alignment, not pixel identity; restrained material detail and smoother barrel accepted.",
+  "originalGeometry": ".cache/batch-two/source/original-htnk.glb",
+  "rejection": "User rejected rigid voxel-influenced appearance. Earlier downsample acceptance withdrawn; natural continuous armor forms must also pass visual review."
+}

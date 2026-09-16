@@ -1,0 +1,46 @@
+{
+  "recipe": "tools/batch-two/mechanical.mjs",
+  "parts": [
+    {
+      "name": "Hull",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "triangles": 26500
+    },
+    {
+      "name": "Turret",
+      "pivot": [
+        0.22,
+        0.067,
+        0
+      ],
+      "parent": 0,
+      "triangles": 3024
+    },
+    {
+      "name": "Barrel",
+      "pivot": [
+        -0.11,
+        0.151,
+        -0.016
+      ],
+      "parent": 1,
+      "triangles": 474
+    }
+  ],
+  "forwardAxis": [
+    -1,
+    0,
+    0
+  ],
+  "barrelAxis": [
+    -1,
+    0,
+    0
+  ],
+  "source": "assets/hd/batch-two/source-parts.json",
+  "correction": "Original htnkbarl extent 17.83 vs hull 44.03; diameter 1.98 vs hull width 32.61. Shorten barrel by .68 and narrow .58, reduce unsupported muzzle bulge."
+}

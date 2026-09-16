@@ -1,0 +1,24 @@
+{
+  "asset": "htnk-v4",
+  "reference": "assets/hd/batch-two/references/htnk-v4.png",
+  "sha256": "664eeaa135897a7416ee205ca5cbf49c7527a63bb0d871dfee44918fc4078222",
+  "parameters": {
+    "model_type": "standard",
+    "ai_model": "meshy-7",
+    "ultra_mode": false,
+    "should_texture": true,
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "should_remesh": false,
+    "image_enhancement": false,
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "taskId": "01a0aaaa-ba98-7085-b69f-9a4976ba6d32",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "master": ".cache/batch-two/htnk-v4/master.glb",
+  "masterBytes": 34783612,
+  "masterSha256": "549372dcf00297d5451a87ce1fd7704447b1021fd27b04ad1c0438d15ce5a61c"
+}

@@ -1,0 +1,8 @@
+// Visual pose evidence from the real consumer; retains mesh bounds at sampled action times.
+import{chromium}from'@playwright/test';import fs from'node:fs/promises';
+await fs.mkdir('.cache/batch-two/review',{recursive:true});const browser=await chromium.launch({channel:'chrome',headless:true});
+try{const page=await browser.newPage({viewport:{width:1280,height:900}});page.on('pageerror',e=>console.log('PAGE ERROR',e.message));await page.goto('http://127.0.0.1:4192/canvas3d/');await page.waitForFunction(()=>window.canvas3d?.ready);await page.locator('#demo').click();await page.evaluate(()=>window.canvas3d.pause(true));
+const tasks=process.argv[2]?[[process.argv[2],process.argv[3]||'ready']]:[['cons','ready'],['cons','walk'],['cons','fireup'],['cons','crawl'],['cons','fireprone'],['cons','die1'],['htnk','aim_left'],['htnk','attack'],['dest','launch'],['gapile','work'],['gapile','construction'],['gapile','damaged']];
+const report=[];for(const[id,action]of tasks){await page.selectOption('#actor',id);await page.selectOption('#action',action);await page.evaluate(()=>{const a=window.canvas3d,m=a.selected;a.tick((m.action?.getClip().duration||1)*.55);});await page.locator('#focus').click();await page.waitForTimeout(150);await page.screenshot({path:`.cache/batch-two/review/${id}-${action}.png`});report.push(await page.evaluate(()=>{const a=window.canvas3d,m=a.selected,b=new a.T.Box3().setFromObject(m.group);return{id:m.id,action:m.playing,bounds:[...b.min.toArray(),...b.max.toArray()]};}));}
+await fs.writeFile('.cache/batch-two/review/poses.json',JSON.stringify(report,null,2));console.log(report);
+}finally{await browser.close();}
